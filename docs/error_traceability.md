@@ -473,3 +473,7 @@ python scripts\run_local.py test-backend
 - 根因：该文件从 `backend.tests.postgres_test_utils` 导入，而同一测试目录其他文件使用 `tests.postgres_test_utils`；从 backend 目录运行时，前者缺少父级模块搜索路径。
 - 修复：统一为 `from tests.postgres_test_utils import postgres_test_database_url`，与现有本地 runner 和 CI 的工作目录一致。
 - 验证：重新执行 [checks.yml:L1](../.github/workflows/checks.yml#L1) 中已有的全部后端测试；修复不改动应用业务行为。
+
+## ERR-TEAM-002 Knowledge lifecycle assertion depends on working directory
+
+REQ-026. GitHub backend tests reported 14 passed and 1 failed. The assertion at [test_knowledge_management.py:L55](../backend/tests/test_knowledge_management.py#L55) assumed a source path prefix, while running from backend created a different relative prefix. The test now verifies that the retrieved top hit has exactly the source returned by publication. This checks the document identity more precisely and works across working directories. Application code is unchanged.

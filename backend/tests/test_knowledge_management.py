@@ -52,7 +52,7 @@ def test_versioned_knowledge_document_lifecycle(monkeypatch):
         assert published["status"] == "active"
         assert published["enabled_chunk_count"] >= 1
         assert hits
-        assert hits[0]["source"].startswith("backend/.test_admin_knowledge") or "data/admin_knowledge" in hits[0]["source"]
+        assert hits[0]["source"] == published["source"]
 
         deleted = knowledge_service.delete_document(saved["id"], actor="admin")
 
