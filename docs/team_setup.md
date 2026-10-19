@@ -5,8 +5,8 @@
 请所有者 D92647426 在仓库 Settings → Collaborators 邀请你的 GitHub 用户名，接受邀请后：
 
 ```bash
-git clone https://github.com/D92647426/whale-tour-course.git
-cd whale-tour-course
+git clone https://github.com/D92647426/tourism-ai-avatar.git
+cd tourism-ai-avatar
 git config user.name "自己的姓名或昵称"
 git config user.email "自己 GitHub 确认过的邮箱"
 ```

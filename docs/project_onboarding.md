@@ -8,3 +8,5 @@
 4. 源码、资产和排除说明见 [UPSTREAM.md:L1](../UPSTREAM.md#L1)。
 5. CI 验证 Maven 构建与 HTTP 资源，不代表 Android 或真实模型服务已经验收。
 6. 小组先在 Issue #1 确定创意，然后通过任务分支、PR 与评审记录自己的贡献。
+
+Local workspace: [local_workspace.md:L1](./local_workspace.md#L1).

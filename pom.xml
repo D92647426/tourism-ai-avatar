@@ -13,8 +13,8 @@
     <groupId>com.guide</groupId>
     <artifactId>ai-guide</artifactId>
     <version>1.0.0</version>
-    <name>景区AI数字人导览系统</name>
-    <description>软件杯比赛项目 - 景区AI数字人导览系统</description>
+    <name>旅游 AI 数字人</name>
+    <description>旅游 AI 数字人导览课程项目</description>
 
     <properties>
         <java.version>8</java.version>

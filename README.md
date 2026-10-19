@@ -1,6 +1,6 @@
-# 灵山景区 AI 数字人导览 · 三人课设
+# 旅游 AI 数字人 · 三人课设
 
-团队仓库：https://github.com/D92647426/whale-tour-course
+团队仓库：https://github.com/D92647426/tourism-ai-avatar
 
 当前主代码来自老师提供的 **软件杯7.16.rar**，已替换之前的 Python/Vue Demo。旧版本完整保留在 Git 标签 `baseline-lingtour-20261019` 中。
 
@@ -51,6 +51,6 @@ Python 只用于可选检查脚本与 CI，网页项目运行不依赖 Python、
 
 ## 当前边界
 
-知识检索是字符串匹配，推荐路线由预设规则生成，语音主要使用浏览器或 Android 系统能力。Haru 是示例角色，最终鲸鱼娘素材与课设创意尚未定案。Android APK 本次未验证构建。
+知识检索是字符串匹配，推荐路线由预设规则生成，语音主要使用浏览器或 Android 系统能力。Haru 是示例角色，最终角色素材与课设创意尚未定案。Android APK 本次未验证构建。
 
 压缩包中的编译产物、个人 IDE 配置、真实接口 Key、历史账号和交互记录未提交。具体处理见 [导入记录](docs/import_manifest.json)。
