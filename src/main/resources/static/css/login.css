@@ -1,0 +1,157 @@
+/* ===== 登录页面样式 ===== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1a0a00 0%, #3d1c00 30%, #7a4220 60%, #c8963e 100%);
+}
+
+.login-bg {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900"><path d="M0 700 L300 500 L600 650 L900 480 L1200 600 L1440 450 L1440 900 L0 900Z" fill="rgba(255,255,255,0.03)"/><circle cx="720" cy="280" r="200" fill="rgba(255,255,255,0.02)"/><circle cx="720" cy="280" r="140" fill="rgba(255,255,255,0.03)"/></svg>') center/cover no-repeat;
+    pointer-events: none;
+}
+
+.login-container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+}
+
+.login-card {
+    background: rgba(255,255,255,0.95);
+    border-radius: 20px;
+    padding: 40px 30px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    text-align: center;
+    animation: cardIn 0.5s ease;
+}
+
+@keyframes cardIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+.login-logo { font-size: 56px; margin-bottom: 8px; }
+
+.login-card h1 {
+    font-size: 28px;
+    color: #5a2d0c;
+    margin-bottom: 4px;
+    font-weight: 700;
+}
+
+.login-card h2 {
+    font-size: 22px;
+    color: #5a2d0c;
+    margin-bottom: 12px;
+}
+
+.login-subtitle {
+    font-size: 14px;
+    color: #999;
+    margin-bottom: 28px;
+}
+
+.auth-form { text-align: left; }
+
+.form-group { margin-bottom: 16px; }
+
+.form-group input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #e8d5b0;
+    border-radius: 12px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+    background: #fdfaf3;
+}
+
+.form-group input:focus {
+    border-color: #c8963e;
+    background: #fff;
+}
+
+.form-error {
+    color: #e74c3c;
+    font-size: 13px;
+    min-height: 20px;
+    margin-bottom: 4px;
+}
+
+.btn-primary, .btn-secondary {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #c8963e, #a67c2e);
+    color: #fff;
+}
+
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(200,150,62,0.4); }
+
+.btn-secondary {
+    background: #f5f0e5;
+    color: #8b6914;
+    margin-bottom: 10px;
+}
+
+.btn-secondary:hover { background: #ede0c8; }
+
+.switch-text {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #999;
+}
+
+.switch-text a {
+    color: #c8963e;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.interest-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.interest-btn {
+    padding: 16px 12px;
+    border: 2px solid #e8d5b0;
+    border-radius: 14px;
+    background: #fdfaf3;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #5a2d0c;
+}
+
+.interest-btn:hover { border-color: #c8963e; background: #fff8ec; }
+
+.interest-btn.selected {
+    border-color: #c8963e;
+    background: linear-gradient(135deg, #c8963e, #a67c2e);
+    color: #fff;
+    font-weight: 700;
+}
+
+#skipInterest { margin-top: 8px; }
+
+@media (max-width: 480px) {
+    .login-card { padding: 30px 20px; }
+    .interest-options { grid-template-columns: 1fr; }
+}

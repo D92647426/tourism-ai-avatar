@@ -1,88 +1,71 @@
-# 团队成员第一次加入
+# 团队成员上手：Java 基线
 
-对应 REQ-026：三人 GitHub 协作。
+## 1. 加入并克隆
 
-## 1. 接受邀请并克隆
-
-所有者在 GitHub 仓库 Settings → Collaborators 邀请另外两人。成员登录自己的账号、接受邀请后克隆私有仓库。
+请所有者 D92647426 在仓库 Settings → Collaborators 邀请你的 GitHub 用户名，接受邀请后：
 
 ```bash
 git clone https://github.com/D92647426/whale-tour-course.git
 cd whale-tour-course
-git config user.name "自己的名字或常用昵称"
+git config user.name "自己的姓名或昵称"
 git config user.email "自己 GitHub 确认过的邮箱"
 ```
 
-可以用 GitHub 隐私邮箱。以上设置只作用于本仓库，提交前用 `git config user.name` 和 `git config user.email` 核对。
+已有本仓库时，先保存或提交自己的修改，再切回 main 并拉取。不要将旧 Python/Vue 分支的结构直接覆盖新 Java 基线。
 
-Windows 首次 HTTPS 连接按 Git Credential Manager 提示登录 GitHub；密码和 Token 不要发到群里或写进源码。
+## 2. 软件准备
 
-## 2. 最快启动：Docker
+网页项目需要 JDK（推荐 17）与 Maven。检查：
 
-安装 Git 和 Docker Desktop，启动 Docker，在根目录执行：
-
-```powershell
-Copy-Item .env.example .env
-docker compose -f deploy/docker-compose.yml up --build
+```bash
+java -version
+mvn -version
 ```
 
-打开 `http://127.0.0.1:8000/guide`。终端按 Ctrl+C 停止前台服务；之后运行 `docker compose -f deploy/docker-compose.yml down` 停止容器并保留数据卷。
+Windows 使用 IDEA 时，可打开根目录 pom.xml 并使用 IDEA 的内置 Maven。确保项目 JDK 和 Maven 使用的 JDK 均有效。
 
-`.env` 是个人配置，不上传。模板模型 Key 为空，未配置时使用降级回答。默认开发管理员 `admin / 123456` 只用于本机。
+## 3. 编译和运行
 
-## 3. 前后端开发
+根目录执行：
 
-准备 Python 3.12、Node.js 22 和 Docker Desktop，首次在根目录：
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r backend/requirements.txt
-docker compose -f deploy/docker-compose.yml up -d postgres
+```bash
+mvn clean package
+java -jar target/ai-guide-1.0.0.jar
 ```
 
-在 `frontend` 目录安装依赖：
+游客页为 http://localhost:8080/，管理页为 http://localhost:8080/admin.html 。
+
+也可在 IDEA 运行 [GuideApplication.java:L1](../src/main/java/com/guide/GuideApplication.java#L1)。启动后 Ctrl+C 退出，不需要 PostgreSQL、Docker 或单独的 npm 服务。
+
+历史用户账号未导入，可通过登录页注册自己的开发账号。当前用户和后台权限沿用老师的演示实现。
+
+## 4. 模型配置
+
+默认 Key 为空，先用降级模式运行。需要模型时，在自己的启动终端设置环境变量：
 
 ```powershell
-npm ci
+$env:DEEPSEEK_API_KEY = "自己本地填写"
+java -jar target/ai-guide-1.0.0.jar
 ```
 
-回到根目录启动开发服务：
+不要把真实 Key 放入提交、群聊或 AI 对话输出。Spring Boot 不自动读取普通 .env 文件。具体字段见 [配置说明 config_reference.md:L1](./config_reference.md#L1)。
 
-```powershell
-.\.venv\Scripts\python.exe scripts/dev_vue_full_stack.py
+## 5. 验证与分支
+
+```bash
+mvn verify
+python scripts/check_doc_links.py
+python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar
 ```
 
-访问 `http://127.0.0.1:5173/guide`，后端为 `http://127.0.0.1:8000`。开发脚本使用默认端口并检查 PostgreSQL。
+Python 只用于检查脚本。分支、提交、评审见 [CONTRIBUTING.md:L1](../CONTRIBUTING.md#L1)。
 
-模型 Key 可通过本机终端环境变量配置。此开发脚本不会自动把根目录 `.env` 的全部字段传给后端进程；需要在所用终端显式设置 `DEEPSEEK_API_KEY`。不要写进代码。
+## 6. Android
 
-## 4. 本地检查
+Android Studio 打开 android 目录，使用 JDK 17、Android SDK 34，Gradle 配置为 8.4。源码含 WebView 和原生语音桥接。压缩包仅带 Gradle wrapper 配置，缺少完整 wrapper 启动文件，需在 Android Studio 配置 Gradle。
 
-根目录文档检查：
+本次未构建 APK；不要将 Android 本机 local.properties 或 build 目录提交。App 连接手机能访问的后端地址，网页项目应先跑通。
 
-```powershell
-.\.venv\Scripts\python.exe scripts/check_doc_links.py
-```
+## 7. 来源
 
-前端目录：
-
-```powershell
-npm test
-npm run build
-```
-
-后端检查在根目录运行，先启动 Docker：
-
-```powershell
-.\.venv\Scripts\python.exe scripts/run_local.py test-backend
-```
-
-测试会建立独立数据库，使用本机课程数据库执行。
-
-## 5. 分支与贡献记录
-
-遵循 [协作流程 CONTRIBUTING.md:L1](../CONTRIBUTING.md#L1)。约定 `main` 经 PR 和另一人评审合并。私有仓库的强制分支保护取决于账号套餐；支持时再启用，不将流程约定表述为已开启的服务端保护。
-
-来源见 [UPSTREAM.md:L1](../UPSTREAM.md#L1)，原始说明见 [README.upstream.md:L1](../README.upstream.md#L1)。
-
-创意候选见 [creative_directions.md:L1](./creative_directions.md#L1)，尚未共同定案。首次协作从确定范围、每人完成一次小 PR 开始。
+当前来源见 [UPSTREAM.md:L1](../UPSTREAM.md#L1)。旧 Python/Vue 版本保存在 Git 标签 baseline-lingtour-20261019。

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台 - 灵山胜境AI数字人导览系统</title>
+    <link rel="stylesheet" href="/css/admin.css">
+    <!-- ECharts CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- 侧边栏 -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-logo">
+                <span class="sidebar-logo-icon">🛕</span>
+                <span class="sidebar-logo-text">管理后台</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a class="nav-item active" data-tab="dashboard">
+                    <span class="nav-icon">📊</span> 数据大屏
+                </a>
+                <a class="nav-item" data-tab="knowledge">
+                    <span class="nav-icon">📚</span> 知识库管理
+                </a>
+                <a class="nav-item" data-tab="digital-human">
+                    <span class="nav-icon">🎭</span> 数字人形象
+                </a>
+                <a class="nav-item" data-tab="reports">
+                    <span class="nav-icon">📋</span> 感受度报告
+                </a>
+                <a class="nav-item" data-tab="users">
+                    <span class="nav-icon">👥</span> 用户列表
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="/" class="back-link">← 返回游客端</a>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="admin-main">
+            <!-- ===== Tab 1: 数据大屏 ===== -->
+            <section class="tab-content active" id="tab-dashboard">
+                <h1 class="page-title">📊 数据大屏概览</h1>
+                <div class="stat-cards" id="statCards">
+                    <div class="stat-card">
+                        <div class="stat-value" id="statToday">--</div>
+                        <div class="stat-label">今日服务人次</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statWeek">--</div>
+                        <div class="stat-label">本周服务人次</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statSatisfaction">--</div>
+                        <div class="stat-label">游客满意度</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statKnowledge">--</div>
+                        <div class="stat-label">知识库条目数</div>
+                    </div>
+                </div>
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>🔥 热门问答 Top 5</h3>
+                        <div class="chart-container" id="chartHotQuestions" style="height:320px;"></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>📈 满意度趋势（近7天）</h3>
+                        <div class="chart-container" id="chartSentiment" style="height:320px;"></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>🏞️ 景点关注度排名</h3>
+                        <div class="chart-container" id="chartSpots" style="height:320px;"></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>🕐 时段分布</h3>
+                        <div class="chart-container" id="chartHourly" style="height:320px;"></div>
+                    </div>
+                </div>
+                <div class="refresh-info">数据每30秒自动刷新 · 上次刷新: <span id="lastRefresh">--</span></div>
+            </section>
+
+            <!-- ===== Tab 2: 知识库管理 ===== -->
+            <section class="tab-content" id="tab-knowledge">
+                <h1 class="page-title">📚 知识库管理</h1>
+                <div class="toolbar">
+                    <input type="text" class="toolbar-search" id="kwSearch" placeholder="搜索知识条目...">
+                    <select class="toolbar-select" id="kwCategoryFilter">
+                        <option value="">全部分类</option>
+                        <option value="景点讲解">景点讲解</option>
+                        <option value="文史资料">文史资料</option>
+                        <option value="常见问题">常见问题</option>
+                        <option value="其他">其他</option>
+                    </select>
+                    <button class="btn btn-primary" id="btnAddKnowledge">+ 新增条目</button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table" id="knowledgeTable">
+                        <thead>
+                            <tr>
+                                <th style="width:60px;">ID</th>
+                                <th style="width:180px;">标题</th>
+                                <th style="width:100px;">分类</th>
+                                <th>内容预览</th>
+                                <th style="width:100px;">创建时间</th>
+                                <th style="width:140px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="knowledgeTbody">
+                            <tr><td colspan="6" style="text-align:center;padding:40px;">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ===== Tab 3: 数字人形象管理 ===== -->
+            <section class="tab-content" id="tab-digital-human">
+                <h1 class="page-title">🎭 数字人形象管理</h1>
+                <div class="config-layout">
+                    <div class="config-form">
+                        <div class="form-group">
+                            <label>导游名称</label>
+                            <input type="text" class="form-input" id="cfgName" placeholder="如：灵灵">
+                        </div>
+                        <div class="form-group">
+                            <label>欢迎语</label>
+                            <textarea class="form-textarea" id="cfgWelcome" rows="3"
+                                placeholder="如：阿弥陀佛！我是您的AI导游灵灵..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>声音类型</label>
+                            <select class="form-input" id="cfgVoice">
+                                <option value="female">女声（推荐）</option>
+                                <option value="male">男声</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>主题色</label>
+                            <input type="color" class="form-color" id="cfgColor" value="#2d8f4e">
+                        </div>
+                        <div class="form-group">
+                            <label>音量 (0.1 ~ 1.0)</label>
+                            <input type="range" class="form-range" id="cfgVolume" min="0.1" max="1.0" step="0.1" value="1.0">
+                            <span class="range-value" id="cfgVolumeLabel">1.0</span>
+                        </div>
+                        <div class="form-group">
+                            <label>语速 (0.5 ~ 2.0)</label>
+                            <input type="range" class="form-range" id="cfgSpeed" min="0.5" max="2.0" step="0.1" value="1.0">
+                            <span class="range-value" id="cfgSpeedLabel">1.0</span>
+                        </div>
+                        <button class="btn btn-primary btn-block" id="btnSaveConfig">💾 保存配置</button>
+                    </div>
+                    <div class="config-preview">
+                        <h3>数字人预览</h3>
+                        <div class="preview-avatar">
+                            <canvas id="previewCanvas" width="200" height="200"></canvas>
+                        </div>
+                        <p class="preview-hint">配置将实时反映到游客端数字人</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== Tab 4: 感受度报告 ===== -->
+            <section class="tab-content" id="tab-reports">
+                <h1 class="page-title">📋 游客感受度报告</h1>
+                <div class="reports-grid">
+                    <div class="report-card">
+                        <h3>😊 情感趋势</h3>
+                        <div class="chart-container" id="chartReportSentiment" style="height:350px;"></div>
+                    </div>
+                    <div class="report-card">
+                        <h3>💬 游客关注点分析</h3>
+                        <div class="chart-container" id="chartReportTopics" style="height:350px;"></div>
+                    </div>
+                    <div class="report-card">
+                        <h3>💡 服务建议</h3>
+                        <div class="suggestions-list" id="suggestionsList">
+                            <p class="loading-text">加载中...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== Tab: 用户列表 ===== -->
+            <section class="tab-content" id="tab-users">
+                <h1 class="page-title">👥 注册用户列表</h1>
+                <div class="table-container">
+                    <table class="data-table" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>用户名</th>
+                                <th>兴趣偏好</th>
+                                <th>注册时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="3" class="loading-text">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 知识库编辑模态框 -->
+    <div class="modal-overlay" id="kwModalOverlay">
+        <div class="modal-content admin-modal">
+            <div class="modal-header">
+                <h3 id="kwModalTitle">新增知识条目</h3>
+                <button class="modal-close-btn" id="kwModalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="kwEditId">
+                <div class="form-group">
+                    <label>标题 *</label>
+                    <input type="text" class="form-input" id="kwEditTitle" placeholder="知识条目标题">
+                </div>
+                <div class="form-group">
+                    <label>分类 *</label>
+                    <select class="form-input" id="kwEditCategory">
+                        <option value="景点讲解">景点讲解</option>
+                        <option value="文史资料">文史资料</option>
+                        <option value="常见问题">常见问题</option>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>内容 *</label>
+                    <textarea class="form-textarea" id="kwEditContent" rows="8" placeholder="知识条目详细内容..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>关键词（逗号分隔，用于检索）</label>
+                    <input type="text" class="form-input" id="kwEditKeywords" placeholder="如：灵山,大佛,祈福">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="kwModalCancel">取消</button>
+                <button class="btn btn-primary" id="kwModalSave">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/admin.js"></script>
+</body>
+</html>

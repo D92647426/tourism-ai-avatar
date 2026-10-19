@@ -1,0 +1,394 @@
+{
+  "import_date": "2026-10-19",
+  "archive_name": "软件杯7.16.rar",
+  "archive_sha256": "7a5a6063f507416b716d6aab03e3f9b907eb7bdb10bb8dcc133abfd19dcc860c",
+  "source_files": [
+    {
+      "path": "pom.xml",
+      "source_sha256": "6593a1206a19b7a526bbf115bd139b23c304edc9fecadced5ac39d4ae96ec864"
+    },
+    {
+      "path": "启动.bat",
+      "source_sha256": "fb57982d105e09235931b44c71689b2164806f8dd64241de3ac826c0533bbf17"
+    },
+    {
+      "path": "android/build.gradle",
+      "source_sha256": "8cab28a547f680d02f5ce1456f109e226e0dc5b2482617096e83c9caa22907b7"
+    },
+    {
+      "path": "android/gradle.properties",
+      "source_sha256": "ea869dd5e3db9da83dec37e5b11a5856dc6f011e9ca3478f5c0b43b300ffcf80"
+    },
+    {
+      "path": "android/settings.gradle",
+      "source_sha256": "052c95ad5807b561b82873c8b7f8352fa32a565608f9d4890a123b9660612847"
+    },
+    {
+      "path": "android/app/build.gradle",
+      "source_sha256": "5a20608784b03c92f59b6fca94ac4e36c49401c44daebbcedce4ad140b03bb30"
+    },
+    {
+      "path": "android/app/proguard-rules.pro",
+      "source_sha256": "a28eba7562150fc144618ccb94871fba5df93631fcdfe7f588fe115bbc22b8b8"
+    },
+    {
+      "path": "android/app/src/main/AndroidManifest.xml",
+      "source_sha256": "68d700e73b1b0ae1cc09699324667446c81184e99ff9974b6688c450d8737389"
+    },
+    {
+      "path": "android/app/src/main/java/com/guide/lingshan/MainActivity.kt",
+      "source_sha256": "3741ffa9b092177c9a5641899753b504fdde9fda17198d04a131b7809e8172b7"
+    },
+    {
+      "path": "android/app/src/main/res/drawable/ic_launcher_background.xml",
+      "source_sha256": "ad91d79962663ad241e179ec9555d747faab0b3c4738284a245763ce32796274"
+    },
+    {
+      "path": "android/app/src/main/res/drawable/ic_launcher_foreground.xml",
+      "source_sha256": "0f9c23469ebe78eb4bdf6a5f013d7ae341b525cb6624db4e41f7d167a0a4f51d"
+    },
+    {
+      "path": "android/app/src/main/res/layout/activity_main.xml",
+      "source_sha256": "6feb3d2d32bb7d48d8f8c20f6e8f28ef5c48649cdbaf616197a1f88424e16954"
+    },
+    {
+      "path": "android/app/src/main/res/values/colors.xml",
+      "source_sha256": "80a1aac08b90445f06e264f6fb70e8e01843da6a6cb3317d2e66a827ab01de53"
+    },
+    {
+      "path": "android/app/src/main/res/values/strings.xml",
+      "source_sha256": "7be3f1d3a370c6b6d20a1d51f68dc63331ba9bf22469a50b794ff3f5f724d58c"
+    },
+    {
+      "path": "android/app/src/main/res/values/themes.xml",
+      "source_sha256": "b80162cac261e21c6e94a7cf2da8f00897bfb11774803e9795ef6a12e2bec109"
+    },
+    {
+      "path": "android/app/src/main/res/xml/network_security_config.xml",
+      "source_sha256": "34648cb9b99eb60b2f761fa1d9bfddd398aa527818652735c34bcdc420e9769d"
+    },
+    {
+      "path": "android/gradle/wrapper/gradle-wrapper.properties",
+      "source_sha256": "3f230e3bef417c786cef9c3f99cc688c3a5ef74419e4bf910ec86e665c9485d2"
+    },
+    {
+      "path": "data/config.json",
+      "source_sha256": "9ff9b169d21b6e99a3927a8ebdd9fbe7680319745328624f41c7cce4bef4c4df"
+    },
+    {
+      "path": "data/knowledge.json",
+      "source_sha256": "fdf07859a11419484f7fd9b8e4702b97fbd496f8d43a0c5aade35cc29ba4d5fa"
+    },
+    {
+      "path": "src/main/java/com/guide/GuideApplication.java",
+      "source_sha256": "ecc853e315cc22ddcb1c31ad03806658e7a94e6a3e844c4f6139953448593556"
+    },
+    {
+      "path": "src/main/java/com/guide/controller/AdminController.java",
+      "source_sha256": "2f83d04a3468961341da7167c6f8c6bb25b6cb072e6ff4ebaddaccb6d5b88772"
+    },
+    {
+      "path": "src/main/java/com/guide/controller/AuthController.java",
+      "source_sha256": "ce87a994763900c8a44b9a98bf672e9708394fbdac837e0e560d4fbe8fc19be8"
+    },
+    {
+      "path": "src/main/java/com/guide/controller/ChatController.java",
+      "source_sha256": "6377e1907313eb49dd59f4f3d370c828d3963f32baf6291f6052ac2c40b4a900"
+    },
+    {
+      "path": "src/main/java/com/guide/controller/SpotController.java",
+      "source_sha256": "4748a936e770eaa045a393e109881376db58891263a70d6189f355be2373c356"
+    },
+    {
+      "path": "src/main/java/com/guide/model/ChatRequest.java",
+      "source_sha256": "2492ec47ea4fbf50236d729b373564bae442e78993dc64c2e08b9ba22963d761"
+    },
+    {
+      "path": "src/main/java/com/guide/model/ChatResponse.java",
+      "source_sha256": "cebd789e7286b58c2b1342c033444fc1a397e5a38db3638d6d9e4cc3c6bcf858"
+    },
+    {
+      "path": "src/main/java/com/guide/model/DashboardData.java",
+      "source_sha256": "1048ce01aeb7abe3113348726faca49f8bb70de1215a8d3cd6637b02857c5c75"
+    },
+    {
+      "path": "src/main/java/com/guide/model/DigitalHumanConfig.java",
+      "source_sha256": "b14a0b0aa72fbabfae121f7b032a2619e7de17e1cf85d1007cab3e59b47ca011"
+    },
+    {
+      "path": "src/main/java/com/guide/model/InteractionLog.java",
+      "source_sha256": "6b770b31100f5feb8e689e38a0b1ea7c0cdd629bc7d741b1fb490817a4dd4df2"
+    },
+    {
+      "path": "src/main/java/com/guide/model/KnowledgeItem.java",
+      "source_sha256": "cdb84cd355e1fbf1d9ece71921505ec2e96ba6de990609d1ba2bb079c9ac14c4"
+    },
+    {
+      "path": "src/main/java/com/guide/model/Spot.java",
+      "source_sha256": "be69a6e7a8f8c202391b0272dd227a15494186ae3d1910f4af8729c122d20444"
+    },
+    {
+      "path": "src/main/java/com/guide/model/User.java",
+      "source_sha256": "d62e68712e826a4df054e051b8e92d9d88a6c49bb84dadd22abcd0a0958ca749"
+    },
+    {
+      "path": "src/main/java/com/guide/service/AnalyticsService.java",
+      "source_sha256": "d2fc5f7d36f8990937358aa3e89de7d999452b32e6f121a14ef22fb9cffa0c21"
+    },
+    {
+      "path": "src/main/java/com/guide/service/ChatService.java",
+      "source_sha256": "b647d8d9cf872d59862653e0300f350ef5ea33454cdb98c0412682c0d78b6c5b"
+    },
+    {
+      "path": "src/main/java/com/guide/service/ConfigService.java",
+      "source_sha256": "dc86b3932641f8b25a61bc89c1ea4849abc04822c85a56de643e0c560013f59e"
+    },
+    {
+      "path": "src/main/java/com/guide/service/KnowledgeService.java",
+      "source_sha256": "61d41adcb993c3402640ff8354ba78c6e299742c34776530a70c862f19f50bbf"
+    },
+    {
+      "path": "src/main/java/com/guide/service/SpotService.java",
+      "source_sha256": "61befdc27f4f2a6a6503e61217bb20400e4649ed3c240f7d4304c4eaa3316873"
+    },
+    {
+      "path": "src/main/java/com/guide/service/UserService.java",
+      "source_sha256": "6df9264275e5732a53af697598599c06720fba0774246a6f334aabe0127e5df3"
+    },
+    {
+      "path": "src/main/resources/application.yml",
+      "source_sha256": "9347a6307e01ef58f308ddbcd29fe387164fca818f48237c662e8336aa1be0d6"
+    },
+    {
+      "path": "src/main/resources/spots.json",
+      "source_sha256": "dcecdebdd1d2cbe8f4b874cd39f6912227db1c2cba13ca9e28d45f072c86080d"
+    },
+    {
+      "path": "src/main/resources/static/admin.html",
+      "source_sha256": "961df33415983acc16c16501a18ef725f09e3165fc68f5b29efebd7a8c4cf1b4"
+    },
+    {
+      "path": "src/main/resources/static/index.html",
+      "source_sha256": "f1389f04e7fb75aedd49330cc482de8b2b16d6120f0b6a5f7a2328178b61dd07"
+    },
+    {
+      "path": "src/main/resources/static/login.html",
+      "source_sha256": "fe0e9d740d51635b2fce420c78b53493cf87837eb63b067238cb67a95de04d73"
+    },
+    {
+      "path": "src/main/resources/static/css/admin.css",
+      "source_sha256": "22103a895b1a4fc8bb9ef2d5a375ed0133f93feb1360646ddcd10e74238e81e9"
+    },
+    {
+      "path": "src/main/resources/static/css/login.css",
+      "source_sha256": "103bc8a4e6a4403431209847d7d79ae66b62262e10da633772480b49c93c0125"
+    },
+    {
+      "path": "src/main/resources/static/css/style.css",
+      "source_sha256": "03caaff08b614023b46b8a000687dfbaa9cbedfd7e3c2d2210d5b5bc7135240d"
+    },
+    {
+      "path": "src/main/resources/static/js/admin.js",
+      "source_sha256": "539ffe60b9a4cfeed4469ea89439e86176b0c331c74cdaa5787bbc8fe85218f6"
+    },
+    {
+      "path": "src/main/resources/static/js/live2d-helper.js",
+      "source_sha256": "ca261f4eeea91c88406372adfe00f0007e01c9c5b94fdcb5b7ebe3a9d2043e24"
+    },
+    {
+      "path": "src/main/resources/static/js/login.js",
+      "source_sha256": "d18148e118add1b7786ac789de6ce6fe6718b12fd4131955da8aa15fbbe6dc88"
+    },
+    {
+      "path": "src/main/resources/static/js/main.js",
+      "source_sha256": "c9573684e5a57ab91bf96b9a6fdfa0c1d1a810ce896b2d54fff42b80b8cf8108"
+    },
+    {
+      "path": "src/main/resources/static/lib/live2d.min.js",
+      "source_sha256": "e4ea1f18bdd44b65394ffd5a1bab16982e88757d45134d1bd0737c8a6b3ddd08"
+    },
+    {
+      "path": "src/main/resources/static/lib/live2dcubismcore.min.js",
+      "source_sha256": "25ae938cb4fe282ce189b357bcc97e603d1e1f7ec78bf04150d401c23cdc792f"
+    },
+    {
+      "path": "src/main/resources/static/lib/pixi-live2d-display.es.js",
+      "source_sha256": "979ea0eca872682e56ffdc42e86277f4ec46fcadfc820e5157e9903d617744de"
+    },
+    {
+      "path": "src/main/resources/static/lib/pixi-live2d-display.min.js",
+      "source_sha256": "0e86a36540fb487d463904fc5e295316a3130dfc8ac345f37f29b34bed48bba3"
+    },
+    {
+      "path": "src/main/resources/static/lib/pixi.min.js",
+      "source_sha256": "403f2f2ee8145fa17f60c5c89403056efe2680e5096ec2762036486914ed19c5"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/haru.model.json",
+      "source_sha256": "b825232259df4b1a236cb5102cad7ca15dded972f6f6081ef1ba8e896aafb855"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/haru01.physics.json",
+      "source_sha256": "8d9e0cc2c87862ee7980c800fa00b918cce28ba5ccc3c3005d3dd90d10f7e693"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/haru01.pose.json",
+      "source_sha256": "1c0f7cbcde30ad314ed02977f2abab75699b02b3155375c7e410287f103a9837"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/exp/f01.exp.json",
+      "source_sha256": "bb38147217e26e31e75ea1ecbcb3509838b142e754a1a984f41098e8f8697532"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/exp/f02.exp.json",
+      "source_sha256": "faad178dca3185278c4f22c60db25aef999508fdc5c1854e14033e636371b092"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/exp/f03.exp.json",
+      "source_sha256": "e22f6b72cc4d7df98e9f74893c6f94e349d636b88882416607da6daade3dd7b5"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/exp/f04.exp.json",
+      "source_sha256": "5004b701c3e575e6c0498c0a666a3ff6ff6280e8c10dd42e0eac67ed1a0814b8"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/exp/f05.exp.json",
+      "source_sha256": "2541188483a9642d47fb16322bd06ae5e685e9739d9a7c3757352b2767409a3c"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/exp/f06.exp.json",
+      "source_sha256": "be98cf03a90e34976961f50c3218d49e396c659bf53d751cb8167d8c4e977a81"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/exp/f07.exp.json",
+      "source_sha256": "24c1080baa64285d7a21679d1887ed7784c7b53f90da7b4e6479fd96dde590b4"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/exp/f08.exp.json",
+      "source_sha256": "c4be8e817f0e8d5e9b124f7c52b245293c4e1b654d476a7c66be5a3bab1f655b"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/moc/haru01.moc",
+      "source_sha256": "740b38fc9299793fd1b3587b4c6d5c1a00efbe55b6a962f8e52b349ca8e7b647"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/moc/haru01.1024/texture_00.png",
+      "source_sha256": "87833d93a629f3fe8877d2725677b38b3d30aeeafa12eb12d2ad2b6b537e0dd5"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/moc/haru01.1024/texture_01.png",
+      "source_sha256": "1b07c0924b84daec884d516f2a868502a8caf0aba9afc8c11e60897cd8423ac5"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/moc/haru01.1024/texture_02.png",
+      "source_sha256": "0cbbe1df149c3db5c11de0a0f5f914a465fce5c351e25aee15de4faab7df5f9e"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/mtn/flickHead_00.mtn",
+      "source_sha256": "767f8d648e8106cb973822e76ea101960cbfcc1b9f39acf39d6cc4fdc80ce8e8"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/mtn/idle_00.mtn",
+      "source_sha256": "f647d8ebaa8b307c07dece0d48a9b187229bce5e2589770235c279ff2e2211ed"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/mtn/idle_01.mtn",
+      "source_sha256": "783142b04f73cc3a8d76368f653929d04711e8941bf47a0ca95ae6b24b3ea844"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/mtn/idle_02.mtn",
+      "source_sha256": "3b8d02a6eb078e1a54ce19bbcc4c0a5ef3cc37782e09b3f8bff40103d385f25c"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/mtn/pinchIn_00.mtn",
+      "source_sha256": "c39f7eb83d3bd70e79e285ddaa1026a664202e825a853aee569410fde3b5c4b1"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/mtn/pinchOut_00.mtn",
+      "source_sha256": "6de0e2bc0fb2203ceb4d104b22c27bd20e78c396882068c844c5eefa6223c27e"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/mtn/shake_00.mtn",
+      "source_sha256": "a024ce6b93431684fd3bafbdd0fe03275e7b82262b6e8c4572d2d9feb7801670"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/mtn/tapBody_00.mtn",
+      "source_sha256": "15fa9827cabcd883b977f4253017b555db314ff9fa3abf391317b8a5c8b520ff"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/mtn/tapBody_01.mtn",
+      "source_sha256": "0a4edfe6fcf39bb179035d52c7df7145b19c80441c82ef8a64a41ed47c68ca56"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/mtn/tapBody_02.mtn",
+      "source_sha256": "bfac3e1ecbc5cb094656d5098bbd798e72dec1b09180537f6edfd29be0aa9677"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/mtn/tapBody_03.mtn",
+      "source_sha256": "d32c4b8878cdabf74364ccd8f56ad1d7ed562c43baeba61eebc4bf490526f3fb"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/mtn/tapBody_04.mtn",
+      "source_sha256": "b74035460be4cde6411faf112bed07c04906ea35a7f6ff687780830d9e1c887b"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/mtn/tapBody_05.mtn",
+      "source_sha256": "a91480be43037ab468f1f4ee6d8d82e3aca50375269a5a253b3ddc7a6736431e"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/mtn/tapBody_06.mtn",
+      "source_sha256": "c9d8e604157d2ff83023a91c0c71df438c08f313f405326e9d3b62b14523daf7"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/mtn/tapBody_07.mtn",
+      "source_sha256": "b8e34ab4c6dc854809fad54ca21e26b92ff0bd389f2f10d6eb47a92d391146fa"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/mtn/tapBody_08.mtn",
+      "source_sha256": "cb1059afad86202cd4f68fef94e97a6b015eb5226aff10f0a9c194db7a9ff017"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/mtn/tapBody_09.mtn",
+      "source_sha256": "dc946609879eb97198d5fe08b05e32993c4eac6b22ee216c6e3cf181abce642b"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/snd/flickHead_00.mp3",
+      "source_sha256": "3eb6697a84cba50219b3d2495149bd9f0394d0900fb5a8fb46641ae221511b0a"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/snd/pinchIn_00.mp3",
+      "source_sha256": "6b9a245590c19e7cc70f0e21b137b19a6afeeb378ff7025d626c5dcfd82ab8cc"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/snd/pinchOut_00.mp3",
+      "source_sha256": "7268cc0a0c8789757f54f70936c74418020c4bcfd699ddd7bff363a9f76319b9"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/snd/shake_00.mp3",
+      "source_sha256": "d1c0109f15fe80650b2c57a9956c753db4c0df3572e83bee296807b1b5cdd705"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/snd/tapBody_00.mp3",
+      "source_sha256": "17cc497ce6d9f417459552fff99654fb3e5c7d0ed1b5cb50ca986fc7a2c87097"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/snd/tapBody_01.mp3",
+      "source_sha256": "e8d4c971a7ade43aa51eba90239e67830b45e39c33b9976191f7acfce9db70bc"
+    },
+    {
+      "path": "src/main/resources/static/models/haru/snd/tapBody_02.mp3",
+      "source_sha256": "d32d46584385e9c61ef78d8fdf18b230c7309f338d5f32985e3c12d3d56003cb"
+    }
+  ],
+  "changed_for_import": [
+    "src/main/resources/application.yml",
+    "Windows launcher portability"
+  ],
+  "omitted": [
+    "build outputs and IDE caches",
+    "local Android SDK path",
+    "historical users and interactions",
+    "personal AI tool settings"
+  ],
+  "previous_baseline_tag": "baseline-lingtour-20261019"
+}

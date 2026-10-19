@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>灵山胜境AI数字人导览系统</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<!-- 登录检查 -->
+<script>
+if (!localStorage.getItem('userId')) { window.location.href = '/login.html'; }
+</script>
+
+
+<header class="header">
+  <div class="header-inner">
+    <div class="logo"><span class="logo-icon">🛕</span><span class="logo-text">灵山胜境AI数字人导览</span></div>
+    <div class="header-right">
+      <span class="header-username" id="headerUsername"></span>
+      <button class="profile-btn" id="profileBtn" title="个人信息">👤</button>
+    </div>
+  </div>
+</header>
+
+<main class="main-container">
+  <section class="search-section">
+    <div class="search-bar">
+      <input type="text" id="searchInput" class="search-input" placeholder="搜索景点名称、类型...">
+      <span class="search-icon">🔍</span>
+    </div>
+  </section>
+  <section class="spots-section">
+    <h2 class="section-title"><span class="title-icon">🏞️</span> 热门景点 <span class="spot-count" id="spotCount"></span></h2>
+    <div class="spots-grid" id="spotsGrid"></div>
+  </section>
+  <footer class="footer"><p>灵山胜境 · 世界佛教论坛永久会址 · 国家5A级旅游景区</p></footer>
+</main>
+
+<!-- 景点详情 -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-content">
+    <button class="modal-close" id="modalClose">&times;</button>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- 个人信息模态框 -->
+<div class="modal-overlay" id="profileOverlay" style="display:none;">
+  <div class="modal-content profile-modal">
+    <div class="modal-header">
+      <h3>👤 个人信息</h3>
+      <button class="modal-close-btn" id="profileClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="profile-field">
+        <label>用户名</label>
+        <p id="profileUsername">-</p>
+      </div>
+      <div class="profile-field">
+        <label>兴趣爱好</label>
+        <div class="interest-options" id="profileInterests">
+          <button class="interest-btn" data-interest="历史人文">🏛️ 历史人文</button>
+          <button class="interest-btn" data-interest="自然风光">🌿 自然风光</button>
+          <button class="interest-btn" data-interest="亲子出游">👶 亲子出游</button>
+          <button class="interest-btn" data-interest="摄影打卡">📷 摄影打卡</button>
+        </div>
+      </div>
+      <button class="btn-primary" id="profileSave">保存</button>
+      <p class="form-msg" id="profileMsg"></p>
+      <button class="btn-secondary" id="profileLogout">退出登录</button>
+    </div>
+  </div>
+</div>
+
+<!-- Live2D 数字人舞台 -->
+<div class="live2d-stage" id="live2dStage">
+  <canvas id="live2dMainCanvas"></canvas>
+  <div class="live2d-label">AI导游灵灵</div>
+  <div class="live2d-hint">点击我对话 💬</div>
+</div>
+
+<!-- 聊天气泡 -->
+<div class="chat-fab" id="chatFab"><span class="chat-fab-icon">💬</span></div>
+
+<!-- 聊天面板（左侧） -->
+<div class="chat-panel-overlay" id="chatPanelOverlay">
+  <div class="chat-panel-window">
+    <div class="chat-panel-header">
+      <div class="chat-header-info">
+        <span class="chat-header-avatar">🧑‍💼</span>
+        <div><div class="chat-header-name" id="chatHeaderName">AI导游灵灵</div><div class="chat-header-status">在线</div></div>
+      </div>
+      <button class="chat-panel-close" id="chatPanelClose">✕</button>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-msg bot"><div class="msg-bubble">阿弥陀佛！我是您的AI导游灵灵 👋<br>我可以为您介绍灵山胜境各景点、推荐游览路线、解答交通门票等问题。愿您在此感悟灵山，吉祥平安！</div></div>
+    </div>
+    <div class="chat-quick-actions" id="quickActions">
+      <button class="quick-btn" data-msg="灵山胜境有哪些必看景点？">推荐景点</button>
+      <button class="quick-btn" data-msg="灵山大佛有什么故事？">灵山大佛的故事</button>
+      <button class="quick-btn" data-msg="灵山胜境门票多少钱？">门票价格</button>
+      <button class="quick-btn" data-msg="怎么去灵山胜境？交通路线推荐">交通路线</button>
+    </div>
+    <div class="chat-input-area">
+      <button class="voice-btn" id="voiceBtn">🎤</button>
+      <button class="stop-btn" id="stopSpeakBtn" title="停止说话">⏹</button>
+      <input type="text" class="chat-input" id="chatInput" placeholder="输入您的问题...">
+      <button class="chat-send-btn" id="chatSendBtn">发送</button>
+    </div>
+    <div class="voice-status" id="voiceStatus"></div>
+  </div>
+</div>
+
+<!-- PIXI v5（本地优先，CDN 兜底） -->
+<script src="/lib/pixi.min.js"></script>
+<script>if(typeof PIXI==='undefined'){document.write('<script src="https://cdn.jsdelivr.net/npm/pixi.js@5.3.12/dist/pixi.min.js"><\/script>');}</script>
+<!-- Live2D Cubism 2.1 Core（必须在 pixi-live2d-display 之前加载） -->
+<script src="/lib/live2dcubismcore.min.js"></script>
+<script src="/lib/live2d.min.js"></script>
+<!-- pixi-live2d-display -->
+<script src="/lib/pixi-live2d-display.min.js"></script>
+<!-- 主逻辑 -->
+<script src="/js/main.js"></script>
+</body>
+</html>

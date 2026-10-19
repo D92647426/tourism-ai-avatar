@@ -1,0 +1,17 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: ai-guide
+
+ai:
+  api-key: ${DEEPSEEK_API_KEY:}
+  base-url: https://api.deepseek.com/v1
+  model: deepseek-chat
+
+# 数据文件存储路径
+data:
+  knowledge-file: data/knowledge.json
+  interactions-file: data/interactions.json
+  config-file: data/config.json

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>灵山胜境 - 登录</title>
+<link rel="stylesheet" href="/css/login.css">
+</head>
+<body>
+<div class="login-bg"></div>
+
+<div class="login-container" id="loginContainer">
+  <div class="login-card">
+    <div class="login-logo">⛩️</div>
+    <h1>灵山胜境</h1>
+    <p class="login-subtitle">AI 数字人导览系统</p>
+
+    <!-- 登录表单 -->
+    <form id="loginForm" class="auth-form">
+      <div class="form-group">
+        <input type="text" id="loginUsername" placeholder="用户名" autocomplete="username" required>
+      </div>
+      <div class="form-group">
+        <input type="password" id="loginPassword" placeholder="密码" autocomplete="current-password" required>
+      </div>
+      <p class="form-error" id="loginError"></p>
+      <button type="submit" class="btn-primary">登 录</button>
+    </form>
+
+    <p class="switch-text">
+      还没有账号？<a href="#" id="showRegister">立即注册</a>
+    </p>
+  </div>
+
+  <!-- 注册表单 -->
+  <div class="login-card" id="registerCard" style="display:none;">
+    <h2>创建账号</h2>
+    <form id="registerForm" class="auth-form">
+      <div class="form-group">
+        <input type="text" id="regUsername" placeholder="用户名（2-20个字符）" autocomplete="off" required>
+      </div>
+      <div class="form-group">
+        <input type="password" id="regPassword" placeholder="密码（至少4位）" autocomplete="new-password" required>
+      </div>
+      <div class="form-group">
+        <input type="password" id="regPassword2" placeholder="确认密码" autocomplete="new-password" required>
+      </div>
+      <p class="form-error" id="regError"></p>
+      <button type="submit" class="btn-primary">注 册</button>
+    </form>
+    <p class="switch-text">
+      已有账号？<a href="#" id="showLogin">返回登录</a>
+    </p>
+  </div>
+
+  <!-- 兴趣选择（注册后） -->
+  <div class="login-card" id="interestCard" style="display:none;">
+    <h2>🎯 选择你的兴趣偏好</h2>
+    <p class="login-subtitle">让我更好地为你推荐游览路线</p>
+    <div class="interest-options" id="interestOptions">
+      <button class="interest-btn" data-interest="历史人文">🏛️ 历史人文</button>
+      <button class="interest-btn" data-interest="自然风光">🌿 自然风光</button>
+      <button class="interest-btn" data-interest="亲子出游">👶 亲子出游</button>
+      <button class="interest-btn" data-interest="摄影打卡">📷 摄影打卡</button>
+    </div>
+    <button class="btn-secondary" id="skipInterest">跳过，随便逛逛</button>
+    <button class="btn-primary" id="enterApp" style="display:none;">进入导览</button>
+  </div>
+</div>
+
+<script src="/js/login.js"></script>
+</body>
+</html>

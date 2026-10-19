@@ -1,68 +1,56 @@
-# 景区数字人课设 · 三人协作仓库
-
-基于 LingTour AI 的课程项目。重点是探索景区导览的创意交互，数字人形象、最终项目名称与主创意由三人共同确定。
+# 灵山景区 AI 数字人导览 · 三人课设
 
 团队仓库：https://github.com/D92647426/whale-tour-course
 
-## 先从这里开始
+当前主代码来自老师提供的 **软件杯7.16.rar**，已替换之前的 Python/Vue Demo。旧版本完整保留在 Git 标签 `baseline-lingtour-20261019` 中。
 
-[给组员转发：AI 入组手册](docs/team_join_guide.md#L1)
+## 技术结构
 
-| 想做什么 | 入口 |
-|---|---|
-| 第一次加入、分支开发、提交合并 | [三人协作说明](CONTRIBUTING.md#L1) |
-| 克隆后启动项目、配置个人环境 | [团队上手指南](docs/team_setup.md#L1) |
-| 看本阶段要做什么 | [GitHub Issues](https://github.com/D92647426/whale-tour-course/issues) |
-| 讨论创意 | [创意方案（尚未定案）](docs/creative_directions.md#L1) |
-| 查来源与贡献边界 | [来源说明](UPSTREAM.md#L1)、[保留的原始 README](README.upstream.md#L1) |
+- Java + Spring Boot 2.7.18，Maven 构建，源码目标 Java 8；团队开发推荐 JDK 17。
+- 网页使用 HTML/CSS/JavaScript，随 Spring Boot 一起提供。
+- Live2D 展示使用 PIXI 与 Haru 示例模型。
+- 景点、知识库、配置等使用 JSON 文件，当前不需要 PostgreSQL。
+- `android/` 保留 Kotlin、WebView 和原生语音桥接源码，需另用 Android Studio 配置构建。
 
-## 当前有什么
+## 第一次加入
 
-- Vue 3 + TypeScript 游客端与管理端。
-- FastAPI 后端，PostgreSQL + pgvector 数据层。
-- 问答、景区地图、规则路线推荐、游客评分、知识库维护与统计模块。
-- 蓝鲸主题 Three.js 展示原型，支持旋转和状态预览。
-- 前端状态测试、后端测试、文档链接检查和 GitHub 自动检查配置。
+- [可转发给组员与 AI 的手册](docs/team_join_guide.md#L1)
+- [环境与启动指南](docs/team_setup.md#L1)
+- [分支、提交与评审](CONTRIBUTING.md#L1)
+- [来源和导入处理](UPSTREAM.md#L1)
+- [项目结构](docs/architecture.md#L1)
 
-未配置模型 Key 时使用本地降级回答；后端语音、图片识景中仍有演示逻辑。精修角色、真实语音与创意玩法需要继续迭代，详见 [框架核查](docs/question_traceability.md#L719)。
+## 启动网页项目
 
-## 快速运行
+准备 JDK 17 和 Maven，在仓库根目录执行：
 
-准备 Git、Docker Desktop，在根目录终端执行：
-
-```powershell
-Copy-Item .env.example .env
-docker compose -f deploy/docker-compose.yml up --build
+```bash
+mvn clean package
+java -jar target/ai-guide-1.0.0.jar
 ```
 
-- 游客导览：http://127.0.0.1:8000/guide
-- 地图：http://127.0.0.1:8000/map
-- 管理端：http://127.0.0.1:8000/admin
+打开：
 
-默认开发管理员为 `admin / 123456`，只用于本机课程开发。个人 API Key 和管理员设置写入自己的 `.env`，该文件不会提交。
+- 游客页：http://localhost:8080/
+- 登录页：http://localhost:8080/login.html
+- 管理页：http://localhost:8080/admin.html
 
-热更新、后端调试和检查命令见 [团队上手指南](docs/team_setup.md#L1)。
+也可用 IDEA 打开 `pom.xml`，等待 Maven 同步后运行 `com.guide.GuideApplication`。
 
-## 每次开发
+未设置 `DEEPSEEK_API_KEY` 时使用本地降级回答。需要真实模型时，在启动终端配置自己的环境变量；不要将 Key 写入源码。Spring Boot 不会自动读取普通 `.env` 文件。
 
-1. Issue 写目标、负责人和验收方式。
-2. 从最新 `main` 创建任务分支。
-3. 小步提交，使用自己的 Git 姓名和邮箱。
-4. 推送分支，创建 Pull Request，附效果与验证结果。
-5. 另一位成员检查后合并。
+## 验证
 
-`main` 保存能演示的版本。三人可同时开发不同任务，修改同一文件前在 Issue 沟通。
+```bash
+mvn verify
+python scripts/check_doc_links.py
+python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar
+```
 
-## 自动检查
+Python 只用于可选检查脚本与 CI，网页项目运行不依赖 Python、Node.js 或 Docker。当前源码没有业务单元测试；自动检查验证 Maven 构建、文档链接和本地启动后的页面/接口/模型资源。
 
-推送与 Pull Request 会触发 [GitHub Actions](.github/workflows/checks.yml#L1)，执行前端测试与构建、后端测试、文档链接检查。实际运行结果查看仓库 Actions 页面。
+## 当前边界
 
-## 更多文档
+知识检索是字符串匹配，推荐路线由预设规则生成，语音主要使用浏览器或 Android 系统能力。Haru 是示例角色，最终鲸鱼娘素材与课设创意尚未定案。Android APK 本次未验证构建。
 
-- [架构](docs/architecture.md#L1)
-- [程序索引](docs/program_index.md#L1)
-- [需求追踪](docs/requirements_traceability.md#L1)
-- [测试说明](docs/test_reference.md#L1)
-- [上游来源与贡献记录](UPSTREAM.md#L1)
-
-已导入源码没有项目级 LICENSE。本次准备为私有团队仓库，没有为上游代码新增许可。课程报告应说明继承功能与本组新增贡献。
+压缩包中的编译产物、个人 IDE 配置、真实接口 Key、历史账号和交互记录未提交。具体处理见 [导入记录](docs/import_manifest.json)。

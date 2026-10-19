@@ -1,75 +1,68 @@
-# 景区数字人课设入组手册（可直接转发）
+# 景区数字人课设入组手册（Java 基线）
 
 仓库：https://github.com/D92647426/whale-tour-course
-组长 GitHub：D92647426
-适用对象：另外两位组员，以及协助他们的 AI。
-更新时间：2026-10-19。
+所有者：D92647426
+更新时间：2026-10-19
 
-## 一、你只需要先做两件事
+## 当前版本
 
-1. 登录你自己的 GitHub 账号，把账号用户名发给组长。用户名是个人主页 github.com/ 后面的账号路径，不一定等于昵称。
-2. 接受组长发来的仓库邀请，再让自己的 AI 按下面的提示词操作。
+仓库已按组长要求换成老师压缩包中的 Java/Spring Boot 项目，网页用 HTML/JS 和 Live2D，另有 Android 源码。原 Python/Vue Demo 已保存在 Git 标签中，日常开发使用当前 main。
 
-仓库是私有的，没有邀请时打开链接可能显示 404。组员的 AI 可以检查环境和辅助入组，但访问权限仍由仓库所有者邀请授权。
+## 第一次加入
 
-## 二、发给你自己的 AI
+1. 把自己的 GitHub 用户名发给组长。
+2. 组长在仓库 Settings → Collaborators 邀请；你接受邀请。
+3. 把下方提示词发给自己的 AI，让其检查环境、克隆、启动和指导首个 PR。
 
-复制以下整段提示词，或把单独的“AI 入组提示词.txt”附件发给 AI：
+私有仓库未邀请前可能显示 404。AI 可以先准备环境，但仓库权限仍由所有者授权。
+
+## 给 AI 的提示词
 
 ```text
-请帮我加入并跑通我们三个人的景区数字人课设项目。
+请帮我加入并运行我们三个人的景区数字人课设。
 
-团队仓库：
-https://github.com/D92647426/whale-tour-course
-仓库所有者：D92647426
-仓库目前是私有仓库。小组最终创意尚未定案，请不要擅自把某个候选方案当成已确认需求。
+仓库：https://github.com/D92647426/whale-tour-course
+所有者：D92647426；这是私有仓库。
+当前主代码已换成老师提供的 Java/Spring Boot + HTML/JS + Live2D 项目，另有 android 源码。旧 Python/Vue 版本只在 baseline-lingtour-20261019 标签中。课设主创意尚未定案。
 
-请按以下顺序实际操作：
-
-1. 检查 Git、GitHub 登录状态，以及 Docker、Python、Node.js 环境。使用我自己的 GitHub 账号，明确告诉我当前账号名；不要把本机 git user.name 当成已经验证的 GitHub 账号。如果缺少必要软件，先说明缺什么以及安装方式。
-2. 先检查我是否有仓库访问权限。私有仓库没接受邀请时可能显示 404，不能据此判断仓库不存在。如果无权限，请整理一句“请仓库所有者 D92647426 邀请 GitHub 用户 XXX 加入 whale-tour-course”，让我发给组长，完成邀请后再继续依赖访问权限的步骤。你不能替代组长授权或绕过邀请。
-3. 有权限后，将仓库克隆到合适的本地目录。Windows 推荐 D:/Code/whale-tour-course。目录已存在时，先核对 Git 远程与工作区状态，保留未提交改动，不覆盖已有项目。
-4. 阅读 README.md、CONTRIBUTING.md、docs/team_setup.md 和 AGENTS.md。向我确认本仓库专用的 Git 姓名与邮箱，使用 git config --local 配置；使用我自己的身份，不复制组长的身份。不要修改我的全局 Git 配置。
-5. 根据项目上手指南安装依赖并启动。只有在 .env 不存在时才从 .env.example 复制；保留原有配置。API Key 通过本地配置保存，不输出、不上传。没有 Key 时先用降级模式跑通。
-6. 实际验证能打开游客导览页，告诉我可访问的本地地址。失败时给出已核实的原因和下一步，不将“启动过命令”当成运行成功。
-7. 带我查看 GitHub Issues 的起步任务。先讨论我负责的内容，再挑一项有实际作用的小任务；不要为了制造提交改无意义内容。
-8. 确定任务后，从最新 main 建立自己的工作分支；由 AI 建立时可以使用 codex/onboarding-我的GitHub用户名。完成相应修改与必要检查后创建 PR，目标 main，关联任务并说明效果和验证情况。不要替团队擅自合并 PR，不向 main 强推。
-9. 最后报告：我的账号、权限情况、本地目录、启动地址、已完成事项、分支/提交/PR 链接，以及需要组长处理的事项。
-
-不要让我提供或发送 GitHub 密码、Token、API Key。遇到登录或二次验证，请让我在官方页面自行完成；不要把凭据写进源码、对话输出或 Git 历史。
+请实际操作：
+1. 确认我自己的 GitHub 用户名和仓库访问权限。没有权限时，请整理一句“请邀请 GitHub 用户 XXX 加入 whale-tour-course”，让我发给组长。组长邀请且我接受后再克隆；不要绕过权限，也不要将私有仓库 404 当作仓库不存在。
+2. 检查 Git、JDK（推荐 17）、Maven；Android 开发另外检查 Android Studio、SDK 34 与 Gradle 8.4。网页不需要 Node.js、Python 后端、PostgreSQL 或 Docker。Python 仅用于可选检查脚本。
+3. 克隆到合适位置，Windows 推荐 D:/Code/whale-tour-course。已有目录时先检查远程和未提交改动，不覆盖个人工作。
+4. 阅读 README.md、CONTRIBUTING.md、docs/team_setup.md、AGENTS.md。向我确认本仓库专用的 Git 姓名/邮箱，用 git config --local 设置，不复制组长身份，不改全局配置。
+5. 在根目录执行 mvn clean package，然后 java -jar target/ai-guide-1.0.0.jar；或者用 IDEA 打开 pom.xml、运行 com.guide.GuideApplication。实际检查 http://localhost:8080/ 可以访问。
+6. 模型 Key 默认为空，先跑通降级模式。真实模型使用本机 DEEPSEEK_API_KEY 环境变量；Spring Boot 不自动读普通 .env。不要索取或输出我的 Token、Key、密码。登录与二次验证让我在官方页面自行完成。
+7. 参考 GitHub Issues 的起步任务，先讨论我负责什么，选择一项有实际用途的小改动。确定后从最新 main 建任务分支，AI 可用 codex/onboarding-我的GitHub用户名。
+8. 运行相应 Maven 构建与检查，有 Python 时运行文档检查和 JAR 启动接口检查。提交 PR、关联 Issue，附效果和验证。不要擅自替团队合并或向 main 强推。
+9. 汇报我的账号/权限、本地目录、启动地址、分支/提交/PR、阻塞原因及需组长处理的事项。没有实际跑通时不要声称成功。
 ```
 
-## 三、组长怎样邀请
+## 组长邀请入口
 
-组长打开：
 https://github.com/D92647426/whale-tour-course/settings/access
 
-在仓库 Settings → Collaborators 中添加组员的 GitHub 用户名。普通协作选择 Write 权限即可，组员接受邀请后可以推送自己的分支并提交 PR。各自保留自己的账号、提交身份与评审记录。
+按用户名邀请，普通协作使用 Write 权限。每个人使用自己的账号、提交身份和评审记录。
 
-也可以等两位组员把用户名发回后，请组长的 AI 邀请准确的账号。第一次查无权限的组员，可以先让 AI 检查本机软件并阅读本手册，稍后再接受邀请与克隆。
+## 最短启动流程
 
-## 四、第一次启动的最短路径
+安装 Git、JDK 17 和 Maven，接受邀请后：
 
-接受邀请并安装 Git、Docker Desktop 后：
-
-```powershell
+```bash
 git clone https://github.com/D92647426/whale-tour-course.git
 cd whale-tour-course
-Copy-Item .env.example .env
-docker compose -f deploy/docker-compose.yml up --build
+mvn clean package
+java -jar target/ai-guide-1.0.0.jar
 ```
 
-打开：http://127.0.0.1:8000/guide
+打开 http://localhost:8080/ 。也可在 IDEA 中打开 pom.xml 并运行应用入口。
 
-如已有 .env，请保留现有文件。默认本机开发管理员为 admin / 123456；模型 Key 为空时先使用本地降级问答。前端热更新和后端开发步骤见克隆后的 docs/team_setup.md。
+## 日常流程
 
-## 五、日常协作
-
-Issue 写目标 → 同步 main → 各自任务分支 → 有意义的小步提交 → Pull Request → 另一人评审 → 合并。
+Issue 写目标 → 同步 main → 任务分支 → 有意义的小步提交 → Pull Request → 另一人评审 → 合并。
 
 起步任务：
 - https://github.com/D92647426/whale-tour-course/issues/1 ：确定创意与分工。
-- https://github.com/D92647426/whale-tour-course/issues/2 ：每位成员跑通项目并完成一次 PR。
-- https://github.com/D92647426/whale-tour-course/issues/3 ：梳理上游复用与本组新增贡献。
+- https://github.com/D92647426/whale-tour-course/issues/2 ：成员跑通当前 Java 基线并完成第一次 PR。
+- https://github.com/D92647426/whale-tour-course/issues/3 ：区分老师源码、旧原型和本组新增贡献。
 
-源码是已有开源项目加上本地 Demo 改动的快照。具体来源见 UPSTREAM.md。课设主创意尚未正式确认，讨论稿见 docs/creative_directions.md。
+详细说明见克隆后的 README.md、docs/team_setup.md 和 UPSTREAM.md。

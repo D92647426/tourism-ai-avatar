@@ -15,3 +15,7 @@
 *.jpg binary
 *.jpeg binary
 *.pdf binary
+*.bat text eol=crlf
+*.mtn binary
+*.moc binary
+*.mp3 binary
