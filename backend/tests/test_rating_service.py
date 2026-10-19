@@ -7,7 +7,7 @@ from app.services.rating_service import (
     get_user_preference_profile,
     list_public_ratings,
 )
-from backend.tests.postgres_test_utils import postgres_test_database_url
+from tests.postgres_test_utils import postgres_test_database_url
 
 
 def test_rating_upsert_stats_and_preference_profile():

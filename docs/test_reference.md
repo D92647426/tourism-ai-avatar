@@ -304,3 +304,5 @@ python scripts\run_local.py smoke-docker-postgres
 | 预期结果 | Git 根是团队项目；模板已跟踪；私密配置和依赖忽略；差异和文档检查通过 |
 | 远程检查 | 首次推送后查看 GitHub Actions 的前端、后端两个任务 |
 | 失败排查 | 先查看 Actions 具体步骤和日志；数据库测试使用工作流独立 PostgreSQL，前端使用 lockfile 安装依赖 |
+
+TEST-026 补充：首轮远程前端检查通过，后端因测试导入路径失败，修复见 [test_rating_service.py:L10](../backend/tests/test_rating_service.py#L10) 与 [ERR-TEAM-001](./error_traceability.md#err-team-001-新协作仓库首次-ci-收集后端测试失败)。最终验收以修复提交后的 Actions 结果为准。成员 AI 的操作规范见 [team_join_guide.md:L1](./team_join_guide.md#L1)。

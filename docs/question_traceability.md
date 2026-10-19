@@ -772,3 +772,9 @@ python scripts\check_doc_links.py
 在独立目录建立 `whale-tour-course` 仓库，以当前 Demo 为初始快照，保留原 Demo。新增团队 README、协作指南、Issue/PR 模板与 GitHub 自动检查；配置和依赖不提交，保留上游署名。新仓库使用每个人独立的 Git 身份、任务分支及交叉评审记录课程贡献。邀请另外两位协作者还需其 GitHub 用户名。
 
 对应位置：[CONTRIBUTING.md:L1](../CONTRIBUTING.md#L1)、[team_setup.md:L1](./team_setup.md#L1)、[checks.yml:L1](../.github/workflows/checks.yml#L1)、[UPSTREAM.md:L1](../UPSTREAM.md#L1)。
+
+## Q-0026 能否让组员把入组手册发给自己的 AI 来操作？
+
+用户暂时不提供另外两位组员的账号，希望生成可转发的指引。
+
+已新增 [AI 入组手册 team_join_guide.md:L1](./team_join_guide.md#L1)，内容包含仓库地址、邀请前提、环境检查、克隆启动、本人 Git 身份与首次 PR。另导出同内容 Markdown 与独立纯文本提示词供转发。私有仓库仍由所有者邀请准确账号，尚未邀请未知组员；其他成员的 AI 无法通过提示词自行取得权限。

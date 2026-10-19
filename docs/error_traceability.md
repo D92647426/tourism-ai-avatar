@@ -462,3 +462,14 @@ python scripts\publish_github.py --remote-url https://github.com/2667741708/ling
 ```powershell
 python scripts\run_local.py test-backend
 ```
+
+## ERR-TEAM-001 新协作仓库首次 CI 收集后端测试失败
+
+- 对应需求：REQ-026。
+- 触发命令：在 backend 目录执行 `python -m pytest tests -q`。
+- 错误类型：ModuleNotFoundError。
+- 消息：No module named 'backend'。
+- 最后一个项目位置：[test_rating_service.py:L10](../backend/tests/test_rating_service.py#L10)。
+- 根因：该文件从 `backend.tests.postgres_test_utils` 导入，而同一测试目录其他文件使用 `tests.postgres_test_utils`；从 backend 目录运行时，前者缺少父级模块搜索路径。
+- 修复：统一为 `from tests.postgres_test_utils import postgres_test_database_url`，与现有本地 runner 和 CI 的工作目录一致。
+- 验证：重新执行 [checks.yml:L1](../.github/workflows/checks.yml#L1) 中已有的全部后端测试；修复不改动应用业务行为。
