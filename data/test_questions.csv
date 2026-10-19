@@ -1,0 +1,4 @@
+id,category,question,standard_answer,expected_source,difficulty
+1,景点介绍,古建筑群有什么特色,传统建筑风貌和历史文化故事,示范景区资料包-历史文化篇,easy
+2,路线推荐,我只有两个小时喜欢历史怎么逛,入口-古建筑群-文化展馆,scenic_spots.csv,easy
+3,设施服务,附近哪里有洗手间,入口游客服务中心和文化展馆附近,faq.csv,easy

@@ -1,0 +1,63 @@
+# Dependencies
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+.env
+.env.local
+.env.*
+!.env.example
+frontend/node_modules/
+
+# Runtime data
+data/vector_db/
+data/admin_knowledge/*
+!data/admin_knowledge/.gitkeep
+data/*.db
+data/*.sqlite
+logs/
+
+# Logs
+*.log
+
+# Coverage
+.coverage
+coverage/
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+target/
+.gradle/
+frontend/dist/
+frontend/tsconfig.tsbuildinfo
+
+# Testing
+.pytest_cache/
+.mypy_cache/
+
+# Local credentials, database instances and handoff exports
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+*.bundle
+.pg0/
+playwright-report/
+test-results/

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LingTour AI 静态演示端</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: "Microsoft YaHei", system-ui, sans-serif;
+        color: #172026;
+        background: #f5f7f4;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 18px 24px;
+        background: #ffffff;
+        border-bottom: 1px solid #d8e0da;
+      }
+      header strong {
+        margin-right: auto;
+      }
+      main {
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        gap: 18px;
+        padding: 24px;
+      }
+      .panel {
+        border: 1px solid #d8e0da;
+        border-radius: 8px;
+        background: #fff;
+        padding: 18px;
+      }
+      .avatar {
+        min-height: 520px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(180deg, #e6f0eb, #cfded6);
+      }
+      .face {
+        position: relative;
+        width: 180px;
+        height: 240px;
+        border-radius: 90px 90px 40px 40px;
+        background: #ffd9bb;
+        box-shadow: inset 0 -72px #386f62;
+      }
+      .eye {
+        position: absolute;
+        top: 82px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #172026;
+      }
+      .eye.left {
+        left: 54px;
+      }
+      .eye.right {
+        right: 54px;
+      }
+      .mouth {
+        position: absolute;
+        left: 78px;
+        top: 128px;
+        width: 24px;
+        height: 10px;
+        border-radius: 12px;
+        background: #8f3a3a;
+        transition: height 120ms linear;
+      }
+      .speaking .mouth {
+        height: 32px;
+      }
+      .messages {
+        min-height: 360px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        overflow: auto;
+      }
+      .message {
+        max-width: 78%;
+        padding: 12px 14px;
+        border-radius: 8px;
+        line-height: 1.6;
+        background: #eef4f0;
+      }
+      .message.user {
+        align-self: end;
+        background: #1f7a5b;
+        color: white;
+      }
+      form {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        margin-top: 14px;
+      }
+      input,
+      button {
+        border: 1px solid #ccd6ce;
+        border-radius: 6px;
+        padding: 12px;
+        font: inherit;
+      }
+      button {
+        border: 0;
+        background: #1f7a5b;
+        color: white;
+        cursor: pointer;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(140px, 1fr));
+        gap: 12px;
+      }
+      .metric strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 24px;
+      }
+      @media (max-width: 860px) {
+        main,
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <strong>LingTour AI 数字人导游平台</strong>
+      <button id="loadDashboard">刷新大屏</button>
+    </header>
+    <main>
+      <section class="panel avatar">
+        <div>
+          <div id="avatarFace" class="face">
+            <div class="eye left"></div>
+            <div class="eye right"></div>
+            <div class="mouth"></div>
+          </div>
+          <p id="avatarStatus">微笑待机</p>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>数字人问答</h2>
+        <div id="messages" class="messages">
+          <div class="message">您好，我是您的 AI 数字人导游灵灵。</div>
+        </div>
+        <form id="chatForm">
+          <input id="question" placeholder="例如：我只有两个小时喜欢历史和拍照怎么逛？" />
+          <button>发送</button>
+        </form>
+        <h2>数据大屏</h2>
+        <div id="dashboard" class="grid"></div>
+      </section>
+    </main>
+    <script>
+      const API_BASE = "http://127.0.0.1:8000";
+      const messages = document.getElementById("messages");
+      const avatarFace = document.getElementById("avatarFace");
+      const avatarStatus = document.getElementById("avatarStatus");
+      let sessionUuid = "static-demo";
+
+      function addMessage(content, role = "assistant") {
+        const node = document.createElement("div");
+        node.className = `message ${role}`;
+        node.textContent = content;
+        messages.appendChild(node);
+        messages.scrollTop = messages.scrollHeight;
+      }
+
+      function setSpeaking(active) {
+        avatarFace.classList.toggle("speaking", active);
+        avatarStatus.textContent = active ? "讲解中" : "微笑待机";
+      }
+
+      async function postJson(path, payload) {
+        const response = await fetch(`${API_BASE}${path}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        return response.json();
+      }
+
+      document.getElementById("chatForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const input = document.getElementById("question");
+        const message = input.value.trim();
+        if (!message) return;
+        input.value = "";
+        addMessage(message, "user");
+        avatarStatus.textContent = "思考中";
+        const result = await postJson("/api/visitor/chat/text", { session_uuid: sessionUuid, message });
+        addMessage(result.data.answer);
+        setSpeaking(true);
+        setTimeout(() => setSpeaking(false), Math.min(result.data.lip_sync?.duration_ms || 3000, 5200));
+      });
+
+      async function loadDashboard() {
+        const response = await fetch(`${API_BASE}/api/admin/analytics/overview`);
+        const result = await response.json();
+        const data = result.data;
+        document.getElementById("dashboard").innerHTML = `
+          <div class="panel metric">今日服务人次<strong>${data.today_service_count}</strong></div>
+          <div class="panel metric">平均响应<strong>${data.avg_latency_ms}ms</strong></div>
+          <div class="panel metric">满意度<strong>${data.satisfaction_score}</strong></div>
+          <div class="panel metric">知识命中率<strong>${Math.round(data.knowledge_hit_rate * 100)}%</strong></div>
+        `;
+      }
+
+      document.getElementById("loadDashboard").addEventListener("click", loadDashboard);
+      loadDashboard();
+    </script>
+  </body>
+</html>

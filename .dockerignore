@@ -1,0 +1,12 @@
+.git
+.pytest_cache
+__pycache__
+*.pyc
+*.pyo
+*.log
+.env
+frontend/node_modules
+frontend/tsconfig.tsbuildinfo
+backend/.venv
+backend/__pycache__
+backend/.pytest_cache
