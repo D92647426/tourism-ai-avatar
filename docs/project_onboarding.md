@@ -57,7 +57,7 @@ LingTour AI 是面向中国软件杯 A5 景区导览服务 AI 数字人赛题的
 | 修改数字人灵灵 | [REQ-006](./requirements_traceability.md#req-006-数字人灵灵真实前端交互体验) | [DigitalAvatar frontend/src/components/Avatar/DigitalAvatar.vue:L1-L64](../frontend/src/components/Avatar/DigitalAvatar.vue#L1-L64) |
 | 修改后台知识库发布机制 | [REQ-007](./requirements_traceability.md#req-007-后台知识库管理闭环) | [knowledge_service.py:L153-L324](../backend/app/services/knowledge_service.py#L153-L324) |
 | 修改后台权限或数据库 | [REQ-008](./requirements_traceability.md#req-008-后台权限版本化知识库与数据库持久化) | [auth_service.py:L32-L145](../backend/app/services/auth_service.py#L32-L145)、[database.py:L38-L76](../backend/app/core/database.py#L38-L76) |
-| 修改 README 或架构文档 | [架构说明](./architecture.md) | [README.md:L1-L116](../README.md#L1-L116)、[architecture.md:L1-L136](./architecture.md#L1-L136) |
+| 修改 README 或架构文档 | [架构说明](./architecture.md) | [README.md:L1](../README.md#L1)、[architecture.md:L1-L136](./architecture.md#L1-L136) |
 | 修改运行命令 | [CLI 使用说明](./cli_usage.md) | [run_local.py:L204-L254](../scripts/run_local.py#L204-L254) |
 | 启动本地演示 | [TEST-006](./test_reference.md#test-006-完整栈烟测) | [main scripts/smoke_full_stack.py:L30-L61](../scripts/smoke_full_stack.py#L30-L61) |
 | 排查 npm 失败 | [TRB-001](./troubleshooting.md#trb-001-前端-npm-install-超时或-econnreset) | [frontend/.npmrc:L1-L4](../frontend/.npmrc#L1-L4) |

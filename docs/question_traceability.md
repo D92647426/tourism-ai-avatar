@@ -671,7 +671,7 @@ python scripts\check_doc_links.py
 
 | 类型 | 说明 | 跳转链接 |
 |---|---|---|
-| README | 当前能力、快速启动、API 链路、验证命令和文档入口 | [README.md:L1-L116](../README.md#L1-L116) |
+| README | 当前能力、快速启动、API 链路、验证命令和文档入口 | [README.upstream.md:L1-L116](../README.upstream.md#L1-L116) |
 | 架构文档 | 系统边界、模块分层、数据流、数据层和部署结构 | [docs/architecture.md:L1-L136](./architecture.md#L1-L136) |
 | CLI 文档 | 本地 runner、联调、Docker、GHCR 和 GitHub 发布命令 | [docs/cli_usage.md:L1-L154](./cli_usage.md#L1-L154) |
 | 项目入口 | 新同事阅读顺序和常见任务入口 | [docs/project_onboarding.md:L27-L63](./project_onboarding.md#L27-L63) |
@@ -764,3 +764,11 @@ python scripts\check_doc_links.py
 | 会话基础 | 可扩展旅程状态与概念记忆 | [VisitorSession backend/app/models/persistence.py:L105-L119](../backend/app/models/persistence.py#L105-L119) |
 
 本次仅补充方案文档，验证范围为文档链接检查。
+
+## Q-0025 如何让三名同学协作开发课设？
+
+用户请求建立 Git 等协作环境，先选 Gitee 后改为 GitHub。
+
+在独立目录建立 `whale-tour-course` 仓库，以当前 Demo 为初始快照，保留原 Demo。新增团队 README、协作指南、Issue/PR 模板与 GitHub 自动检查；配置和依赖不提交，保留上游署名。新仓库使用每个人独立的 Git 身份、任务分支及交叉评审记录课程贡献。邀请另外两位协作者还需其 GitHub 用户名。
+
+对应位置：[CONTRIBUTING.md:L1](../CONTRIBUTING.md#L1)、[team_setup.md:L1](./team_setup.md#L1)、[checks.yml:L1](../.github/workflows/checks.yml#L1)、[UPSTREAM.md:L1](../UPSTREAM.md#L1)。

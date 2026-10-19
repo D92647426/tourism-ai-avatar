@@ -293,3 +293,14 @@ python scripts\run_local.py smoke-docker-postgres
 | 运行命令 | 在 `frontend` 目录运行 `npm test` 和 `npm run build` |
 | 预期结果 | 讲解口型最终归零；中途切换思考后不被旧计时器覆盖；Vue 类型检查与生产构建通过 |
 | 失败排查 | 查看状态计时器取消逻辑及 [DigitalAvatar 前端绑定 frontend/src/components/Avatar/DigitalAvatar.vue:L19-L43](../frontend/src/components/Avatar/DigitalAvatar.vue#L19-L43)；视觉表现需在 `/guide` 页面人工查看 |
+
+## TEST-026 团队仓库与自动检查验收
+
+| 项目 | 内容 |
+|---|---|
+| 对应需求 | REQ-026 |
+| 协作配置 | [CONTRIBUTING.md:L1](../CONTRIBUTING.md#L1), [checks.yml:L1](../.github/workflows/checks.yml#L1) |
+| 本地检查 | `git rev-parse --show-toplevel`、`git ls-files .env.example`、`git check-ignore .env frontend/node_modules/example`、`git diff --check`、`python scripts/check_doc_links.py` |
+| 预期结果 | Git 根是团队项目；模板已跟踪；私密配置和依赖忽略；差异和文档检查通过 |
+| 远程检查 | 首次推送后查看 GitHub Actions 的前端、后端两个任务 |
+| 失败排查 | 先查看 Actions 具体步骤和日志；数据库测试使用工作流独立 PostgreSQL，前端使用 lockfile 安装依赖 |

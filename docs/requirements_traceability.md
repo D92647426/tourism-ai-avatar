@@ -747,3 +747,24 @@ npm run build
 ### 当前边界与影响范围
 
 该角色是程序生成的原创概念造型，参考蓝鲸配色和三视图构图，没有复制用户提供的现成角色模型或美术文件。尚未接入 VRM 骨骼、OpenAvatarChat 或音频驱动口型。改动集中在游客导览页数字人展示、前端依赖与状态计时器，不改变后端 API 或数据库。
+
+## REQ-026 三人 GitHub 协作仓库
+
+### 用户场景
+
+三人课程小组使用独立 Git 仓库，共享代码、记录各自贡献，并通过任务分支和 Pull Request 协作。用户最终选择 GitHub。
+
+### 实现位置
+
+| 类型 | 说明 | 跳转链接 |
+|---|---|---|
+| 团队入口 | 仓库用途、当前状态与入口 | [README.md:L1](../README.md#L1) |
+| 协作流程 | 分工、分支、提交、评审与贡献记录 | [CONTRIBUTING.md:L1](../CONTRIBUTING.md#L1) |
+| 上手指南 | 克隆、身份、Docker 和开发环境 | [team_setup.md:L1](./team_setup.md#L1) |
+| 模板 | 功能提案、问题反馈、合并说明 | [feature_request.md:L1](../.github/ISSUE_TEMPLATE/feature_request.md#L1), [bug_report.md:L1](../.github/ISSUE_TEMPLATE/bug_report.md#L1), [pull_request_template.md:L1](../.github/pull_request_template.md#L1) |
+| 自动检查 | 前端测试/构建、PostgreSQL 后端测试与文档检查 | [checks.yml:L1](../.github/workflows/checks.yml#L1) |
+| 来源与忽略 | 上游来源、密钥与依赖排除、换行规范 | [UPSTREAM.md:L1](../UPSTREAM.md#L1), [.gitignore:L1](../.gitignore#L1), [.gitattributes:L1](../.gitattributes#L1) |
+
+### 验证与影响范围
+
+检查独立 Git 根目录、配置模板被跟踪、依赖与真实配置被忽略、文档链接有效、提交差异无新增空白错误。GitHub Actions 以实际运行结果为准。业务代码沿用导入快照；原来 Demo 目录保留。初始快照不包含上游完整 Git 历史。协作者名单须由组长提供后邀请。

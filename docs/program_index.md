@@ -68,3 +68,11 @@
 - 修改 [run_local.py 命令分发 scripts/run_local.py:L204-L254](../scripts/run_local.py#L204-L254) 会影响部署、测试、Docker pgvector 烟测、Docker All-in-One 烟测和服务器运行流程。
 - 修改 [publish_github.py 发布流程 scripts/publish_github.py:L56-L84](../scripts/publish_github.py#L56-L84) 会影响 GitHub 远程发布、分支映射和 tag 推送。
 - 修改 [publish_ghcr_allinone.py 发布流程 scripts/publish_ghcr_allinone.py:L123-L160](../scripts/publish_ghcr_allinone.py#L123-L160) 会影响 GHCR 镜像标签、本地构建和容器仓库推送。
+
+## 三人协作配置
+
+| 配置 | 职责 | 位置 |
+|---|---|---|
+| 团队流程 | 每人独立身份、分支、PR 和评审 | [CONTRIBUTING.md:L1](../CONTRIBUTING.md#L1) |
+| 上手指南 | 克隆、环境启动与验证 | [team_setup.md:L1](./team_setup.md#L1) |
+| 自动检查 | 推送和 PR 后执行前端、后端与文档检查 | [checks.yml:L1](../.github/workflows/checks.yml#L1) |
