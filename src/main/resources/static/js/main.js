@@ -25,7 +25,8 @@
     var chatHeaderName = S('chatHeaderName');
 
     var allSpots = [], isChatOpen = false;
-    // 从登录信息读取
+    var api = window.AuthGuard.apiFetch;
+    // 从登录信息读取（localStorage 只作显示缓存，真实身份以 /api/auth/me 为准）
     var currentUserId = localStorage.getItem('userId') || '';
     var currentInterest = localStorage.getItem('interest') || '';
 
@@ -204,11 +205,14 @@
         var body = { message: text, userId: currentUserId };
         if (currentInterest) body.interest = currentInterest;
 
-        fetch('/api/chat', {
+        api('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
-        }).then(function(r) { return r.json(); }).then(function(d) {
+        }).then(function(r) {
+            if (!r.ok) { throw new Error('chat ' + r.status); }
+            return r.json();
+        }).then(function(d) {
             removeTyping();
             addMsg('bot', d.reply);
             if (d.recommendedRoutes && d.recommendedRoutes.length) {
@@ -373,8 +377,8 @@
         }
     }
 
-    // 加载声线配置
-    fetch('/api/admin/digital-human-config').then(function(r) { return r.json(); }).then(function(c) {
+    // 加载声线配置（公开只读端点，无需登录；管理端配置接口仍需 ADMIN）
+    fetch('/api/digital-human-config').then(function(r) { return r.json(); }).then(function(c) {
         if (c && c.name) {
             var lbl = document.querySelector('.live2d-label');
             if (lbl) lbl.textContent = 'AI导游' + c.name;
@@ -564,10 +568,10 @@
         if (selected) {
             currentInterest = selected.dataset.interest;
             localStorage.setItem('interest', currentInterest);
-            fetch('/api/auth/interest', {
+            api('/api/auth/interest', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: currentUserId, interest: currentInterest })
+                body: JSON.stringify({ interest: currentInterest })
             }).catch(function(){});
             profileMsg.textContent = '兴趣爱好已更新！';
             profileMsg.classList.add('success');
@@ -577,12 +581,11 @@
         }
     });
 
-    // 退出登录
+    // 退出登录：结束服务端会话后清理本地显示缓存
     profileLogout.addEventListener('click', function() {
-        localStorage.removeItem('userId');
-        localStorage.removeItem('username');
-        localStorage.removeItem('interest');
-        window.location.href = '/login.html';
+        window.AuthGuard.logout().then(function() {
+            window.location.href = '/login.html';
+        });
     });
 
     // ===== 快捷按钮 =====
@@ -590,9 +593,28 @@
     chatInput.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
     quickActions.addEventListener('click', function(e) { var b = e.target.closest('.quick-btn'); if (!b) return; chatInput.value = b.dataset.msg; sendMessage(); });
 
-    // ===== 启动 =====
-    loadSpots();
-    initLive2D();
-    initSR();
+    // ===== 启动：先向服务端确认会话身份，localStorage 仅作显示缓存 =====
+    window.AuthGuard.me().then(function(user) {
+        if (!user) {
+            window.location.href = '/login.html';
+            return;
+        }
+        currentUserId = user.userId || '';
+        currentInterest = user.interest || currentInterest;
+        try {
+            localStorage.setItem('userId', currentUserId);
+            localStorage.setItem('username', user.username || '');
+            if (currentInterest) localStorage.setItem('interest', currentInterest);
+        } catch (e) { }
+        savedUsername = user.username || '';
+        if (headerUsername) headerUsername.textContent = savedUsername;
+        loadSpots();
+        initLive2D();
+        initSR();
+    }).catch(function() {
+        loadSpots();
+        initLive2D();
+        initSR();
+    });
     if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = function() { speechSynthesis.getVoices(); }; }
 })();

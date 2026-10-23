@@ -155,3 +155,10 @@ body {
     .login-card { padding: 30px 20px; }
     .interest-options { grid-template-columns: 1fr; }
 }
+
+/* 管理员入口（REQ-030 / GitHub #5） */
+.switch-text.admin-entry {
+    margin-top: 8px;
+    font-size: 13px;
+}
+.switch-text.admin-entry a { font-weight: 500; }

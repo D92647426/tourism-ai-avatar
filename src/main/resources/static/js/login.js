@@ -1,8 +1,10 @@
 // ===== 登录注册逻辑 =====
+// 真实身份由服务端 HttpSession 决定；localStorage 只缓存显示信息（REQ-030 / GitHub #5）。
 (function() {
     'use strict';
 
     var S = function(id) { return document.getElementById(id); };
+    var api = window.AuthGuard.apiFetch;
 
     var loginForm = S('loginForm');
     var registerForm = S('registerForm');
@@ -13,7 +15,6 @@
     var enterApp = S('enterApp');
     var skipInterest = S('skipInterest');
 
-    var currentUserId = null;
     var selectedInterest = '';
 
     // ===== 切换表单 =====
@@ -31,7 +32,7 @@
         interestCard.style.display = 'none';
     });
 
-    // ===== 注册 =====
+    // ===== 注册（永远创建游客，客户端 role 会被服务端忽略） =====
     registerForm.addEventListener('submit', function(e) {
         e.preventDefault();
         var u = S('regUsername').value.trim();
@@ -40,16 +41,14 @@
 
         if (p !== p2) { regError.textContent = '两次密码不一致'; return; }
 
-        fetch('/api/auth/register', {
+        api('/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: u, password: p })
         }).then(function(r) { return r.json(); }).then(function(d) {
             if (d.success) {
-                currentUserId = d.userId;
                 registerCard.style.display = 'none';
                 interestCard.style.display = 'block';
-                // 记录到 localStorage
                 saveSession(d.userId, d.username);
             } else {
                 regError.textContent = d.message || '注册失败';
@@ -63,20 +62,20 @@
         var u = S('loginUsername').value.trim();
         var p = S('loginPassword').value;
 
-        fetch('/api/auth/login', {
+        api('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: u, password: p })
         }).then(function(r) { return r.json(); }).then(function(d) {
             if (d.success) {
-                currentUserId = d.userId;
                 saveSession(d.userId, d.username);
-                if (d.interest) {
-                    // 已有兴趣偏好，直接进入
+                if (d.role === 'ADMIN') {
+                    // 管理员登录后进入管理后台，权限仍由服务端接口校验。
+                    window.location.href = '/admin.html';
+                } else if (d.interest) {
                     localStorage.setItem('interest', d.interest);
                     goToApp();
                 } else {
-                    // 还没选兴趣
                     loginForm.parentElement.style.display = 'none';
                     interestCard.style.display = 'block';
                 }
@@ -107,13 +106,11 @@
 
     function saveInterest(interest) {
         localStorage.setItem('interest', interest);
-        if (currentUserId) {
-            fetch('/api/auth/interest', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: currentUserId, interest: interest })
-            }).catch(function(){});
-        }
+        api('/api/auth/interest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ interest: interest })
+        }).catch(function(){});
     }
 
     function saveSession(userId, username) {
@@ -125,9 +122,15 @@
         window.location.href = '/index.html';
     }
 
-    // ===== 自动检查登录状态 =====
-    if (localStorage.getItem('userId')) {
-        // 已登录，直接跳转
-        goToApp();
-    }
+    // ===== 自动检查：以服务端会话为准，localStorage 只作显示缓存 =====
+    window.AuthGuard.me().then(function(user) {
+        if (user) {
+            saveSession(user.userId, user.username);
+            if (user.role === 'ADMIN') {
+                window.location.href = '/admin.html';
+            } else {
+                goToApp();
+            }
+        }
+    });
 })();
