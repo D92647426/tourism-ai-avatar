@@ -6,11 +6,16 @@
     var csrfToken = null;
     var csrfPending = null;
 
+    // 获取 CSRF token：并发调用复用同一个请求；失败后清除 pending，允许下一次重试。
     function fetchCsrf(force) {
-        if (csrfToken && !force) {
+        if (force) {
+            csrfToken = null;
+            csrfPending = null;
+        }
+        if (csrfToken) {
             return Promise.resolve(csrfToken);
         }
-        if (!csrfPending || force) {
+        if (!csrfPending) {
             csrfPending = fetch('/api/auth/csrf', {
                 method: 'GET',
                 credentials: 'same-origin',
@@ -21,14 +26,25 @@
                 }
                 return res.json();
             }).then(function (data) {
+                if (!data || !data.token) {
+                    throw new Error('CSRF 响应缺少 token');
+                }
                 csrfToken = data.token;
                 return csrfToken;
+            }).then(function (token) {
+                csrfPending = null;
+                return token;
+            }, function (error) {
+                // 关键：失败不能留下 rejected promise，否则之后所有写请求都会永久失败。
+                csrfPending = null;
+                csrfToken = null;
+                throw error;
             });
         }
         return csrfPending;
     }
 
-    // 统一 fetch：自动带 Cookie、自动附加 X-XSRF-TOKEN；403 时刷新 token 重试一次。
+    // 统一 fetch：自动带 Cookie、自动附加 X-XSRF-TOKEN；403 时刷新 token 重试一次（仅一次）。
     function apiFetch(url, options) {
         options = options || {};
         var method = (options.method || 'GET').toUpperCase();
@@ -83,16 +99,32 @@
         });
     }
 
-    // 服务端退出：使 HttpSession 失效，然后清理本地显示缓存。
+    // 清理本地显示缓存；真实会话是否结束只以服务端响应为准。
+    function clearIdentity() {
+        try {
+            localStorage.removeItem('userId');
+            localStorage.removeItem('username');
+            localStorage.removeItem('interest');
+        } catch (e) {
+            // 本地缓存清理失败不应影响服务端退出结果。
+        }
+    }
+
+    // 服务端退出：只有服务端确认 HTTP 2xx 且 success=true 才清理缓存；失败时 reject 供页面提示重试。
     function logout() {
-        return apiFetch('/api/auth/logout', { method: 'POST' }).catch(function () {
-        }).then(function () {
-            try {
-                localStorage.removeItem('userId');
-                localStorage.removeItem('username');
-                localStorage.removeItem('interest');
-            } catch (e) {
+        return apiFetch('/api/auth/logout', { method: 'POST' }).then(function (res) {
+            if (!res.ok) {
+                throw new Error('退出登录失败: HTTP ' + res.status);
             }
+            return res.json().catch(function () {
+                return {};
+            });
+        }).then(function (data) {
+            if (!data || data.success !== true) {
+                throw new Error('退出登录失败：服务端未确认');
+            }
+            clearIdentity();
+            return data;
         });
     }
 
@@ -100,6 +132,7 @@
         fetchCsrf: fetchCsrf,
         apiFetch: apiFetch,
         me: me,
-        logout: logout
+        logout: logout,
+        clearIdentity: clearIdentity
     };
 })(window);

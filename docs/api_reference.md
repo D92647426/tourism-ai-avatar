@@ -1,46 +1,80 @@
 # 当前 Java API 入口
 
-## 公开与学生侧接口
+基础地址：`http://localhost:8080`。请求/响应均为 JSON；认证依赖服务端 HttpSession（Cookie `JSESSIONID`），状态变更请求还必须携带 CSRF token。
 
-| 方法与地址 | 用途 | 位置 |
-|---|---|---|
-| POST /api/chat | 输入 message、可选 interest，返回 reply、fallback 与推荐路线；匿名可用，但需 CSRF 头 | [ChatController.java:L22](../src/main/java/com/guide/controller/ChatController.java#L22) |
-| GET /api/spots | 景点列表，可选 keyword | [SpotController.java:L23](../src/main/java/com/guide/controller/SpotController.java#L23) |
-| GET /api/spots/{id} | 景点详情 | [SpotController.java:L33](../src/main/java/com/guide/controller/SpotController.java#L33) |
-| GET /api/digital-human-config | 公开只读的数字人展示配置，不含用户/凭据 | [PublicConfigController.java:L34](../src/main/java/com/guide/controller/PublicConfigController.java#L34) |
+## 公开接口（无需登录）
 
-空 Key 的聊天示例：请求 JSON 为 {"message":"hello"}，结果应有非空 reply，并标记 fallback；状态变更请求必须携带 `X-XSRF-TOKEN`。
+| API 编号 | 方法与地址 | 用途 | 位置 |
+|---|---|---|---|
+| API-001 | POST /api/chat | 输入 message、可选 interest，返回 reply、fallback 与推荐路线；匿名可用，但需 CSRF 头 | [ChatController.java:L22](../src/main/java/com/guide/controller/ChatController.java#L22) |
+| API-002 | GET /api/spots | 景点列表，可选 keyword | [SpotController.java:L23](../src/main/java/com/guide/controller/SpotController.java#L23) |
+| API-003 | GET /api/spots/{id} | 景点详情 | [SpotController.java:L33](../src/main/java/com/guide/controller/SpotController.java#L33) |
+| API-004 | GET /api/digital-human-config | 公开只读的数字人展示配置，不含用户/凭据 | [PublicConfigController.java:L34](../src/main/java/com/guide/controller/PublicConfigController.java#L34) |
 
-## 认证接口（REQ-030）
+API-001 请求示例：`{"message":"hello"}`；空 Key 时响应示例：`{"reply":"...","fallback":true,"recommendedRoutes":[]}`。缺少/错误 CSRF 时返回 403。
 
-| 方法与地址 | 用途 | 位置 |
-|---|---|---|
-| GET /api/auth/csrf | 取 CSRF token（Cookie 双提交：`XSRF-TOKEN` + 响应字段 token） | [AuthController.java:L60](../src/main/java/com/guide/controller/AuthController.java#L60) |
-| POST /api/auth/register | 注册游客账号；忽略客户端传入的 role，永远 GUEST；密码 ≥4 位 | [AuthController.java:L76](../src/main/java/com/guide/controller/AuthController.java#L76) |
-| POST /api/auth/login | 登录并建立服务端 HttpSession；成功返回 role；失败 401 | [AuthController.java:L103](../src/main/java/com/guide/controller/AuthController.java#L103) |
-| GET /api/auth/me | 读取当前服务端身份；匿名 401 | [AuthController.java:L131](../src/main/java/com/guide/controller/AuthController.java#L131) |
-| POST /api/auth/interest | 更新当前登录用户的兴趣；忽略客户端 userId；需登录 + CSRF | [AuthController.java:L150](../src/main/java/com/guide/controller/AuthController.java#L150) |
-| POST /api/auth/logout | 退出并使服务端会话失效，返回 200 JSON | [SecurityConfig.java:L117](../src/main/java/com/guide/config/SecurityConfig.java#L117) |
+API-004 响应示例：`{"name":"灵灵","welcomeMessage":"...","voiceType":"female","modelName":"haru","primaryColor":"#c8963e","volume":1.0,"speechRate":1.0}`；该端点供游客页读取展示配置，管理端的 `GET/PUT /api/admin/digital-human-config` 仍需 ADMIN。
+
+## CSRF 约定（REQ-030）
+
+- 先 `GET /api/auth/csrf`，响应体为 `{"headerName":"X-XSRF-TOKEN","parameterName":"_csrf","token":"..."}`，同时下发 `XSRF-TOKEN` Cookie（非 HttpOnly，供页面脚本读取）。
+- 浏览器端由 [security.js:L48](../src/main/resources/static/js/security.js#L48) 统一封装：带 `credentials: 'same-origin'`，非 GET/HEAD/OPTIONS 请求自动加 `X-XSRF-TOKEN` 头；403 时只刷新一次 token 并重试一次。
+- 服务端使用 `CookieCsrfTokenRepository`（[SecurityConfig.java:L110](../src/main/java/com/guide/config/SecurityConfig.java#L110)），不能全局关闭 CSRF。
+
+## 认证接口（API-030）
+
+| API 编号 | 方法与地址 | 用途 | 位置 |
+|---|---|---|---|
+| API-030-01 | GET /api/auth/csrf | 取 CSRF token（Cookie 双提交：`XSRF-TOKEN` + 响应字段 token） | [AuthController.java:L60](../src/main/java/com/guide/controller/AuthController.java#L60) |
+| API-030-02 | POST /api/auth/register | 注册游客账号；忽略客户端传入的 role，永远 GUEST；密码 ≥4 位 | [AuthController.java:L76](../src/main/java/com/guide/controller/AuthController.java#L76) |
+| API-030-03 | POST /api/auth/login | 登录并建立服务端 HttpSession；成功返回 role；失败 401 | [AuthController.java:L103](../src/main/java/com/guide/controller/AuthController.java#L103) |
+| API-030-04 | GET /api/auth/me | 读取当前服务端身份；匿名 401 | [AuthController.java:L131](../src/main/java/com/guide/controller/AuthController.java#L131) |
+| API-030-05 | POST /api/auth/interest | 更新当前登录用户的兴趣；忽略客户端 userId；需登录 + CSRF | [AuthController.java:L150](../src/main/java/com/guide/controller/AuthController.java#L150) |
+| API-030-06 | POST /api/auth/logout | 退出并使服务端会话失效，返回 200 JSON | [SecurityConfig.java:L117](../src/main/java/com/guide/config/SecurityConfig.java#L117) |
+
+请求/响应示例：
+
+- API-030-02：请求 `{"username":"alice","password":"pass1234"}`；200 `{"success":true,"userId":"ab12cd34","username":"alice","role":"GUEST"}`。400 示例：`{"success":false,"message":"密码至少 4 位"}`、`{"success":false,"message":"用户名已存在"}`。
+- API-030-03：请求 `{"username":"admin","password":"********"}`；200 `{"success":true,"userId":"...","username":"admin","interest":null,"role":"ADMIN"}` 并下发新的 `JSESSIONID`；401 `{"success":false,"message":"用户名或密码错误"}`。登录会更换 session id（会话固定防护）。
+- API-030-04：200 返回与登录相同的安全字段；匿名 401 `{"success":false,"message":"未登录或会话已过期，请重新登录"}`。
+- API-030-05：请求 `{"interest":"摄影打卡"}`（客户端传 userId 会被忽略，以服务端会话身份为准）；200 返回更新后的安全字段；400 `{"success":false,"message":"兴趣偏好不能为空"}`；匿名 401；CSRF 缺失/错误 403。
+- API-030-06：200 `{"success":true,"message":"已退出登录"}`；之后旧 `JSESSIONID` 访问 `/api/admin/**` 返回 401。
 
 所有认证响应使用独立 DTO（[UserView.java:L13](../src/main/java/com/guide/dto/UserView.java#L13)、[AuthResult.java:L13](../src/main/java/com/guide/dto/AuthResult.java#L13)），响应中不会出现 `password` 或 `passwordHash`。
 
-## 管理接口
+## 管理接口（API-030-07）
 
 | 方法与地址 | 用途 | 位置 |
 |---|---|---|
 | /api/admin/** | 知识、配置、统计、用户列表等管理接口，服务端要求 ADMIN | [AdminController.java:L26](../src/main/java/com/guide/controller/AdminController.java#L26) |
+| GET /api/admin/users | 用户列表；返回 `UserView`，不含密码字段 | [AdminController.java:L147](../src/main/java/com/guide/controller/AdminController.java#L147) |
 
-## 认证与错误行为（2026-10-23 起）
+保护规则由 [SecurityConfig.java:L137](../src/main/java/com/guide/config/SecurityConfig.java#L137) 的 `authorizeRequests` 强制执行（`/api/admin/**` → `hasRole("ADMIN")`），不依赖页面检查：
 
-- 服务端权限：匿名访问 `/api/admin/**` 返回 HTTP 401 JSON；已登录游客返回 HTTP 403 JSON；管理员正常 200。
-- CSRF：写操作缺少或使用错误 token 返回 403（提示“CSRF 校验失败”），与匿名 401 明确区分；浏览器应通过 `/api/auth/csrf` 获取 token。
-- 会话：登录会更换 session id（会话固定防护），退出会 invalidateHttpSession 并清除 JSESSIONID/XSRF-TOKEN；默认 30 分钟过期。
-- 注册永远创建 GUEST，不会接受客户端注入的 ADMIN 角色。
+- 匿名 + 合法 CSRF：401 `{"success":false,"message":"未登录或会话已过期，请重新登录"}`。
+- 已登录游客 + 合法 CSRF：403 `{"success":false,"message":"无权限访问该接口"}`。
+- 管理员：200；写操作需合法 CSRF。
+- 任意身份缺少/错误 CSRF：403 `{"success":false,"message":"CSRF 校验失败，请刷新页面后重试"}`（与匿名 401 明确区分）。
+
+## 认证、错误码与验证方式
+
+| 状态码 | 含义 | 典型场景 |
+|---|---|---|
+| 200 | 成功 | 公开读取、管理员读写、登录/注册/退出成功 |
+| 400 | 参数或凭据格式错误 | 用户名长度、密码策略、兴趣为空、注册重名 |
+| 401 | 未登录或会话过期 | 匿名访问 `/api/admin/**`、匿名 `/api/auth/me`、登出后访问管理接口 |
+| 403 | 已登录无权限或 CSRF 失败 | 游客访问管理接口；缺少/错误 CSRF token |
+
+测试方式：
+
+- Java 集成测试真实走 `GET /api/auth/csrf` 再带 `X-XSRF-TOKEN`：权限边界见 [SecurityIntegrationTest.java:L199](../src/test/java/com/guide/security/SecurityIntegrationTest.java#L199)，会话固定/退出见 [L294](../src/test/java/com/guide/security/SecurityIntegrationTest.java#L294)、[L309](../src/test/java/com/guide/security/SecurityIntegrationTest.java#L309)，角色注入见 [L328](../src/test/java/com/guide/security/SecurityIntegrationTest.java#L328)，兴趣身份隔离见 [L378](../src/test/java/com/guide/security/SecurityIntegrationTest.java#L378)。
+- 真实 HTTP（随机端口）的 Cookie/CSRF 与管理全链路见 [CookieAttributeTest.java:L128](../src/test/java/com/guide/security/CookieAttributeTest.java#L128)、[L168](../src/test/java/com/guide/security/CookieAttributeTest.java#L168)。
+- 浏览器脚本行为（退出失败、CSRF 重试、兴趣保存、管理员重登）用 Node 内置测试执行：`node --test tests/frontend/*.test.js`，文件见 [security.test.js](../tests/frontend/security.test.js)、[login.test.js](../tests/frontend/login.test.js)、[main.test.js](../tests/frontend/main.test.js)、[admin.test.js](../tests/frontend/admin.test.js)。
 
 ## 管理后台入口与认证现状（已修复）
 
-2026-10-19 的基线状态是“没有管理员账号、管理接口无认证、`/admin.html` 可直接打开、未认证 dashboard 返回 200”。GitHub #5 / REQ-030 已修复该状态：
+2026-10-19 的基线状态是“没有管理员账号、管理接口无认证、`/admin.html` 可直接打开、未认证 dashboard 返回 200”。GitHub #5 / REQ-030 已修复该状态，基线记录保留为历史：
 
-- 后台 API 的保护由 [SecurityConfig.java:L137](../src/main/java/com/guide/config/SecurityConfig.java#L137) 的 `authorizeRequests` 强制执行，不依赖页面检查；
-- 管理页进入时通过 [admin.js:L89](../src/main/resources/static/js/admin.js#L89) 调 `/api/auth/me` 校验身份，未登录显示管理员登录入口（[admin.html:L13](../src/main/resources/static/admin.html#L13)），游客显示无权限；
+- 后台 API 的保护由 [SecurityConfig.java:L137-L138](../src/main/java/com/guide/config/SecurityConfig.java#L137-L138) 的 `authorizeRequests` 强制执行；
+- 管理页进入时通过 [admin.js:L150](../src/main/resources/static/js/admin.js#L150) 调 `/api/auth/me` 校验身份，未登录显示管理员登录入口（[admin.html:L13](../src/main/resources/static/admin.html#L13)），游客显示无权限并可真正切换账号；
 - 管理员由启动环境变量 `APP_ADMIN_USERNAME`/`APP_ADMIN_PASSWORD` 初始化，默认不创建，见 [config_reference.md](./config_reference.md)。

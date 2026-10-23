@@ -561,30 +561,61 @@
         b.classList.add('selected');
     });
 
+    function showProfileMessage(text, isError) {
+        profileMsg.textContent = text;
+        profileMsg.className = 'form-msg' + (isError ? ' error' : ' success');
+    }
+
+    // 保存兴趣：必须等服务端确认成功后才更新本地缓存与提示
+    function saveInterest(interest) {
+        showProfileMessage('正在保存…', false);
+        api('/api/auth/interest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ interest: interest })
+        }).then(function(res) {
+            if (res.status === 401) {
+                var error = new Error('登录状态已失效');
+                error.status = 401;
+                throw error;
+            }
+            if (!res.ok) { throw new Error('保存失败: HTTP ' + res.status); }
+            return res.json();
+        }).then(function(data) {
+            if (!data || data.success !== true) { throw new Error('保存失败'); }
+            currentInterest = interest;
+            try { localStorage.setItem('interest', interest); } catch (e) { }
+            showProfileMessage('兴趣爱好已更新！', false);
+        }).catch(function(error) {
+            if (error && error.status === 401) {
+                // 会话过期：清掉过期身份缓存，引导重新登录
+                window.AuthGuard.clearIdentity();
+                window.location.href = '/login.html';
+                return;
+            }
+            // 网络/服务端失败：保留上一次已保存的服务端状态，不写入本地缓存
+            showProfileMessage('保存失败，请检查网络后重试', true);
+        });
+    }
+
     // 保存
     profileSave.addEventListener('click', function() {
         var selected = profileInterests.querySelector('.interest-btn.selected');
-        profileMsg.className = 'form-msg';
-        if (selected) {
-            currentInterest = selected.dataset.interest;
-            localStorage.setItem('interest', currentInterest);
-            api('/api/auth/interest', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ interest: currentInterest })
-            }).catch(function(){});
-            profileMsg.textContent = '兴趣爱好已更新！';
-            profileMsg.classList.add('success');
-        } else {
-            profileMsg.textContent = '请选择一个兴趣偏好';
-            profileMsg.classList.add('error');
+        if (!selected) {
+            showProfileMessage('请选择一个兴趣偏好', true);
+            return;
         }
+        saveInterest(selected.dataset.interest);
     });
 
-    // 退出登录：结束服务端会话后清理本地显示缓存
+    // 退出登录：只有服务端确认退出后才清理缓存并跳转
     profileLogout.addEventListener('click', function() {
+        profileLogout.disabled = true;
         window.AuthGuard.logout().then(function() {
             window.location.href = '/login.html';
+        }).catch(function() {
+            profileLogout.disabled = false;
+            showProfileMessage('退出失败，请检查网络后重试', true);
         });
     });
 
@@ -600,11 +631,16 @@
             return;
         }
         currentUserId = user.userId || '';
-        currentInterest = user.interest || currentInterest;
+        // 以服务端返回为准：新账号没有兴趣时清掉上一个账号留下的缓存
+        currentInterest = user.interest || '';
         try {
             localStorage.setItem('userId', currentUserId);
             localStorage.setItem('username', user.username || '');
-            if (currentInterest) localStorage.setItem('interest', currentInterest);
+            if (currentInterest) {
+                localStorage.setItem('interest', currentInterest);
+            } else {
+                localStorage.removeItem('interest');
+            }
         } catch (e) { }
         savedUsername = user.username || '';
         if (headerUsername) headerUsername.textContent = savedUsername;

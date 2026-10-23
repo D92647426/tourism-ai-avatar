@@ -37,13 +37,15 @@
 | 登录/注册/身份/兴趣接口 | [AuthController.java:L44](../src/main/java/com/guide/controller/AuthController.java#L44) |
 | 管理员初始化（环境变量） | [AdminBootstrapRunner.java:L20](../src/main/java/com/guide/config/AdminBootstrapRunner.java#L20) |
 | 密码策略（游客 ≥4、管理员 ≥8） | [PasswordPolicy.java:L15](../src/main/java/com/guide/security/PasswordPolicy.java#L15) |
-| 用户存储、BCrypt、旧明文迁移与原子写入 | [UserService.java:L60](../src/main/java/com/guide/service/UserService.java#L60) |
+| 用户存储、BCrypt、旧明文迁移与原子写入 | [UserService.java:L48](../src/main/java/com/guide/service/UserService.java#L48) |
 | 安全 DTO（不含密码字段） | [UserView.java:L13](../src/main/java/com/guide/dto/UserView.java#L13)、[AuthResult.java:L13](../src/main/java/com/guide/dto/AuthResult.java#L13) |
 | 匿名/游客 JSON 401 与 403 | [RestAuthenticationEntryPoint.java:L23](../src/main/java/com/guide/security/RestAuthenticationEntryPoint.java#L23)、[RestAccessDeniedHandler.java:L26](../src/main/java/com/guide/security/RestAccessDeniedHandler.java#L26) |
 | 公开只读数字人配置 | [PublicConfigController.java:L21](../src/main/java/com/guide/controller/PublicConfigController.java#L21) |
-| 前端会话/CSRF 封装 | [security.js:L99](../src/main/resources/static/js/security.js#L99) |
-| 管理页身份校验与退出 | [admin.js:L89](../src/main/resources/static/js/admin.js#L89)、[admin.html:L13](../src/main/resources/static/admin.html#L13) |
+| 前端会话/CSRF 封装 | [security.js:L131](../src/main/resources/static/js/security.js#L131) |
+| 管理页身份校验与退出 | [admin.js:L150](../src/main/resources/static/js/admin.js#L150)、[admin.html:L13](../src/main/resources/static/admin.html#L13) |
+| 用户数据一致性回滚 | [UserServiceConsistencyTest.java:L38](../src/test/java/com/guide/service/UserServiceConsistencyTest.java#L38) |
 | 测试 | [SecurityIntegrationTest.java:L54](../src/test/java/com/guide/security/SecurityIntegrationTest.java#L54)、[UserServiceMigrationTest.java:L33](../src/test/java/com/guide/service/UserServiceMigrationTest.java#L33) |
+| 前端行为测试 | [security.test.js](../tests/frontend/security.test.js) 等 4 个文件 |
 
-验收事实：匿名访问 `/api/admin/**` 返回 401；游客返回 403；管理员可读写；退出后服务端会话失效；缺少/错误 CSRF 返回 403 且与匿名 401 区分；注册忽略客户端注入的角色；所有认证响应不含 `password`/`passwordHash`；新注册只存 BCrypt；旧明文记录迁移前备份、迁移保留 ID/用户名/兴趣/时间；`APP_ADMIN_*` 未配置时不创建管理员；用户名冲突拒绝初始化。详见 [TEST-030](./test_reference.md) 与 [API 说明](./api_reference.md)。
+验收事实：匿名访问 `/api/admin/**` 返回 401；游客返回 403；管理员可读写；退出后服务端会话失效；缺少/错误 CSRF 返回 403 且与匿名 401 区分；注册忽略客户端注入的角色；所有认证响应不含 `password`/`passwordHash`；新注册只存 BCrypt；旧明文记录迁移前备份、迁移保留 ID/用户名/兴趣/时间；`APP_ADMIN_*` 未配置时不创建管理员；用户名冲突拒绝初始化；落盘失败会回滚内存；重复 ID/用户名与空数据根会被拒绝且不覆盖原文件。自动化覆盖为 41 个 Java 测试 + 27 个前端行为测试（`node:test` + `vm` 执行真实脚本）。详见 [TEST-030](./test_reference.md) 与 [API 说明](./api_reference.md)。
 

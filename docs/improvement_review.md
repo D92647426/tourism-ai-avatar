@@ -2,6 +2,8 @@
 
 评估日期：2026-10-19。基于当前 Java 源码和本地 HTTP 检查；未做完整浏览器视觉验收、真实模型或 Android 验收。本文件是建议，尚未选定或实现新功能，不承诺具体课程分数。
 
+> 现状说明（2026-10-23）：本文件保留 2026-10-19 初始基线。P0 的“管理接口无认证、响应含密码”已由 [REQ-030](./requirements_traceability.md) 修复（服务端会话、ADMIN 权限、BCrypt、安全 DTO），其余条目仍未实施；不要把本文件中的旧结论当作当前状态。
+
 ## 结论
 
 当前基线包含景点浏览、问答、Live2D 和管理端，适合继续开发。建议把原创体验集中在“今天你当导游”：游客在景点完成观察任务，向数字人解释发现，获得有依据的反馈，形成个人旅程记忆。通过可导入导出的景区内容包，让其他小组也能制作新景区。
@@ -10,7 +12,7 @@
 
 | 优先级 | 现状和证据 | 建议和验收 |
 |---|---|---|
-| P0 | 管理接口无需认证；用户接口直接返回 User，包含 password 字段。[AdminController.java:L139](../src/main/java/com/guide/controller/AdminController.java#L139)、[User.java:L28](../src/main/java/com/guide/model/User.java#L28) | 增加服务端会话和管理员角色；用户响应独立 DTO 不含密码；密码哈希存储。匿名/游客不能访问管理接口，合法管理员可以；检查响应不含密码字段 |
+| P0 | 初始基线（2026-10-19）：管理接口无需认证；用户接口直接返回 User，包含 password 字段；**已于 2026-10-23 由 [REQ-030](./requirements_traceability.md) 修复，此处保留历史**。[AdminController.java:L147](../src/main/java/com/guide/controller/AdminController.java#L147)、[User.java:L36](../src/main/java/com/guide/model/User.java#L36) | 现状：服务端会话 + 管理员角色；用户响应独立 DTO 不含密码；密码 BCrypt 存储。匿名/游客不能访问管理接口，合法管理员可以；响应不含密码字段。验证见 [TEST-030](./test_reference.md) |
 | P1 | 生成请求只带 system 和本次 user，未带历史消息。[ChatService.java:L104](../src/main/java/com/guide/service/ChatService.java#L104) | 按会话保留有限历史和当前景点，使“它什么时候开放”等追问能关联上一问；两用户会话隔离 |
 | P1 | 用整句 contains 检索，最多取前三条。[KnowledgeService.java:L186](../src/main/java/com/guide/service/KnowledgeService.java#L186) | 先做景点实体、别名和关键词检索，再按需要增加语义检索；返回资料来源和更新日期，无依据时明确说明 |
 | P1 | 路线是按兴趣选固定列表。[ChatService.java:L325](../src/main/java/com/guide/service/ChatService.java#L325) | 首版用人工校验的步行连接、时长、停留时间和台阶标签，支持时长/行动条件筛选，说明取舍；未接地图时不称实时导航 |
@@ -18,10 +20,10 @@
 | P2 | 口型随机开合，时长按字数估算，先于实际语音启动。[main.js:L258](../src/main/resources/static/js/main.js#L258)、[main.js:L315](../src/main/resources/static/js/main.js#L315) | 先统一待机/聆听/思考/播报/错误状态，绑定播报开始与结束，再在有可访问音频时做振幅驱动；没有声音时不假装播报 |
 | P2 | 首页主流程是景点列表加聊天浮层。[index.html:L26](../src/main/resources/static/index.html#L26)、[index.html:L76](../src/main/resources/static/index.html#L76) | 首页展示开始探索、当前站、任务和旅程；景点详情可一键“问她这个景点”，传入明确景点上下文 |
 
-本地复核：
-- 未带认证的 GET /api/admin/users 返回 200；只检查响应字段名，未输出密码值。
+本地复核（2026-10-19 初始基线；认证与密码字段两条已由 [REQ-030](./requirements_traceability.md) 修复，以下保留历史）：
+- 未带认证的 GET /api/admin/users 返回 200；只检查响应字段名，未输出密码值。（现状：未认证返回 401，用户列表使用 [UserView.java:L13](../src/main/java/com/guide/dto/UserView.java#L13) 不含密码字段。）
 - 使用当前知识数据和源码相同的匹配规则：“灵山大佛”命中 3 条，“灵山大佛有什么故事？”命中 0 条。此结果描述知识检索；离线回复仍可能命中另一条景点名称规则。
-- GET /admin.html、GET /api/admin/dashboard 无认证可访问。
+- GET /admin.html、GET /api/admin/dashboard 无认证可访问。（现状：页面进入时由 [admin.js:L150](../src/main/resources/static/js/admin.js#L150) 校验服务端身份，管理接口由 [SecurityConfig.java:L137-L138](../src/main/java/com/guide/config/SecurityConfig.java#L137-L138) 强制 ADMIN。）
 - 对话、路线和统计问题为源码确认；不把它们描述为已经进行真实模型实测。
 
 ## 建议的原创体验：今天你当导游

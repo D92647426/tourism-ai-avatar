@@ -30,7 +30,8 @@
             <h2>无权限访问</h2>
             <p class="admin-gate-hint">当前账号不是管理员。后台接口由服务端按角色校验，游客无法读取管理数据。</p>
             <a href="/index.html" class="btn btn-secondary admin-gate-btn">返回游客端</a>
-            <a href="/login.html" class="admin-gate-back">切换账号登录</a>
+            <button type="button" class="admin-gate-back" id="adminSwitchAccount">切换账号登录</button>
+            <p class="admin-gate-error" id="adminGateSwitchError"></p>
         </div>
     </div>
 
@@ -62,6 +63,7 @@
                 <div class="admin-identity" id="adminIdentity"></div>
                 <a href="/" class="back-link">← 返回游客端</a>
                 <button type="button" class="admin-logout" id="adminLogout">退出登录</button>
+                <p class="admin-logout-error" id="adminLogoutError"></p>
             </div>
         </aside>
 

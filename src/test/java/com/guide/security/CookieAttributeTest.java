@@ -158,4 +158,68 @@ class CookieAttributeTest {
         assertTrue(sessionHeader.toLowerCase().contains("samesite=lax"),
                 "JSESSIONID 必须 SameSite=Lax: " + sessionHeader);
     }
+
+    /**
+     * 真实 HTTP 全链路（REQ-030）：Cookie + CSRF → 管理员登录 → 管理 GET/写 → 退出 → 401。
+     *
+     * <p>此前主要依赖 MockMvc 覆盖，这里验证真实容器下的会话、CSRF 与退出失效行为。
+     */
+    @Test
+    void realHttpAdminFlowRequiresSessionAndCsrfAndEndsOnLogout() throws Exception {
+        // 1. 匿名获取 CSRF token 与 Cookie
+        ResponseEntity<String> csrfResponse = restTemplate.getForEntity("/api/auth/csrf", String.class);
+        assertEquals(200, csrfResponse.getStatusCodeValue());
+        List<String> csrfCookies = csrfResponse.getHeaders().get(HttpHeaders.SET_COOKIE);
+        assertNotNull(csrfCookies);
+        String csrfToken = cookieValue(csrfCookies, "XSRF-TOKEN");
+        assertNotNull(csrfToken);
+        JsonNode csrfBody = objectMapper.readTree(csrfResponse.getBody());
+        String csrfHeaderName = csrfBody.path("headerName").asText("X-XSRF-TOKEN");
+
+        // 2. 管理员登录：必须带 CSRF，登录后获得新的 JSESSIONID
+        HttpHeaders loginHeaders = new HttpHeaders();
+        loginHeaders.setContentType(MediaType.APPLICATION_JSON);
+        loginHeaders.set(csrfHeaderName, csrfToken);
+        loginHeaders.add(HttpHeaders.COOKIE, "XSRF-TOKEN=" + csrfToken);
+        ResponseEntity<String> login = restTemplate.exchange("/api/auth/login", HttpMethod.POST,
+                new HttpEntity<>("{\"username\":\"" + ADMIN_USERNAME + "\",\"password\":\""
+                        + ADMIN_PASSWORD + "\"}", loginHeaders), String.class);
+        assertEquals(200, login.getStatusCodeValue(), login.getBody());
+        String sessionId = cookieValue(login.getHeaders().get(HttpHeaders.SET_COOKIE), "JSESSIONID");
+        assertNotNull(sessionId, "登录成功必须建立服务端会话");
+
+        // 3. 管理员 GET：带会话即可
+        HttpHeaders adminHeaders = new HttpHeaders();
+        adminHeaders.add(HttpHeaders.COOKIE, "JSESSIONID=" + sessionId + "; XSRF-TOKEN=" + csrfToken);
+        ResponseEntity<String> dashboard = restTemplate.exchange("/api/admin/dashboard", HttpMethod.GET,
+                new HttpEntity<>(adminHeaders), String.class);
+        assertEquals(200, dashboard.getStatusCodeValue(), dashboard.getBody());
+
+        // 4. 管理员写操作：必须带 CSRF header
+        HttpHeaders writeHeaders = new HttpHeaders();
+        writeHeaders.setContentType(MediaType.APPLICATION_JSON);
+        writeHeaders.set(csrfHeaderName, csrfToken);
+        writeHeaders.add(HttpHeaders.COOKIE, "JSESSIONID=" + sessionId + "; XSRF-TOKEN=" + csrfToken);
+        ResponseEntity<String> configWrite = restTemplate.exchange("/api/admin/digital-human-config",
+                HttpMethod.PUT, new HttpEntity<>("{\"name\":\"cookie-integration-name\"}", writeHeaders),
+                String.class);
+        assertEquals(200, configWrite.getStatusCodeValue(), configWrite.getBody());
+
+        // 5. 退出：服务端确认后会话应失效
+        HttpHeaders logoutHeaders = new HttpHeaders();
+        logoutHeaders.setContentType(MediaType.APPLICATION_JSON);
+        logoutHeaders.set(csrfHeaderName, csrfToken);
+        logoutHeaders.add(HttpHeaders.COOKIE, "JSESSIONID=" + sessionId + "; XSRF-TOKEN=" + csrfToken);
+        ResponseEntity<String> logout = restTemplate.exchange("/api/auth/logout", HttpMethod.POST,
+                new HttpEntity<>(logoutHeaders), String.class);
+        assertEquals(200, logout.getStatusCodeValue(), logout.getBody());
+        assertTrue(logout.getBody().contains("\"success\":true"), logout.getBody());
+
+        // 6. 退出后旧会话访问管理接口应为 401
+        HttpHeaders afterLogout = new HttpHeaders();
+        afterLogout.add(HttpHeaders.COOKIE, "JSESSIONID=" + sessionId);
+        ResponseEntity<String> denied = restTemplate.exchange("/api/admin/dashboard", HttpMethod.GET,
+                new HttpEntity<>(afterLogout), String.class);
+        assertEquals(401, denied.getStatusCodeValue(), denied.getBody());
+    }
 }

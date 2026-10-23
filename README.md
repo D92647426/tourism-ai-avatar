@@ -57,17 +57,18 @@ mvn spring-boot:run
 - 不要提交或打印真实管理员凭据；`data/users.json`、迁移备份与本机日志都不进入 Git。
 - 登录后服务端会话默认 30 分钟过期；管理员和游客退出都会使服务端会话失效。
 
-实现见 [SecurityConfig.java:L42](src/main/java/com/guide/config/SecurityConfig.java#L42)、[UserService.java:L60](src/main/java/com/guide/service/UserService.java#L60)。
+实现见 [SecurityConfig.java:L36](src/main/java/com/guide/config/SecurityConfig.java#L36)、[UserService.java:L59](src/main/java/com/guide/service/UserService.java#L59)。
 
 ## 验证
 
 ```bash
 mvn verify
 python scripts/check_doc_links.py
-python scripts/smoke_teacher_project.py --java 'C:\\Program Files\\Java\\jdk-19\\bin\\java.exe' --jar target/ai-guide-1.0.0.jar
+python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar
+node --test tests/frontend/*.test.js
 ```
 
-Python 只用于可选检查脚本与 CI，网页项目运行不依赖 Python、Node.js 或 Docker。当前源码有 31 个自动化测试（权限边界、CSRF、会话固定、密码迁移、密码策略、Cookie 属性），由 `mvn verify` 执行；自动检查同时验证文档链接和本地启动后的页面/接口/模型资源，详见 [测试说明](docs/test_reference.md)。
+Python 只用于可选检查脚本与 CI，Node.js 只用于前端行为测试，网页项目运行不依赖 Python、Node.js 或 Docker。当前源码有 41 个 Java 自动化测试（权限边界、CSRF、会话固定、密码迁移/一致性、密码策略、Cookie 属性、真实 HTTP 认证链路）和 27 个前端行为测试（`node:test` + `vm` 直接执行 `static/js` 脚本，覆盖退出/CSRF/兴趣保存/管理员会话切换），分别由 `mvn verify` 与 `node --test` 执行；自动检查同时验证文档链接和本地启动后的页面/接口/模型资源，详见 [测试说明](docs/test_reference.md)。
 
 ## 当前边界
 

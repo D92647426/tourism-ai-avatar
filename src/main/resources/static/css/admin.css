@@ -483,9 +483,14 @@ body {
 .admin-gate-back {
     display: inline-block;
     margin-top: 16px;
+    padding: 0;
+    border: none;
+    background: none;
+    font-family: inherit;
     font-size: 13px;
     color: var(--text-light);
     text-decoration: none;
+    cursor: pointer;
 }
 .admin-gate-back:hover { color: var(--primary); }
 
@@ -509,3 +514,11 @@ body {
     transition: all 0.2s;
 }
 .admin-logout:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+.admin-logout:disabled { opacity: 0.6; cursor: not-allowed; }
+.admin-logout-error {
+    min-height: 16px;
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #ff8a80;
+}

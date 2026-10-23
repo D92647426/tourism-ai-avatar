@@ -19,9 +19,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -32,10 +34,12 @@ import java.util.UUID;
  *   <li>可配置用户文件路径（{@code data.users-file}），测试使用临时文件；</li>
  *   <li>旧版明文 {@code password} 记录的一次性兼容迁移：先备份，再原子写入；</li>
  *   <li>注册只写入 {@code passwordHash}，角色固定为游客；</li>
- *   <li>管理员初始化只来自服务器环境变量，禁止静默提权或覆盖已有管理员密码。</li>
+ *   <li>管理员初始化只来自服务器环境变量，禁止静默提权或覆盖已有管理员密码；</li>
+ *   <li>写操作失败回滚内存状态，避免落盘失败后留下“幽灵用户”或未持久化的兴趣。</li>
  * </ul>
  *
- * <p>迁移失败会抛出 {@link IllegalStateException} 终止启动，避免以空用户集合覆盖原文件。
+ * <p>启动加载遇到不可解析内容、空根节点、重复 id 或重复用户名时明确拒绝启动并保留原文件，
+ * 迁移失败同样抛出 {@link IllegalStateException}，避免以空用户集合覆盖本地数据。
  *
  * <p>文档：[配置说明](../../../../../docs/config_reference.md)、
  * [测试说明](../../../../../docs/test_reference.md)。
@@ -66,7 +70,7 @@ public class UserService {
     /**
      * 启动时加载用户数据；旧版明文记录在此完成一次性迁移。
      *
-     * @throws IllegalStateException 文件不可读、记录缺少密码字段或迁移写入失败
+     * @throws IllegalStateException 文件不可读、内容无效、记录缺少密码字段或迁移写入失败
      */
     @PostConstruct
     public void init() {
@@ -89,35 +93,56 @@ public class UserService {
                     "读取用户数据失败，已停止启动以避免覆盖本地用户文件: " + file.getPath(), e);
         }
         if (list == null) {
-            list = new ArrayList<>();
+            throw new IllegalStateException(
+                    "用户数据文件根节点为空（应为用户数组），已停止启动并保留原文件: " + file.getPath());
         }
 
         boolean needsMigration = false;
         boolean needsRewrite = false;
-        for (User user : list) {
-            if (isBlank(user.getId()) || isBlank(user.getUsername())) {
-                throw new IllegalStateException(
-                        "用户数据存在缺少 id 或用户名的记录，已停止启动以避免数据损坏: " + file.getPath());
-            }
-            String legacy = user.getPassword();
-            if (!isBlank(user.getPasswordHash())) {
-                if (!isBlank(legacy)) {
-                    // 已迁移记录残留明文：清掉并重写，绝不保留明文密码。
-                    user.setPassword(null);
-                    needsRewrite = true;
+        Set<String> ids = new HashSet<>();
+        Set<String> usernames = new HashSet<>();
+        try {
+            for (User user : list) {
+                if (user == null) {
+                    throw new IllegalStateException("用户数据包含空记录，已停止启动并保留原文件: " + file.getPath());
                 }
-            } else if (!isBlank(legacy)) {
-                needsMigration = true;
-            } else {
-                throw new IllegalStateException(
-                        "用户记录缺少密码凭据，无法完成迁移: id=" + user.getId());
+                if (isBlank(user.getId()) || isBlank(user.getUsername())) {
+                    throw new IllegalStateException(
+                            "用户数据存在缺少 id 或用户名的记录，已停止启动以避免数据损坏: " + file.getPath());
+                }
+                if (!ids.add(user.getId())) {
+                    throw new IllegalStateException(
+                            "用户数据存在重复 id: " + user.getId() + "，已停止启动并保留原文件");
+                }
+                if (!usernames.add(user.getUsername())) {
+                    throw new IllegalStateException(
+                            "用户数据存在重复用户名: " + user.getUsername() + "，已停止启动并保留原文件");
+                }
+                String legacy = user.getPassword();
+                if (!isBlank(user.getPasswordHash())) {
+                    if (!isBlank(legacy)) {
+                        // 已迁移记录残留明文：清掉并重写，绝不保留明文密码。
+                        user.setPassword(null);
+                        needsRewrite = true;
+                    }
+                } else if (!isBlank(legacy)) {
+                    needsMigration = true;
+                } else {
+                    throw new IllegalStateException(
+                            "用户记录缺少密码凭据，无法完成迁移: id=" + user.getId());
+                }
+                users.put(user.getId(), user);
             }
-            users.put(user.getId(), user);        }
 
-        if (needsMigration) {
-            migrateLegacyPasswords();
-        } else if (needsRewrite) {
-            save();
+            if (needsMigration) {
+                migrateLegacyPasswords();
+            } else if (needsRewrite) {
+                save();
+            }
+        } catch (RuntimeException e) {
+            // 加载失败时不保留半加载的内存状态，调用方（启动流程）会终止。
+            users.clear();
+            throw e;
         }
         log.info("已加载 {} 个用户", users.size());
     }
@@ -183,23 +208,27 @@ public class UserService {
     /**
      * 注册普通游客账号：密码只保存哈希，角色固定 GUEST。
      *
+     * <p>写入失败时从内存移除新用户并抛出异常，避免出现只存在于内存的“幽灵用户”。
+     *
      * @param username 用户名（调用方已完成格式校验）
      * @param password 明文密码（调用方已完成策略校验）
      * @return 新用户；用户名已存在时返回 {@code null}
      */
-    public User register(String username, String password) {
+    public synchronized User register(String username, String password) {
         if (findByUsername(username) != null) {
             return null;
         }
-        String id = UUID.randomUUID().toString().substring(0, 8);
-        while (users.containsKey(id)) {
-            id = UUID.randomUUID().toString().substring(0, 8);
-        }
+        String id = generateId();
         User user = new User(id, username);
         user.setRole(User.ROLE_GUEST);
         user.setPasswordHash(passwordEncoder.encode(password));
         users.put(id, user);
-        save();
+        try {
+            save();
+        } catch (RuntimeException e) {
+            users.remove(id);
+            throw e;
+        }
         log.info("用户注册: {}", username);
         return user;
     }
@@ -215,7 +244,7 @@ public class UserService {
      * @return 本次是否新建了管理员
      * @throws IllegalStateException 配置不完整、密码不符合策略或用户名已被游客占用
      */
-    public boolean bootstrapAdmin(String username, String password) {
+    public synchronized boolean bootstrapAdmin(String username, String password) {
         boolean hasUsername = !isBlank(username);
         boolean hasPassword = !isBlank(password);
         if (!hasUsername && !hasPassword) {
@@ -246,15 +275,17 @@ public class UserService {
                             + "请更换 APP_ADMIN_USERNAME 或删除该游客记录");
         }
 
-        String id = UUID.randomUUID().toString().substring(0, 8);
-        while (users.containsKey(id)) {
-            id = UUID.randomUUID().toString().substring(0, 8);
-        }
+        String id = generateId();
         User admin = new User(id, name);
         admin.setRole(User.ROLE_ADMIN);
         admin.setPasswordHash(passwordEncoder.encode(password));
         users.put(id, admin);
-        save();
+        try {
+            save();
+        } catch (RuntimeException e) {
+            users.remove(id);
+            throw e;
+        }
         log.info("已创建本地管理员账号: {}", name);
         return true;
     }
@@ -262,15 +293,24 @@ public class UserService {
     /**
      * 更新兴趣偏好（调用方必须使用服务端登录身份，绝不信任客户端传入的 userId）。
      *
+     * <p>写入失败时恢复内存中的旧兴趣并抛出异常，保证内存与磁盘一致。
+     *
      * @param userId   用户 ID
      * @param interest 兴趣偏好
      * @return 更新后的用户；不存在返回 {@code null}
      */
-    public User updateInterest(String userId, String interest) {
+    public synchronized User updateInterest(String userId, String interest) {
         User user = users.get(userId);
-        if (user != null) {
-            user.setInterest(interest);
+        if (user == null) {
+            return null;
+        }
+        String previous = user.getInterest();
+        user.setInterest(interest);
+        try {
             save();
+        } catch (RuntimeException e) {
+            user.setInterest(previous);
+            throw e;
         }
         return user;
     }
@@ -281,7 +321,7 @@ public class UserService {
      * @param id 用户 ID
      * @return 用户或 {@code null}
      */
-    public User findById(String id) {
+    public synchronized User findById(String id) {
         return users.get(id);
     }
 
@@ -291,7 +331,7 @@ public class UserService {
      * @param username 用户名
      * @return 用户或 {@code null}
      */
-    public User findByUsername(String username) {
+    public synchronized User findByUsername(String username) {
         if (username == null) {
             return null;
         }
@@ -308,8 +348,16 @@ public class UserService {
      *
      * @return 用户列表副本
      */
-    public List<User> getAllUsers() {
+    public synchronized List<User> getAllUsers() {
         return new ArrayList<>(users.values());
+    }
+
+    private String generateId() {
+        String id = UUID.randomUUID().toString().substring(0, 8);
+        while (users.containsKey(id)) {
+            id = UUID.randomUUID().toString().substring(0, 8);
+        }
+        return id;
     }
 
     private static boolean isBlank(String value) {

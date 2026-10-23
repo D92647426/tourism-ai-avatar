@@ -13,7 +13,19 @@
     var adminIdentity = S('adminIdentity');
     var adminStarted = false;
 
+    // 会话失效/被拒绝时结束页面上的管理员状态，避免继续展示或误用此前的数据
+    function endAdminSession() {
+        adminStarted = false;
+        if (adminIdentity) adminIdentity.textContent = '';
+        // 清掉上一次会话加载的敏感列表，避免退出/被拒绝后仍可从 DOM 读到旧数据
+        var knowledgeBody = S('knowledgeTbody');
+        if (knowledgeBody) knowledgeBody.innerHTML = '';
+        var usersBody = document.querySelector('#usersTable tbody');
+        if (usersBody) usersBody.innerHTML = '';
+    }
+
     function showLoginGate(message) {
+        endAdminSession();
         adminGate.style.display = 'flex';
         adminGateLogin.style.display = 'block';
         adminGateDenied.style.display = 'none';
@@ -21,6 +33,7 @@
     }
 
     function showForbiddenGate() {
+        endAdminSession();
         adminGate.style.display = 'flex';
         adminGateLogin.style.display = 'none';
         adminGateDenied.style.display = 'block';
@@ -43,6 +56,29 @@
             }
             return res;
         });
+    }
+
+    function activeTabName() {
+        var active = document.querySelector('.nav-item.active');
+        return active ? active.dataset.tab : 'dashboard';
+    }
+
+    function loadTab(tab) {
+        if (tab === 'knowledge') loadKnowledge();
+        else if (tab === 'digital-human') loadDigitalHumanConfig();
+        else if (tab === 'reports') loadReports();
+        else if (tab === 'users') loadUsers();
+        else loadDashboard();
+    }
+
+    // 登录（含过期后重新登录）成功后重载当前激活 tab，不能只隐藏遮罩留下旧数据
+    function startAdmin(username) {
+        hideGate();
+        adminStarted = true;
+        if (adminIdentity && username) {
+            adminIdentity.textContent = '👤 ' + username + '（管理员）';
+        }
+        loadTab(activeTabName());
     }
 
     // 管理员登录
@@ -72,19 +108,44 @@
             }
             S('adminPassword').value = '';
             adminGateError.textContent = '';
-            if (adminIdentity) adminIdentity.textContent = '👤 ' + d.username + '（管理员）';
-            startAdmin();
+            var switchError = S('adminGateSwitchError');
+            if (switchError) switchError.textContent = '';
+            startAdmin(d.username);
         }).catch(function() {
             adminGateError.textContent = '登录失败，请稍后重试';
         });
     });
 
-    // 退出登录：结束服务端会话
+    // 退出登录：仅当服务端确认退出后才跳转，失败时显示可见提示并允许重试
     S('adminLogout').addEventListener('click', function() {
+        var button = S('adminLogout');
+        var error = S('adminLogoutError');
+        if (error) error.textContent = '';
+        button.disabled = true;
         window.AuthGuard.logout().then(function() {
             window.location.href = '/login.html';
+        }).catch(function() {
+            button.disabled = false;
+            if (error) error.textContent = '退出失败，请检查网络后重试';
         });
     });
+
+    // 无权限面板的“切换账号登录”：先结束服务端会话，再显示本页管理员登录表单
+    var adminSwitchAccount = S('adminSwitchAccount');
+    if (adminSwitchAccount) {
+        adminSwitchAccount.addEventListener('click', function() {
+            var switchError = S('adminGateSwitchError');
+            if (switchError) switchError.textContent = '';
+            adminSwitchAccount.disabled = true;
+            window.AuthGuard.logout().then(function() {
+                adminSwitchAccount.disabled = false;
+                showLoginGate('已退出当前账号，请使用管理员账号登录');
+            }).catch(function() {
+                adminSwitchAccount.disabled = false;
+                if (switchError) switchError.textContent = '退出失败，请检查网络后重试';
+            });
+        });
+    }
 
     function checkIdentity() {
         window.AuthGuard.me().then(function(user) {
@@ -96,19 +157,10 @@
                 showForbiddenGate();
                 return;
             }
-            hideGate();
-            if (adminIdentity) adminIdentity.textContent = '👤 ' + user.username + '（管理员）';
-            startAdmin();
+            startAdmin(user.username);
         }).catch(function() {
             showLoginGate('无法确认登录状态，请重新登录');
         });
-    }
-
-    function startAdmin() {
-        hideGate();
-        if (adminStarted) return;
-        adminStarted = true;
-        loadDashboard();
     }
 
     // ===== Tab 导航 =====

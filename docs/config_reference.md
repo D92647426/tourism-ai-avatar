@@ -41,16 +41,16 @@
 2. 对每条旧记录生成 BCrypt `passwordHash`，保留 id、用户名、兴趣、注册时间；
 3. 通过同目录临时文件 + 原子替换写回，避免中途崩溃产生半截 JSON。
 
-迁移失败（JSON 损坏、记录既无 `password` 也无 `passwordHash`）会**终止启动并保留原文件**，不会从空用户列表覆盖。迁移逻辑见 [UserService.java:L129](../src/main/java/com/guide/service/UserService.java#L129)。
+迁移失败（JSON 损坏、记录既无 `password` 也无 `passwordHash`）会**终止启动并保留原文件**，不会从空用户列表覆盖。迁移逻辑见 [UserService.java:L154](../src/main/java/com/guide/service/UserService.java#L154)。
 
 ## 会话与 CSRF
 
 - 登录/退出会在服务端建立/销毁会话，前端 localStorage 只做显示缓存，不作为权限依据。
-- 状态变更请求必须带 `X-XSRF-TOKEN`；浏览器前端通过 `/api/auth/csrf` 获取，见 [security.js:L9](../src/main/resources/static/js/security.js#L9)。
+- 状态变更请求必须带 `X-XSRF-TOKEN`；浏览器前端通过 `/api/auth/csrf` 获取，见 [security.js:L10](../src/main/resources/static/js/security.js#L10)。
 - 管理端页面进入时通过 `/api/auth/me` 校验身份，但真正的权限由服务端 [SecurityConfig.java:L137](../src/main/java/com/guide/config/SecurityConfig.java#L137) 强制。
 
 ## 其他
 
 Spring Boot 参数可通过命令行覆盖，例如 java -jar target/ai-guide-1.0.0.jar --server.port=8081。普通 .env 文件不会被自动读取。
 
-验证方式：空 Key 下执行 [本地接口检查 smoke_teacher_project.py:L1](../scripts/smoke_teacher_project.py#L1)，真实模型由各成员在本机配置 Key 后单独验收。
+验证方式：空 Key 下执行 [本地接口检查 smoke_teacher_project.py:L60](../scripts/smoke_teacher_project.py#L60)，真实模型由各成员在本机配置 Key 后单独验收。

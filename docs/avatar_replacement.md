@@ -2,7 +2,7 @@
 
 ## Q-0030 当前数字人如何实现，是否方便替换？
 
-当前游客页面使用 PIXI + pixi-live2d-display，加载 Haru 的 Cubism 2 格式模型。实际加载和口型控制在 [main.js:L104](../src/main/resources/static/js/main.js#L104)，首页并未引用独立的 live2d-helper.js，因此修改游客端时不能只改 helper。
+当前游客页面使用 PIXI + pixi-live2d-display，加载 Haru 的 Cubism 2 格式模型。实际加载和口型控制在 [main.js:L105](../src/main/resources/static/js/main.js#L105)，首页并未引用独立的 live2d-helper.js，因此修改游客端时不能只改 helper。
 
 职责分为三部分：
 1. 对话：Java 调用模型或离线规则，见 [ChatService.java:L53](../src/main/java/com/guide/service/ChatService.java#L53)。
@@ -22,7 +22,7 @@
 
 以上是项目复杂度判断，不是制作工时承诺。
 
-当前路径硬编码为 /models/haru/haru.model.json：[main.js:L127](../src/main/resources/static/js/main.js#L127)。后台 modelName 虽然保存，但游客端配置读取仅更新名称，未用它切换模型：[DigitalHumanConfig.java:L10](../src/main/java/com/guide/model/DigitalHumanConfig.java#L10)、[main.js:L376](../src/main/resources/static/js/main.js#L376)。
+当前路径硬编码为 /models/haru/haru.model.json：[main.js:L128](../src/main/resources/static/js/main.js#L128)。后台 modelName 虽然保存，但游客端配置读取仅更新名称，未用它切换模型：[DigitalHumanConfig.java:L10](../src/main/java/com/guide/model/DigitalHumanConfig.java#L10)、[main.js:L376](../src/main/resources/static/js/main.js#L376)。
 
 当前表情名 f01、旧参数 PARAM_MOUTH_OPEN_Y 和 setParamFloat 控制方式均有现有模型假设：[main.js:L139](../src/main/resources/static/js/main.js#L139)、[main.js:L369](../src/main/resources/static/js/main.js#L369)。现代模型参数、接口与运行时版本需要单独验证，不能保证仅换路径即可兼容。
 
