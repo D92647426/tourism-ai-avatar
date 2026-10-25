@@ -20,3 +20,7 @@ Local verification (2026-10-19): Maven build passed with JDK 19; HTTP smoke pass
 ## TEST-029 项目名称与路径一致性
 
 对应 REQ-029。检查本地仓库名、GitHub origin、README 与入组手册一致；网页标题为“旅游 AI 数字人”；执行 Maven verify、文档链接检查和现有 JAR 启动检查。沿用 [smoke_teacher_project.py:L1](../scripts/smoke_teacher_project.py#L1)，无需为纯名称替换新增镜像测试。
+
+## TEST-031 聊天请求与页面行为
+
+对应 REQ-031；执行 `node --test tests/frontend/*.test.js`，预期 23/23 通过。控制模块的 single-flight、HTTP/网络/JSON错误、超时、取消与迟到回调测试见 [chat-request.test.js:L1](../tests/frontend/chat-request.test.js#L1)；页面入口、状态恢复、重试草稿和语音延迟保护见 [chat-main.test.js:L1](../tests/frontend/chat-main.test.js#L1)。可复现演示矩阵见 [chat_reliability.md:L1](./chat_reliability.md#L1)。失败时按用例标题检查请求状态、计时器清理及对应入口，不使用真实模型排错。Node仅作测试工具，CI使用Node22。

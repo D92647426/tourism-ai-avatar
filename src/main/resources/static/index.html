@@ -108,6 +108,11 @@ if (!localStorage.getItem('userId')) { window.location.href = '/login.html'; }
       <input type="text" class="chat-input" id="chatInput" placeholder="输入您的问题...">
       <button class="chat-send-btn" id="chatSendBtn">发送</button>
     </div>
+    <div class="chat-request-tools">
+      <span id="chatRequestStatus" role="status" aria-live="polite"></span>
+      <button type="button" id="chatCancelBtn" hidden>取消等待</button>
+      <button type="button" id="chatRetryBtn" hidden>重试上一个问题</button>
+    </div>
     <div class="voice-status" id="voiceStatus"></div>
   </div>
 </div>
@@ -121,6 +126,7 @@ if (!localStorage.getItem('userId')) { window.location.href = '/login.html'; }
 <!-- pixi-live2d-display -->
 <script src="/lib/pixi-live2d-display.min.js"></script>
 <!-- 主逻辑 -->
+<script src="/js/chat-request.js"></script>
 <script src="/js/main.js"></script>
 </body>
 </html>

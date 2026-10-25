@@ -26,3 +26,7 @@
 项目中文名为“旅游 AI 数字人”，GitHub 仓库名为 tourism-ai-avatar，本地集中目录为 D:/Code/旅游AI数字人，正式仓库为其下 tourism-ai-avatar。说明、入组手册、界面标题与团队任务采用统一名称，角色方案使用通用称呼。模型供应商的真实接口地址、环境变量与模型 ID 属于连接配置，保持有效值。
 
 位置：[README.md:L1](../README.md#L1)、[local_workspace.md:L1](./local_workspace.md#L1)、[index.html:L6](../src/main/resources/static/index.html#L6)。验证：文档链接、Maven 构建、页面与接口检查。
+
+## REQ-031 聊天发送、超时处理与重试（GitHub #6）
+
+单请求、30秒总超时、取消/关闭隔离迟到回复、显式重试与草稿保护，详见 [chat_reliability.md:L1](./chat_reliability.md#L1)。不修改后端协议，不依赖未合并的 #15。

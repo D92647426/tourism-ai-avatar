@@ -15,3 +15,7 @@
 | Android | [MainActivity.kt:L1](../android/app/src/main/java/com/guide/lingshan/MainActivity.kt#L1) |
 | 启动接口检查 | [smoke_teacher_project.py:L1](../scripts/smoke_teacher_project.py#L1) |
 | GitHub 自动检查 | [checks.yml:L1](../.github/workflows/checks.yml#L1) |
+
+## 聊天请求控制（REQ-031）
+
+新增 [chat-request.js:L7](../src/main/resources/static/js/chat-request.js#L7) 的 create 工厂，返回 send、retry、cancel、isPending、getState；网络与计时器可注入。页面适配与行为说明见 [chat_reliability.md:L1](./chat_reliability.md#L1)。
