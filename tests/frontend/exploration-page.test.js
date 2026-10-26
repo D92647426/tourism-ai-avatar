@@ -62,7 +62,8 @@ test('page saves a real observation once, safely renders text, restores and expo
 });
 test('page import previews before activation, rejects invalid files and restores the previous pack journal',async()=>{
     const p=fixture();await mount(p.win);
-    p.nodes.get('exploreObservation').value='我看到双手的不同之处';await p.nodes.get('exploreForm').fire('submit');
+    p.nodes.get('exploreObservation').value='  我看到双手的不同之处  ';await p.nodes.get('exploreForm').fire('submit');
+    assert.equal(p.nodes.get('exploreObservation').value,'我看到双手的不同之处');
     const file=p.nodes.get('exploreImportFile');
     file.files=[{size:20,text:async()=>'{bad'}];await file.fire('change');
     assert.match(p.nodes.get('explorePackTitle').textContent,/灵山/);
@@ -102,6 +103,11 @@ test('storage failures leave a working temporary notebook and a visible warning'
     const p=fixture(disk);await mount(p.win);
     p.nodes.get('exploreObservation').value='我记录了一段自己的观察';await p.nodes.get('exploreForm').fire('submit');
     assert.equal(p.nodes.get('exploreEntries').children.length,1);assert.match(p.nodes.get('exploreStatus').textContent,/无法在刷新后保留/);
+    const file=p.nodes.get('exploreImportFile');
+    file.files=[{size:2000,text:async()=>JSON.stringify(campus)}];await file.fire('change');await p.nodes.get('exploreUsePack').fire('click');
+    file.files=[{size:2000,text:async()=>JSON.stringify(pack)}];await file.fire('change');await p.nodes.get('exploreUsePack').fire('click');
+    assert.equal(p.nodes.get('exploreEntries').children.length,1);
+    assert.match(p.nodes.get('exploreStatus').textContent,/无法在刷新后保留/);
 });
 
 test('valid task IDs matching Object prototype names do not create phantom records',async()=>{

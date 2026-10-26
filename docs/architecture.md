@@ -17,6 +17,8 @@
 | 网页 | 随 Java 应用提供静态页面 | [index.html:L1](../src/main/resources/static/index.html#L1) |
 | Android | WebView 与语音桥接 | [MainActivity.kt:L1](../android/app/src/main/java/com/guide/lingshan/MainActivity.kt#L1) |
 
-当前使用 JSON 文件，没有数据库或向量模型。账号与后台权限仍是演示实现。创意玩法和精修角色尚未落地，Android 构建尚未验收。
+当前使用 JSON 文件，没有数据库或向量模型。账号与后台权限仍是演示实现。观察式导览已新增首版，精修角色尚未落地，Android 构建尚未验收。
 
 REQ-031 在浏览器中集中维护聊天请求生命周期，单请求、取消、30秒总超时与迟到回调隔离；详见 [chat_reliability.md:L1](./chat_reliability.md#L1)。后端服务与数据格式保持原有契约。
+
+REQ-032 在浏览器中新增纯规则与页面适配边界，包校验、记录、关键词对照、草稿和导出无需后端新接口；本机存储按用户和内容版本隔离。见 [exploration_guide.md:L1](./exploration_guide.md#L1)。

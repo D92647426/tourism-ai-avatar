@@ -15,7 +15,7 @@
 | P1 | 用整句 contains 检索，最多取前三条。[KnowledgeService.java:L186](../src/main/java/com/guide/service/KnowledgeService.java#L186) | 先做景点实体、别名和关键词检索，再按需要增加语义检索；返回资料来源和更新日期，无依据时明确说明 |
 | P1 | 路线是按兴趣选固定列表。[ChatService.java:L325](../src/main/java/com/guide/service/ChatService.java#L325) | 首版用人工校验的步行连接、时长、停留时间和台阶标签，支持时长/行动条件筛选，说明取舍；未接地图时不称实时导航 |
 | P1 | 满意度无数据时返回 95，其他情况按问句正面情感比例计算；访客指标按问答日志条数计算。[AnalyticsService.java:L208](../src/main/java/com/guide/service/AnalyticsService.java#L208)、[AnalyticsService.java:L216](../src/main/java/com/guide/service/AnalyticsService.java#L216) | 分开显示问答次数、独立会话数、明确点赞率与样本数；无数据用空状态；词典分析只能标作问句情绪估计 |
-| P2 | 口型随机开合，时长按字数估算，先于实际语音启动。[main.js:L315](../src/main/resources/static/js/main.js#L315)、[main.js:L372](../src/main/resources/static/js/main.js#L372) | 先统一待机/聆听/思考/播报/错误状态，绑定播报开始与结束，再在有可访问音频时做振幅驱动；没有声音时不假装播报 |
+| P2 | 口型随机开合，时长按字数估算，先于实际语音启动。[main.js:L328](../src/main/resources/static/js/main.js#L328)、[main.js:L385](../src/main/resources/static/js/main.js#L385) | 先统一待机/聆听/思考/播报/错误状态，绑定播报开始与结束，再在有可访问音频时做振幅驱动；没有声音时不假装播报 |
 | P2 | 首页主流程是景点列表加聊天浮层。[index.html:L27](../src/main/resources/static/index.html#L27)、[index.html:L104](../src/main/resources/static/index.html#L104) | 首页展示开始探索、当前站、任务和旅程；景点详情可一键“问她这个景点”，传入明确景点上下文 |
 
 本地复核：
@@ -67,3 +67,7 @@
 ## 课设证据
 
 保留继承功能与新增功能对照、原版/新版任务对比、三位成员的有效 PR、少量真实试用反馈。可比较完成任务时间、追问正确关联率、带依据回答比例和内容包导入结果；这些是建议采集的指标，当前没有实测成绩。
+
+## 2026-10-26 进展
+
+基于用户继续发挥创意的授权，已实现观察式导览与可复用内容包首版，含三站任务、个人记录、资料区分、聊天草稿和导出；实施不等于三人已共同定案。见 [exploration_guide.md:L1](./exploration_guide.md#L1)。原评估保留为当时的基线记录。

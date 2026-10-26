@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>旅游 AI 数字人</title>
 <link rel="stylesheet" href="/css/style.css">
-<link rel="stylesheet" href="/css/exploration.css">
+<link rel="stylesheet" href="/css/exploration.css?v=explore-1">
 </head>
-<body>
+<body class="exploration-page">
 <!-- 登录检查 -->
 <script>
 if (!localStorage.getItem('userId')) { window.location.href = '/login.html'; }
@@ -44,7 +44,7 @@ if (!localStorage.getItem('userId')) { window.location.href = '/login.html'; }
             <div class="explore-editor-footer"><small>4–1200 字；修改后保存会更新本站记录</small><button class="explore-primary" type="submit">保存我的发现</button></div>
           </form>
           <div id="exploreFeedback" class="explore-feedback" hidden><h4>用资料对照你的讲解</h4><p id="exploreComparison"></p><p class="explore-disclaimer">关键词只表示提及，不判断讲解是否正确。</p></div>
-          <details class="explore-reference"><summary>查看资料线索与来源</summary><p id="exploreReference"></p><a id="exploreSource" target="_blank" rel="noopener noreferrer"></a><p id="exploreSourceStatus"></p></details>
+          <div class="explore-reference"><details><summary>查看资料线索</summary><p id="exploreReference"></p></details><a id="exploreSource" target="_blank" rel="noopener noreferrer"></a><p id="exploreSourceStatus"></p></div>
           <button id="exploreAsk" type="button" class="explore-secondary">带着这份发现问导游</button><small class="explore-ask-note">先放入可编辑草稿，由你确认后发送</small>
         </article>
       </div>
@@ -133,7 +133,7 @@ if (!localStorage.getItem('userId')) { window.location.href = '/login.html'; }
     <div class="chat-input-area">
       <button class="voice-btn" id="voiceBtn">🎤</button>
       <button class="stop-btn" id="stopSpeakBtn" title="停止说话">⏹</button>
-      <input type="text" class="chat-input" id="chatInput" placeholder="输入您的问题...">
+      <textarea rows="2" class="chat-input" id="chatInput" aria-label="给 AI 导游的问题" placeholder="输入您的问题；Shift+Enter 换行"></textarea>
       <button class="chat-send-btn" id="chatSendBtn">发送</button>
     </div>
     <div class="chat-request-tools">
@@ -155,8 +155,8 @@ if (!localStorage.getItem('userId')) { window.location.href = '/login.html'; }
 <script src="/lib/pixi-live2d-display.min.js"></script>
 <!-- 主逻辑 -->
 <script src="/js/chat-request.js"></script>
-<script src="/js/main.js"></script>
-<script src="/js/exploration-core.js"></script>
-<script src="/js/exploration.js"></script>
+<script src="/js/main.js?v=explore-1"></script>
+<script src="/js/exploration-core.js?v=explore-1"></script>
+<script src="/js/exploration.js?v=explore-1"></script>
 </body>
 </html>

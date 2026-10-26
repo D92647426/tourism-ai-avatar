@@ -65,4 +65,11 @@
   .explore-editor-footer .explore-primary { width:100%; }
   .explore-journal .explore-section-heading { align-items:flex-start; }
 }
+/* Keep the character beside the notebook on tablets/phones instead of over its text. */
+@media(max-width:1024px) {
+  .exploration-page .main-container { margin:0 auto; }
+  .exploration-page .live2d-stage { width:90px; height:120px; right:10px; bottom:88px; animation:none; }
+  .exploration-page .live2d-label,.exploration-page .live2d-hint { display:none; }
+}
+.exploration-page .chat-input { min-width:0; resize:vertical; min-height:44px; max-height:120px; line-height:1.5; font-family:inherit; }
 @media(prefers-reduced-motion:reduce) { .exploration * { animation:none !important; transition:none !important; scroll-behavior:auto !important; } }

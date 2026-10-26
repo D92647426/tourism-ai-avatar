@@ -130,13 +130,7 @@
 
         PIXI.live2d.Live2DModel.from('/models/haru/haru.model.json').then(function(model) {
             app.stage.addChild(model);
-            // 缩放：基准 0.16，按画布等比调整，但不低于 0.10
-            var ratio = Math.min(cw / 380, ch / 500);
-            var s = Math.max(0.16 * ratio, 0.10);
-            model.scale.set(s * 12 / 16, s);
-            model.anchor.set(0.5, 0.12);
-            model.x = cw / 2;
-            model.y = ch * (isMobile ? 0.48 : 0.44);
+            fitLive2D(app, model);
             live2dReady = true;
             window._live2dModel = model;
             window._live2dApp = app;
@@ -164,6 +158,25 @@
             drawFallback();
         });
     }
+
+    /** REQ-032: fit the existing model to its actual stage, including a compact phone dock.
+     * Inputs: current PIXI app/model; output: no value; does not reload assets.
+     * Browser/PIXI errors follow the existing model initialization error path.
+     * Change scale/position here; see docs/exploration_guide.md, page verification.
+     */
+    function fitLive2D(app, model) {
+        var rect = live2dStage.getBoundingClientRect();
+        var width = Math.max(1, Math.floor(rect.width)), height = Math.max(1, Math.floor(rect.height));
+        app.renderer.resize(width, height);
+        var scale = Math.max(0.16 * Math.min(width / 380, height / 500), 0.025);
+        model.scale.set(scale * 12 / 16, scale);
+        model.anchor.set(0.5, 0.12);
+        model.x = width / 2;
+        model.y = height * (width < 200 ? 0.48 : 0.44);
+    }
+    if (typeof window.addEventListener === 'function') window.addEventListener('resize', function() {
+        if (live2dReady && window._live2dApp && window._live2dModel) fitLive2D(window._live2dApp, window._live2dModel);
+    });
 
     function drawFallback(cw, ch) {
         var c = live2dCanvas, ctx = c.getContext('2d');

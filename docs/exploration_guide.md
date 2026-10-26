@@ -55,9 +55,19 @@
 | 边界 | 位置 |
 |---|---|
 | 校验、记录、恢复、对照、草稿、导出 | [exploration-core.js:L1](../src/main/resources/static/js/exploration-core.js#L1) |
-| DOM、存储、导入预览、下载 | [exploration.js:L43](../src/main/resources/static/js/exploration.js#L43) |
-| 聊天草稿交接 | [main.js:L261](../src/main/resources/static/js/main.js#L261) |
+| DOM、存储、导入预览、下载 | [exploration.js:L51](../src/main/resources/static/js/exploration.js#L51) |
+| 聊天草稿交接 | [main.js:L274](../src/main/resources/static/js/main.js#L274) |
 | 页面/样式 | [index.html:L28](../src/main/resources/static/index.html#L28)、[exploration.css:L1](../src/main/resources/static/css/exploration.css#L1) |
 | 测试 | [exploration-core.test.js:L1](../tests/frontend/exploration-core.test.js#L1)、[exploration-page.test.js:L1](../tests/frontend/exploration-page.test.js#L1)、[chat-main.test.js:L1](../tests/frontend/chat-main.test.js#L1) |
 
 执行 `node --test tests/frontend/*.test.js`、`mvn verify`、`python scripts/check_doc_links.py`、`python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar`。导入失败先看具体字段提示；存储失败先下载手册，不要求清空数据排错。
+
+## 本轮验证记录（2026-10-26）
+
+前端共47项检查通过。浏览器在1440×1100与390×844验证：保存一条观察、准备含换行的聊天草稿；导入校园包先预览再确认，重新导入灵山包恢复1条记录。窄屏数字人缩为角落角色，窗口变化后重新适配画布；长草稿使用可编辑多行框。
+
+![桌面观察任务](./screenshots/exploration-desktop.png)
+
+![窄屏观察与资料对照](./screenshots/exploration-mobile.png)
+
+规则实现由 DeepSeek Harness 按 Codex 已定接口完成，Codex复查、反馈修正日期验证并完成页面与集成验证。评审发现的来源隐藏、空白误判未保存、存储失败切包丢记录均已修复并回归。真实模型、Android真机与现场观察未验收。

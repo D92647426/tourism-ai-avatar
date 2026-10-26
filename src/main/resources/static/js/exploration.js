@@ -16,6 +16,7 @@
     function createStore(storage, userId, onWarning) {
         if (typeof userId !== 'string' || !userId.trim()) throw new Error('请先登录后记录旅程。');
         var user = encodeURIComponent(userId);
+        var journalCache = Object.create(null);
         function warn() { if (onWarning) onWarning('本机存储不可用或记录损坏，本次修改可能无法在刷新后保留。请下载旅程手册。'); }
         function read(key) {
             try { var value = storage.getItem(key); return value ? JSON.parse(value) : null; }
@@ -29,8 +30,15 @@
         return {
             current: function () { return read('tourism-explore:v1:' + user); },
             saveCurrent: function (value) { return write('tourism-explore:v1:' + user, value); },
-            journal: function (pack) { return core.restore(pack, read(journalKey(pack))); },
-            saveJournal: function (pack, journal) { return write(journalKey(pack), core.restore(pack, journal)); }
+            journal: function (pack) {
+                var key = journalKey(pack);
+                return core.restore(pack, Object.prototype.hasOwnProperty.call(journalCache, key) ? journalCache[key] : read(key));
+            },
+            saveJournal: function (pack, journal) {
+                var key = journalKey(pack), clean = core.restore(pack, journal);
+                journalCache[key] = clean;
+                return write(key, clean);
+            }
         };
     }
 
@@ -142,7 +150,7 @@
             event.preventDefault();
             try {
                 journal = core.record(pack, journal, selectedId, { text: input.value, mode: mode.value }, new Date().toISOString());
-                draftByTask[selectedId] = input.value; store.saveJournal(pack, journal); keepCurrent();
+                draftByTask[selectedId] = entryFor(selectedId).text; store.saveJournal(pack, journal); keepCurrent();
                 renderTask(); renderStations(); renderJournal(); status('发现已记录。可对照资料，或带着它继续问导游。');
             } catch (error) { status(error.message, true); }
         });
@@ -175,13 +183,13 @@
             if (!pendingPack) return;
             draftByTask[selectedId] = input.value;
             var unsaved = pack.tasks.some(function (item) {
-                return Object.prototype.hasOwnProperty.call(draftByTask, item.id) && draftByTask[item.id].trim() && draftByTask[item.id] !== (entryFor(item.id) ? entryFor(item.id).text : '');
+                return Object.prototype.hasOwnProperty.call(draftByTask, item.id) && draftByTask[item.id].trim() && draftByTask[item.id].trim() !== (entryFor(item.id) ? entryFor(item.id).text : '');
             });
             if (unsaved) {
                 status('有站点保留了未保存的讲解。请先保存，或清空后再更换内容包。', true); return;
             }
             activate(pendingPack); pendingPack = null; importGeneration++; keepCurrent();
-            byId('exploreImportPreview').hidden = true; byId('exploreImportFile').value = ''; status('已换用新内容包。原包已保存的记录仍保留在本机。');
+            byId('exploreImportPreview').hidden = true; byId('exploreImportFile').value = ''; status('已换用新内容包。重新导入原包可恢复记录。');
         });
     }
     return { createStore: createStore, mount: mount };
