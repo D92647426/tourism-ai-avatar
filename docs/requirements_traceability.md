@@ -1,5 +1,9 @@
 # 当前基线需求追踪
 
+## REQ-034 后台统计口径纠正（GitHub #13）
+
+实际问答次数、近7天上海时区窗口、有效情绪样本与正向问句占比；无样本null、真实0%保留，未采集的访客/满意度/耗时不输出假数值。Dashboard和报告按单一时刻与日志副本聚合，页面失败不冒充空数据，空图表不造样本。设计与迁移见 [analytics_accuracy.md:L1](./analytics_accuracy.md#L1)。
+
 ## REQ-026 三人协作
 
 仓库保留独立 Git 历史、Issue/PR 模板、个人身份与评审流程。见 [CONTRIBUTING.md:L1](../CONTRIBUTING.md#L1)、[team_join_guide.md:L1](./team_join_guide.md#L1)。

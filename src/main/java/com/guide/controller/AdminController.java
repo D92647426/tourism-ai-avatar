@@ -91,31 +91,31 @@ public class AdminController {
 
     // ========== 数据大屏 ==========
 
+    /**
+     * 数据大屏快照（API-034）。
+     *
+     * <p>需求：REQ-034；文档：docs/analytics_accuracy.md。由 AnalyticsService 在单次调用内取一个时刻和
+     * 一份日志副本聚合，避免跨午夜/并发新增导致分子分母不一致；旧访客/满意度字段恒为 null。
+     * 保留原有 flush 行为（统计后落盘当前日志副本）。</p>
+     */
     @GetMapping("/dashboard")
     public ResponseEntity<DashboardData> getDashboard() {
-        DashboardData data = new DashboardData();
-        data.setTodayVisitors(analyticsService.getTodayVisitorCount());
-        data.setWeekVisitors(analyticsService.getWeekVisitorCount());
-        data.setSatisfactionRate(analyticsService.getSatisfactionRate());
-        data.setTotalKnowledgeItems(knowledgeService.getCount());
-        data.setHotQuestions(analyticsService.getHotQuestions(5));
-        data.setSentimentTrend(analyticsService.getSentimentTrend());
-        data.setSpotRanking(analyticsService.getTopicDistribution());
-        data.setHourlyDistribution(analyticsService.getHourlyDistribution());
-        data.setAvgResponseTime(0);
-
+        DashboardData data = analyticsService.getDashboardData(knowledgeService.getCount());
         analyticsService.flush();
         return ResponseEntity.ok(data);
     }
 
     // ========== 感受度报告 ==========
 
+    /**
+     * 问句情绪统计报告（API-034）。
+     *
+     * <p>需求：REQ-034；文档：docs/analytics_accuracy.md。返回四类情绪趋势、正向问句占比（规则估计）、
+     * 有效样本数、窗口起止日期、时区与 estimated 标记；旧 satisfactionRate 为 null。</p>
+     */
     @GetMapping("/reports/sentiment")
-    public ResponseEntity<?> getSentimentReport() {
-        Map<String, Object> result = new HashMap<>();
-        result.put("trend", analyticsService.getSentimentTrend());
-        result.put("satisfactionRate", analyticsService.getSatisfactionRate());
-        return ResponseEntity.ok(result);
+    public ResponseEntity<SentimentReport> getSentimentReport() {
+        return ResponseEntity.ok(analyticsService.getSentimentReport());
     }
 
     @GetMapping("/reports/topics")

@@ -47,9 +47,11 @@ python scripts/check_doc_links.py
 python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar
 ```
 
-Python 只用于可选检查脚本与 CI，网页项目运行不依赖 Python、Node.js 或 Docker。当前源码没有业务单元测试；自动检查验证 Maven 构建、文档链接和本地启动后的页面/接口/模型资源。
+Python 只用于可选检查脚本与 CI，网页项目运行不依赖 Python、Node.js 或 Docker。本组已新增统计回归测试；原导入基线没有业务单元测试。自动检查验证 Maven 构建、文档链接和本地启动后的页面/接口/模型资源。
 
 ## 当前边界
+
+后台统计已按 #13 更正：问答次数不再称访客量，问句正向占比只作规则估计并显示样本，空数据不再显示95%满意度；未采集的真实评价/独立访客/响应耗时为null。所有图表统一含今天的近7天、上海时区。新字段与旧客户端迁移见 [统计口径](docs/analytics_accuracy.md#L1)。
 
 知识检索是字符串匹配，推荐路线由预设规则生成，语音主要使用浏览器或 Android 系统能力。Haru 是示例角色，最终角色素材与课设创意尚未定案。Android APK 本次未验证构建。
 

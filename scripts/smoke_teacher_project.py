@@ -72,16 +72,29 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                 assert b"live2d" in home.lower(), "Homepage does not reference Live2D."
                 spots = json.loads(fetch(base + "/api/spots"))
                 assert isinstance(spots, list) and spots, "No scenic spots returned."
+                # REQ-034: empty logs are not a 95% rating or fabricated visitors.
+                dashboard = json.loads(fetch(base + "/api/admin/dashboard"))
+                assert dashboard["todayInteractions"] == dashboard["last7DaysInteractions"] == 0
+                assert dashboard["positiveQuestionRate"] is None and dashboard["sentimentSampleCount"] == 0
+                for field in ("todayVisitors", "weekVisitors", "satisfactionRate", "avgResponseTime"):
+                    assert dashboard[field] is None, f"Uncollected metric must be null: {field}"
+                assert dashboard["timezone"] == "Asia/Shanghai" and dashboard["estimated"] is True
                 chat = json.loads(fetch(base + "/api/chat", {"message": "hello"}))
                 assert isinstance(chat.get("reply"), str) and chat["reply"].strip()
                 assert chat.get("fallback") is True, "Smoke test must use offline fallback."
+                dashboard = json.loads(fetch(base + "/api/admin/dashboard"))
+                assert dashboard["todayInteractions"] == dashboard["last7DaysInteractions"] == 1
+                assert dashboard["positiveQuestionRate"] == 0 and dashboard["sentimentSampleCount"] == 1
+                report = json.loads(fetch(base + "/api/admin/reports/sentiment"))
+                assert report["positiveQuestionRate"] == 0 and report["sentimentSampleCount"] == 1
+                assert report["periodStart"] == dashboard["periodStart"] and report["periodEnd"] == dashboard["periodEnd"]
                 model_url = base + "/models/haru/haru.model.json"
                 model = json.loads(fetch(model_url))
                 assert model.get("model"), "Live2D model definition is missing."
                 assert fetch(urllib.parse.urljoin(model_url, model["model"]))
                 assert fetch(base + "/js/live2d-helper.js")
                 return {"status": "passed", "spot_count": len(spots),
-                        "checks": ["homepage", "spots", "offline_chat", "live2d_definition",
+                        "checks": ["homepage", "spots", "empty_analytics", "zero_positive_question_rate", "offline_chat", "live2d_definition",
                                    "live2d_model_file", "live2d_helper"]}
             except Exception:
                 log.flush()

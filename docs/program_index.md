@@ -1,5 +1,14 @@
 # 当前程序索引
 
+## 后台统计（REQ-034）
+
+| 功能 | 位置 |
+|---|---|
+| 单时刻/日志副本、上海七日窗口、真实计数与情绪规则 | [AnalyticsService.java:L1](../src/main/java/com/guide/service/AnalyticsService.java#L1) |
+| 仪表盘/报告契约 | [DashboardData.java:L1](../src/main/java/com/guide/model/DashboardData.java#L1)、[SentimentReport.java:L1](../src/main/java/com/guide/model/SentimentReport.java#L1) |
+| 数字格式、0/null区分、旧口径隔离 | [admin-stats.js:L1](../src/main/resources/static/js/admin-stats.js#L1) |
+| 页面刷新/图表空态/失败状态与报告快照 | [admin.js:L1](../src/main/resources/static/js/admin.js#L1)、[admin.html:L1](../src/main/resources/static/admin.html#L1) |
+
 | 功能 | 位置 |
 |---|---|
 | Maven 构建 | [pom.xml:L1](../pom.xml#L1) |

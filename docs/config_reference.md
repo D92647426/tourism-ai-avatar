@@ -1,5 +1,11 @@
 # Java 项目配置
 
+## REQ-034 统计的日期口径
+
+统计时区固定Asia/Shanghai，窗口固定含今天的七个自然日（起点today-6日00:00、截止本次统计时刻）。这是代码契约，不新增配置字段或环境变量。默认使用系统时钟，测试可注入固定Clock；改变JVM默认时区不改变统计分日。修改窗口/时区须同时改页面说明、API文档和日期边界测试。
+
+位置与验证：[AnalyticsService.java:L1](../src/main/java/com/guide/service/AnalyticsService.java#L1)、[AnalyticsServiceTest.java:L1](../src/test/java/com/guide/service/AnalyticsServiceTest.java#L1)。仍使用data.interactions-file，测试/预览用隔离合成日志，不读取开发者已有历史数据。
+
 配置入口：[application.yml:L1](../src/main/resources/application.yml#L1)。
 
 | 字段 | 类型/默认 | 用途与修改影响 |
