@@ -75,13 +75,29 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                 chat = json.loads(fetch(base + "/api/chat", {"message": "hello"}))
                 assert isinstance(chat.get("reply"), str) and chat["reply"].strip()
                 assert chat.get("fallback") is True, "Smoke test must use offline fallback."
+                # REQ-033: task-scoped coaching must work without a real model/key.
+                pack = json.loads(fetch(base + "/exploration/lingshan-demo.json"))
+                context = {"packId": pack["id"], "packVersion": pack["version"],
+                           "task": pack["tasks"][0], "observation": "课堂演示：我注意到两只手的姿态不同，想再看看。", "mode": "demo"}
+                coach = json.loads(fetch(base + "/api/exploration/coach", context))
+                assert coach.get("mode") == "local-coach" and coach.get("fallback") is True
+                assert isinstance(coach.get("reply"), str) and coach["reply"].strip()
+                assert isinstance(coach.get("followUp"), str) and 0 < len(coach["followUp"]) <= 160
+                assert coach.get("source") == context["task"]["source"]
+                assert coach.get("reference") == context["task"]["reference"]
+                try:
+                    fetch(base + "/api/exploration/coach", {**context, "observation": "a"})
+                    raise AssertionError("Short observations must fail validation.")
+                except urllib.error.HTTPError as error:
+                    assert error.code == 400
+                    assert json.loads(error.read()).get("code") == "INVALID_CONTEXT"
                 model_url = base + "/models/haru/haru.model.json"
                 model = json.loads(fetch(model_url))
                 assert model.get("model"), "Live2D model definition is missing."
                 assert fetch(urllib.parse.urljoin(model_url, model["model"]))
                 assert fetch(base + "/js/live2d-helper.js")
                 return {"status": "passed", "spot_count": len(spots),
-                        "checks": ["homepage", "spots", "offline_chat", "live2d_definition",
+                        "checks": ["homepage", "spots", "offline_chat", "offline_coach", "coach_validation", "live2d_definition",
                                    "live2d_model_file", "live2d_helper"]}
             except Exception:
                 log.flush()

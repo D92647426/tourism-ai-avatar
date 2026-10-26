@@ -54,6 +54,14 @@
         var pack, journal, selectedId, pendingPack = null, importGeneration = 0;
         var storageWarning = '', store, draftByTask = Object.create(null);
         var input = byId('exploreObservation'), mode = byId('exploreMode');
+        var coach = null;
+        // REQ-033: feedback belongs only to the currently visible observation.
+        function invalidateCoach() {
+            var hadFeedback = !byId('exploreCoachResult').hidden || (coach && coach.isPending());
+            if (coach) coach.cancel();
+            byId('exploreCoachResult').hidden = true;
+            byId('exploreCoachStatus').textContent = hadFeedback ? '观察已变化，请重新请求追问。' : '';
+        }
         function status(message, error) {
             byId('exploreStatus').textContent = (message || '') + (storageWarning ? ' ' + storageWarning : '');
             byId('exploreStatus').dataset.error = error || storageWarning ? 'true' : 'false';
@@ -74,6 +82,7 @@
                 button.appendChild(text('strong', (index + 1) + '. ' + item.spotName));
                 button.appendChild(text('span', entryFor(item.id) ? '已记录' : '等待你的发现'));
                 button.addEventListener('click', function () {
+                    invalidateCoach();
                     draftByTask[selectedId] = input.value; selectedId = item.id; renderTask(); renderStations(); keepCurrent();
                 });
                 nav.appendChild(button);
@@ -110,6 +119,7 @@
             byId('exploreExportJournal').disabled = count === 0;
         }
         function activate(nextPack) {
+            invalidateCoach();
             pack = nextPack; journal = store.journal(pack); selectedId = pack.tasks[0].id; draftByTask = Object.create(null);
             byId('explorePackTitle').textContent = pack.title;
             byId('exploreLicense').textContent = '内容作者：' + pack.author + '。' + pack.licenseNotice;
@@ -145,7 +155,48 @@
             status('选一站开始。可以在教室演示，也可以留待现场观察。');
         } catch (error) { status(error.message || '观察手册暂时无法打开，请刷新后重试。', true); return; }
 
-        mode.addEventListener('change', function () { keepCurrent(); status(mode.value === 'demo' ? '之后保存的记录标记为课堂演示。' : '之后保存的记录标记为现场个人记录，不验证到访。'); });
+        if (win.GuideCoachRequest) {
+            coach = win.GuideCoachRequest.create({
+                setTimeout: win.setTimeout.bind(win), clearTimeout: win.clearTimeout.bind(win),
+                transport: function (body, signal) {
+                    var transport = win.AuthGuard ? win.AuthGuard.apiFetch : win.fetch.bind(win);
+                    return transport('/api/exploration/coach', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body, signal: signal });
+                },
+                onState: function (state) {
+                    var busy = state.status === 'pending';
+                    byId('exploreCoachAsk').disabled = busy;
+                    byId('exploreCoachCancel').hidden = !busy;
+                    byId('exploreCoachResult').setAttribute('aria-busy', busy ? 'true' : 'false');
+                    if (busy) byId('exploreCoachResult').hidden = true;
+                    var messages = { timeout: '等待超过20秒，请稍后重试。', cancelled: '已取消等待，观察内容仍保留。', http: '搭档暂时无法回答，请稍后重试或检查内容包。', network: '网络请求失败，请检查连接后重试。', 'invalid-response': '收到的建议格式或来源不匹配，请重试。' };
+                    byId('exploreCoachStatus').textContent = busy ? '正在根据这份观察准备追问…' : messages[state.reason] || '';
+                },
+                onSuccess: function (data) {
+                    byId('exploreCoachMode').textContent = data.mode === 'model-coach' ? '模型建议，尚未核验' : '本地观察提示';
+                    byId('exploreCoachReply').textContent = data.reply;
+                    byId('exploreCoachQuestion').textContent = data.followUp;
+                    byId('exploreCoachReference').textContent = data.reference;
+                    byId('exploreCoachSource').textContent = data.source.title;
+                    byId('exploreCoachSource').href = data.source.url;
+                    byId('exploreCoachNotice').textContent = data.notice + (data.source.status === 'inherited-unverified' ? ' 老师项目资料，待官方或实地核对。' : ' 原创演示资料，不代表真实景区事实。');
+                    byId('exploreCoachResult').hidden = false;
+                    byId('exploreCoachStatus').textContent = '建议基于这次请求时的草稿；修改观察后请重新请求。';
+                }
+            });
+            byId('exploreCoachAsk').addEventListener('click', function () {
+                if (coach.isPending()) return;
+                try {
+                    var scratch = core.record(pack, journal, selectedId, { text: input.value, mode: mode.value }, new Date().toISOString());
+                    coach.send({ packId: pack.id, packVersion: pack.version, task: task(), observation: scratch.entries[selectedId].text, mode: mode.value });
+                } catch (error) { byId('exploreCoachStatus').textContent = error.message; }
+            });
+            byId('exploreCoachCancel').addEventListener('click', function () { coach.cancel(); });
+        } else {
+            byId('exploreCoachAsk').disabled = true;
+            byId('exploreCoachStatus').textContent = '搭档组件未加载，请刷新页面后重试。';
+        }
+        input.addEventListener('input', invalidateCoach);
+        mode.addEventListener('change', function () { invalidateCoach(); keepCurrent(); status(mode.value === 'demo' ? '之后保存的记录标记为课堂演示。' : '之后保存的记录标记为现场个人记录，不验证到访。'); });
         byId('exploreForm').addEventListener('submit', function (event) {
             event.preventDefault();
             try {

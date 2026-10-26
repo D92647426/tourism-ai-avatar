@@ -29,6 +29,13 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
+        <!-- REQ-033: Java 测试基座（JUnit 5 / MockMvc / MockRestServiceServer / Mockito）。
+             仅 test 作用域，与认证分支 #15 使用同一依赖，便于后续合并。 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

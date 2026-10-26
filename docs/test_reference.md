@@ -1,5 +1,13 @@
 # 当前检查与验证
 
+## TEST-033 讲解搭档与共用供应商边界
+
+对应REQ-033。Java执行 `mvn test` 或 `mvn verify`；本机联网依赖解析受限时，依赖已缓存可用 `mvn -o verify`。规则/类型/来源/失败降级：[ExplorationCoachServiceTest.java:L1](../src/test/java/com/guide/service/ExplorationCoachServiceTest.java#L1)；HTTP/畸形JSON：[ExplorationCoachControllerTest.java:L1](../src/test/java/com/guide/controller/ExplorationCoachControllerTest.java#L1)；假供应商与时限：[AiCompletionClientTest.java:L1](../src/test/java/com/guide/service/AiCompletionClientTest.java#L1)；旧chat回归：[ChatServiceTest.java:L1](../src/test/java/com/guide/service/ChatServiceTest.java#L1)、[ChatControllerTest.java:L1](../src/test/java/com/guide/controller/ChatControllerTest.java#L1)。测试函数名直接说明各验收场景，预期无真实网络调用且全通过。
+
+前端执行 `node --test tests/frontend/*.test.js`。快照、模式/来源一致性、超时/取消/迟到JSON、网络恢复见 [coach-request.test.js:L1](../tests/frontend/coach-request.test.js#L1)；页面编辑/模式/站点/包切换失效、草稿保留、安全渲染见 [exploration-page.test.js:L1](../tests/frontend/exploration-page.test.js#L1)。预期新旧用例全部通过，真实模型与Android不在该证据内。
+
+HTTP构建产物检查同 [smoke_teacher_project.py:L1](../scripts/smoke_teacher_project.py#L1)，新增 offline_coach 与 coach_validation 项。失败按API400提示/前端用例名检查当前包格式或请求状态，不用真实Key排错。
+
 ## TEST-032 观察式导览
 
 对应 REQ-032。执行 `node --test tests/frontend/*.test.js`。规则与异常包见 [exploration-core.test.js:L1](../tests/frontend/exploration-core.test.js#L1)，存储隔离、导入预览、恢复、未保存草稿与安全渲染见 [exploration-page.test.js:L1](../tests/frontend/exploration-page.test.js#L1)，聊天交接保护见 [chat-main.test.js:L1](../tests/frontend/chat-main.test.js#L1)。预期所有用例通过，原聊天测试仍通过；具体数量以执行结果为准。

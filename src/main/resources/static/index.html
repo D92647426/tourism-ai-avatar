@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>旅游 AI 数字人</title>
 <link rel="stylesheet" href="/css/style.css">
-<link rel="stylesheet" href="/css/exploration.css?v=explore-1">
+<link rel="stylesheet" href="/css/exploration.css?v=coach-1">
 </head>
 <body class="exploration-page">
 <!-- 登录检查 -->
@@ -44,6 +44,12 @@ if (!localStorage.getItem('userId')) { window.location.href = '/login.html'; }
             <div class="explore-editor-footer"><small>4–1200 字；修改后保存会更新本站记录</small><button class="explore-primary" type="submit">保存我的发现</button></div>
           </form>
           <div id="exploreFeedback" class="explore-feedback" hidden><h4>用资料对照你的讲解</h4><p id="exploreComparison"></p><p class="explore-disclaimer">关键词只表示提及，不判断讲解是否正确。</p></div>
+          <section class="explore-coach" aria-labelledby="exploreCoachHeading">
+            <h4 id="exploreCoachHeading">让导游做你的讲解搭档</h4><p>请她根据这段观察追问一个细节。反馈基于当前草稿，不会自动保存或播报。</p>
+            <div class="explore-coach-actions"><button id="exploreCoachAsk" type="button" class="explore-primary">请导游追问一个细节</button><button id="exploreCoachCancel" type="button" class="explore-secondary" hidden>取消等待</button></div>
+            <p id="exploreCoachStatus" role="status" aria-live="polite"></p>
+            <div id="exploreCoachResult" hidden><span id="exploreCoachMode" class="explore-coach-mode"></span><p id="exploreCoachReply"></p><h5>再观察一次</h5><p id="exploreCoachQuestion" class="explore-coach-question"></p><details><summary>本次参考的资料</summary><p id="exploreCoachReference"></p></details><a id="exploreCoachSource" target="_blank" rel="noopener noreferrer"></a><p id="exploreCoachNotice" class="explore-disclaimer"></p></div>
+          </section>
           <div class="explore-reference"><details><summary>查看资料线索</summary><p id="exploreReference"></p></details><a id="exploreSource" target="_blank" rel="noopener noreferrer"></a><p id="exploreSourceStatus"></p></div>
           <button id="exploreAsk" type="button" class="explore-secondary">带着这份发现问导游</button><small class="explore-ask-note">先放入可编辑草稿，由你确认后发送</small>
         </article>
@@ -157,6 +163,7 @@ if (!localStorage.getItem('userId')) { window.location.href = '/login.html'; }
 <script src="/js/chat-request.js"></script>
 <script src="/js/main.js?v=explore-1"></script>
 <script src="/js/exploration-core.js?v=explore-1"></script>
-<script src="/js/exploration.js?v=explore-1"></script>
+<script src="/js/coach-request.js?v=coach-1"></script>
+<script src="/js/exploration.js?v=coach-1"></script>
 </body>
 </html>

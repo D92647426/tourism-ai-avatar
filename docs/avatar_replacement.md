@@ -5,7 +5,7 @@
 当前游客页面使用 PIXI + pixi-live2d-display，加载 Haru 的 Cubism 2 格式模型。实际加载和口型控制在 [main.js:L108](../src/main/resources/static/js/main.js#L108)，首页并未引用独立的 live2d-helper.js，因此修改游客端时不能只改 helper。
 
 职责分为三部分：
-1. 对话：Java 调用模型或离线规则，见 [ChatService.java:L53](../src/main/java/com/guide/service/ChatService.java#L53)。
+1. 对话：Java 调用模型或离线规则，见 [ChatService.java:L41](../src/main/java/com/guide/service/ChatService.java#L41)。
 2. 声音：Android 原生 TTS 或浏览器 speechSynthesis，见 [main.js:L328](../src/main/resources/static/js/main.js#L328)。
 3. 外观：运行时模型、贴图、表情、动作和物理配置，见 [haru.model.json:L1](../src/main/resources/static/models/haru/haru.model.json#L1)。
 

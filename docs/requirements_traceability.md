@@ -1,5 +1,9 @@
 # 当前基线需求追踪
 
+## REQ-033 当前观察的讲解搭档（GitHub #19）
+
+根据当前任务/草稿提供建议与后续观察问题，展示真实生成方式和本次资料来源，编辑/切站后失效，不判分、不自动保存或播报。抽取旧聊天和搭档共同的供应商调用，限制连接与读取时间、严格检查空响应并明确降级。设计：[exploration_coach_design.md:L1](./exploration_coach_design.md#L1)；API：[api_reference.md:L3](./api_reference.md#L3)；页面请求：[coach-request.js:L1](../src/main/resources/static/js/coach-request.js#L1)。
+
 ## REQ-026 三人协作
 
 仓库保留独立 Git 历史、Issue/PR 模板、个人身份与评审流程。见 [CONTRIBUTING.md:L1](../CONTRIBUTING.md#L1)、[team_join_guide.md:L1](./team_join_guide.md#L1)。

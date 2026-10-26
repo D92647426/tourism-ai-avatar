@@ -1,5 +1,15 @@
 # 当前程序索引
 
+## 讲解搭档（REQ-033）
+
+| 边界 | 位置 |
+|---|---|
+| 共享模型调用、严格响应解析和超时 | [AiCompletionClient.java:L1](../src/main/java/com/guide/service/AiCompletionClient.java#L1) |
+| 任务校验、本地提示、模型建议与来源回填 | [ExplorationCoachService.java:L1](../src/main/java/com/guide/service/ExplorationCoachService.java#L1) |
+| HTTP与400错误映射 | [ExplorationCoachController.java:L1](../src/main/java/com/guide/controller/ExplorationCoachController.java#L1) |
+| 请求快照、20秒等待、引用一致性校验 | [coach-request.js:L1](../src/main/resources/static/js/coach-request.js#L1) |
+| 编辑/切站/切包时清理反馈 | [exploration.js:L1](../src/main/resources/static/js/exploration.js#L1) |
+
 | 功能 | 位置 |
 |---|---|
 | Maven 构建 | [pom.xml:L1](../pom.xml#L1) |

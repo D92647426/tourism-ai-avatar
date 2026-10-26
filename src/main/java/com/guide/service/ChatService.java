@@ -1,17 +1,10 @@
 package com.guide.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.guide.model.ChatResponse;
 import com.guide.model.Spot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
@@ -23,42 +16,37 @@ public class ChatService {
 
     private static final Logger log = LoggerFactory.getLogger(ChatService.class);
 
-    @Value("${ai.api-key:}")
-    private String apiKey;
-
-    @Value("${ai.base-url:https://api.deepseek.com/v1}")
-    private String baseUrl;
-
-    @Value("${ai.model:deepseek-chat}")
-    private String model;
-
     private final SpotService spotService;
     private final KnowledgeService knowledgeService;
     private final AnalyticsService analyticsService;
-    private final RestTemplate restTemplate;
-    private final ObjectMapper objectMapper;
+    private final AiCompletionClient aiCompletionClient;
 
     public ChatService(SpotService spotService, KnowledgeService knowledgeService,
-                       AnalyticsService analyticsService) {
+                       AnalyticsService analyticsService, AiCompletionClient aiCompletionClient) {
         this.spotService = spotService;
         this.knowledgeService = knowledgeService;
         this.analyticsService = analyticsService;
-        this.restTemplate = new RestTemplate();
-        this.objectMapper = new ObjectMapper();
+        this.aiCompletionClient = aiCompletionClient;
     }
 
     /**
-     * 处理对话并返回完整响应
+     * 处理对话并返回完整响应。REQ-033：模型调用改为复用 {@link AiCompletionClient}，
+     * 响应字段、空 Key 降级语义和交互日志行为保持不变。
+     *
+     * @param userMessage 游客输入
+     * @param interest    可选兴趣标签
+     * @return 非空回复；{@code fallback} 表示本次是否走了本地规则
+     * @see com.guide.service.AiCompletionClient
      */
     public ChatResponse chat(String userMessage, String interest) {
         boolean fallback = false;
         String reply;
 
-        if (apiKey != null && !apiKey.trim().isEmpty()) {
+        if (aiCompletionClient.isEnabled()) {
             try {
-                reply = callAiApi(userMessage, interest);
+                reply = aiCompletionClient.complete(buildSystemPrompt(userMessage, interest), userMessage, 0.7, 800);
             } catch (Exception e) {
-                log.warn("AI API调用失败，降级到本地匹配: {}", e.getMessage());
+                log.warn("AI API调用失败，降级到本地匹配: {}", e.getClass().getSimpleName());
                 fallback = true;
                 reply = localFallback(userMessage, interest);
             }
@@ -90,42 +78,19 @@ public class ChatService {
         return chat(userMessage, null).getReply();
     }
 
-    // ===== AI API 调用 =====
+    // ===== AI 调用 =====
 
-    private String callAiApi(String userMessage, String interest) throws Exception {
+    /**
+     * 构建固定的系统任务边界。REQ-033：游客输入只作为 user 消息交给
+     * {@link AiCompletionClient}，不得拼接进系统消息，避免游客文本被当成系统指令。
+     *
+     * @param userMessage 游客输入，仅用于知识库检索，不写入系统消息
+     * @param interest    可选兴趣标签，用于生成既有推荐倾向
+     * @return 系统提示文本，保持基线导游人设与回答原则
+     */
+    private String buildSystemPrompt(String userMessage, String interest) {
         String spotContext = spotService.buildSpotContext();
         String knowledgeContext = knowledgeService.retrieveRelevantContext(userMessage);
-
-        ObjectNode requestBody = objectMapper.createObjectNode();
-        requestBody.put("model", model);
-        requestBody.put("temperature", 0.7);
-        requestBody.put("max_tokens", 800);
-
-        ArrayNode messages = objectMapper.createArrayNode();
-        messages.add(buildSystemMessage(spotContext, knowledgeContext, interest));
-
-        ObjectNode userMsg = objectMapper.createObjectNode();
-        userMsg.put("role", "user");
-        userMsg.put("content", userMessage);
-        messages.add(userMsg);
-
-        requestBody.set("messages", messages);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer " + apiKey);
-
-        HttpEntity<String> entity = new HttpEntity<>(objectMapper.writeValueAsString(requestBody), headers);
-        ResponseEntity<String> response = restTemplate.exchange(
-                baseUrl + "/chat/completions", HttpMethod.POST, entity, String.class);
-
-        JsonNode root = objectMapper.readTree(response.getBody());
-        return root.path("choices").get(0).path("message").path("content").asText();
-    }
-
-    private ObjectNode buildSystemMessage(String spotContext, String knowledgeContext, String interest) {
-        ObjectNode systemMsg = objectMapper.createObjectNode();
-        systemMsg.put("role", "system");
 
         StringBuilder content = new StringBuilder();
         content.append("你是一位热情、生动、有温度的灵山胜境AI数字人导游，名叫'灵灵'。\n\n");
@@ -169,9 +134,7 @@ public class ChatService {
         }
 
         content.append("\n\n记住：你是灵灵，一个有人情味的数字导游。做游客的朋友，而不是一台播报路线的机器。");
-
-        systemMsg.put("content", content.toString());
-        return systemMsg;
+        return content.toString();
     }
 
     // ===== 本地降级回复 =====

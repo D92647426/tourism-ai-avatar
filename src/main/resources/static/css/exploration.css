@@ -72,4 +72,15 @@
   .exploration-page .live2d-label,.exploration-page .live2d-hint { display:none; }
 }
 .exploration-page .chat-input { min-width:0; resize:vertical; min-height:44px; max-height:120px; line-height:1.5; font-family:inherit; }
+.explore-coach { margin:22px 0; padding:18px; border:1px solid #a4beb2; border-radius:6px; background:#f9fcfa; }
+.explore-coach h4 { font-size:16px; margin-bottom:6px; }
+.explore-coach > p { font-size:13px; color:#49665d; }
+.explore-coach-actions { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 8px; }
+#exploreCoachStatus { color:var(--explore-accent); font-size:13px; min-height:22px; }
+#exploreCoachResult { border-top:1px solid #c9d9d0; margin-top:10px; padding-top:14px; }
+.explore-coach-mode { display:inline-block; padding:3px 8px; background:#deede5; color:#16483f; font-size:12px; border-radius:4px; }
+#exploreCoachReply { margin:12px 0; }
+.explore-coach h5 { font-size:14px; margin-top:16px; }
+.explore-coach-question { padding:10px 0 10px 12px; border-left:3px solid #91b57c; margin:8px 0 14px; }
+#exploreCoachNotice { margin-top:8px; }
 @media(prefers-reduced-motion:reduce) { .exploration * { animation:none !important; transition:none !important; scroll-behavior:auto !important; } }

@@ -4,6 +4,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const core = require('../../src/main/resources/static/js/exploration-core.js');
 const {createStore, mount} = require('../../src/main/resources/static/js/exploration.js');
+const coachRequests = require('../../src/main/resources/static/js/coach-request.js');
+const {clock, deferred, flush, response} = require('./chat-fixture.cjs');
 const pack = JSON.parse(fs.readFileSync(path.join(__dirname, '../../src/main/resources/static/exploration/lingshan-demo.json')));
 const campus = JSON.parse(fs.readFileSync(path.join(__dirname, '../../src/main/resources/static/exploration/campus-demo.json')));
 function storage() {
@@ -26,12 +28,13 @@ function fixture(localStorage=storage()) {
     const html=fs.readFileSync(path.join(__dirname,'../../src/main/resources/static/index.html'),'utf8');
     for(const match of html.matchAll(/id="([^"]+)"/g)) nodes.set(match[1],new Node());
     nodes.get('exploreMode').value='demo';
-    const drafts=[], downloads=[];
+    const drafts=[], downloads=[], coachCalls=[], time=clock();
+    nodes.get('exploreCoachResult').hidden=true;
     const win={document:{getElementById:id=>nodes.get(id),createElement:tag=>new Node(tag),body:new Node()},localStorage,
-        fetch:async()=>({ok:true,json:async()=>pack}),
-        Blob, URL:{createObjectURL:b=>{downloads.push(b);return 'blob:test';},revokeObjectURL(){}},setTimeout:fn=>fn(),
+        fetch:async(url,options)=>{if(url!=='/api/exploration/coach')return {ok:true,json:async()=>pack}; const call=deferred();coachCalls.push({...call,body:JSON.parse(options.body),signal:options.signal});return call.promise;},
+        Blob, URL:{createObjectURL:b=>{downloads.push(b);return 'blob:test';},revokeObjectURL(){}},setTimeout:time.setTimeout,clearTimeout:time.clearTimeout,GuideCoachRequest:coachRequests,
         GuideChatDraft:text=>{drafts.push(text);return {accepted:true};}};
-    return {nodes,win,drafts,downloads};
+    return {nodes,win,drafts,downloads,coachCalls,time};
 }
 test('storage separates users, pack IDs and versions; corrupt or unavailable storage is recoverable',()=>{
     const disk=storage(), warnings=[];
@@ -120,4 +123,37 @@ test('valid task IDs matching Object prototype names do not create phantom recor
     assert.equal(p.nodes.get('exploreEntries').children.length,1);
     await p.nodes.get('exploreStations').children[1].fire('click');
     assert.equal(p.nodes.get('exploreFeedback').hidden,true);
+});
+
+function coachingReply(call) {
+    return {reply:'<b>这只是一段建议</b>',followUp:'你还能看到哪个细节？',mode:'local-coach',fallback:true,reference:call.body.task.reference,source:call.body.task.source,notice:'来源由内容包提供，尚未独立核验，不判分。'};
+}
+test('coach feedback uses the current draft without saving or speaking and renders returned text safely',async()=>{
+    const p=fixture();await mount(p.win);p.nodes.get('exploreObservation').value='这是一段尚未保存的观察';
+    await p.nodes.get('exploreCoachAsk').fire('click');await flush();
+    assert.equal(p.coachCalls[0].body.observation,'这是一段尚未保存的观察');
+    assert.equal(p.nodes.get('exploreCoachAsk').disabled,true);
+    await p.nodes.get('exploreCoachAsk').fire('click');await flush();assert.equal(p.coachCalls.length,1);
+    p.coachCalls[0].resolve(response(coachingReply(p.coachCalls[0])));await flush();
+    assert.equal(p.nodes.get('exploreCoachResult').hidden,false);assert.equal(p.nodes.get('exploreCoachMode').textContent,'本地观察提示');
+    assert.equal(p.nodes.get('exploreCoachReply').textContent,'<b>这只是一段建议</b>');
+    assert.equal(p.nodes.get('exploreEntries').children.length,0);assert.equal(p.drafts.length,0);
+    await p.nodes.get('exploreObservation').fire('input');assert.equal(p.nodes.get('exploreCoachResult').hidden,true);
+});
+for(const change of ['input','mode','station','pack']) test(change+' invalidates pending coach feedback',async()=>{
+    const p=fixture();await mount(p.win);p.nodes.get('exploreObservation').value='这一条发现已经保存了';await p.nodes.get('exploreForm').fire('submit');
+    await p.nodes.get('exploreCoachAsk').fire('click');await flush();
+    if(change==='input')await p.nodes.get('exploreObservation').fire('input');
+    if(change==='mode'){p.nodes.get('exploreMode').value='onsite';await p.nodes.get('exploreMode').fire('change');}
+    if(change==='station')await p.nodes.get('exploreStations').children[1].fire('click');
+    if(change==='pack') {const file=p.nodes.get('exploreImportFile');file.files=[{size:2000,text:async()=>JSON.stringify(campus)}];await file.fire('change');await p.nodes.get('exploreUsePack').fire('click');}
+    p.coachCalls[0].resolve(response(coachingReply(p.coachCalls[0])));await flush();
+    assert.equal(p.coachCalls[0].signal.aborted,true);assert.equal(p.nodes.get('exploreCoachResult').hidden,true);assert.equal(p.nodes.get('exploreCoachAsk').disabled,false);
+});
+test('coach cancellation, invalid input and failed HTTP preserve observation and permit a deliberate retry',async()=>{
+    const p=fixture();await mount(p.win);p.nodes.get('exploreObservation').value='ab';await p.nodes.get('exploreCoachAsk').fire('click');await flush();assert.equal(p.coachCalls.length,0);
+    p.nodes.get('exploreObservation').value='观察到一个特别的细节';await p.nodes.get('exploreCoachAsk').fire('click');await flush();
+    await p.nodes.get('exploreCoachCancel').fire('click');assert.equal(p.nodes.get('exploreCoachAsk').disabled,false);
+    await p.nodes.get('exploreCoachAsk').fire('click');await flush();p.coachCalls[1].resolve({ok:false,status:500});await flush();
+    assert.equal(p.nodes.get('exploreObservation').value,'观察到一个特别的细节');assert.equal(p.nodes.get('exploreCoachAsk').disabled,false);assert.match(p.nodes.get('exploreCoachStatus').textContent,/重试/);
 });

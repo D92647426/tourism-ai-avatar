@@ -1,5 +1,26 @@
 # 当前 Java API 入口
 
+## API-033 讲解搭档（REQ-033 / GitHub #19）
+
+`POST /api/exploration/coach`，`Content-Type: application/json`。实现：[ExplorationCoachController.java:L1](../src/main/java/com/guide/controller/ExplorationCoachController.java#L1)、[ExplorationCoachService.java:L1](../src/main/java/com/guide/service/ExplorationCoachService.java#L1)。
+
+| 字段 | 请求约束 |
+|---|---|
+| packId / packVersion | 必填字符串，1–64 位既有内容包 ID 规则 |
+| task | 必填对象，含 id、spotName、title、prompt、reference、source、cues；沿用内容包类型与长度上限，不使用其他字段 |
+| observation | 必填字符串，去首尾空白后4–1200字；不是服务端已核实事实 |
+| mode | demo 或 onsite，个人选择，不验证到访 |
+
+完整字段限制及响应契约见 [exploration_coach_design.md:L13](./exploration_coach_design.md#L13)。请求示例由当前包生成：`{packId: pack.id, packVersion: pack.version, task: pack.tasks[0], observation: "我注意到两只手的姿态不同。", mode: "demo"}`，字段值须按 JSON 编码；示例包见 [lingshan-demo.json:L1](../src/main/resources/static/exploration/lingshan-demo.json#L1)。
+
+200 响应示例：`{"reply":"可以把看到的细节与推测分开。","followUp":"哪一个细节支持你的解释？","mode":"local-coach","fallback":true,"reference":"本次任务资料原文","source":{"title":"资料标题","url":"https://example.org/source","status":"inherited-unverified"},"notice":"资料由内容包提供，未经独立核验，不判分。"}`。mode 为 local-coach/model-coach，fallback 如实标注本次是否使用本地规则；followUp由任务规则生成，模型仅补充reply。source/reference只取本次有效请求，模型不可改写引用。
+
+非法字段、非对象根或畸形JSON返回400：`{"code":"INVALID_CONTEXT","message":"中文原因"}`，不回显完整观察。错误Content-Type可能由Spring返回415；未预期服务器故障为500。该接口不写analytics/用户数据、不抓取来源链接，不能称为独立资料核验。取消浏览器等待不保证后端调用立即停止。
+
+验证：`mvn test`；隔离运行 `python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar` 验证无Key本地提示、来源回填和400错误。当前基线公开接口；后续合并 #15 时沿用框架CSRF，页面已兼容AuthGuard.apiFetch。
+
+## 继承基线入口
+
 基线 API 保持老师源码实现：
 
 | 方法与地址 | 用途 | 位置 |
