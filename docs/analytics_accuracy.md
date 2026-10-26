@@ -35,3 +35,17 @@ GET /api/admin/reports/sentiment：trend与以上positiveQuestionRate/sentimentS
 ## 验证与协作
 
 后端执行Maven clean verify（切分支后清除其他PR遗留target测试类）；前端以Node执行真实页面脚本/统计格式化测试；执行文档链接及隔离JAR HTTP检查。浏览器用隔离合成日志验证空状态及0%，不读取开发者历史交互文件。API新旧字段语义在Issue #13与本文件提前明确；未来合并其他PR时重跑对应回归。
+
+## 本轮证据（2026-10-26）
+
+- 本独立分支17项Java测试、9项前端测试通过；不把其他待合并PR的测试计入本分支。Codex已亲自执行离线Maven verify、Node检查、文档链接和最终JAR隔离HTTP检查。
+- HTTP检查在空日志时验证0次/0样本/null比例及旧字段全null；一次离线问答后验证1次/1样本/0%，并核对报告窗口一致。原景点、离线导览及Live2D资源检查继续通过。
+- 浏览器1440×1000：空数据为“暂无样本”；三条合成有效问答（中性、负向、未知各一）为3次、2条有效情绪样本、0%。另有过期/未来/无效时间/null记录，均未混入当前计数。报告页面仍显示2样本与0%，三面板来自同一快照。
+- Standards与Spec评审无新增发现。Codex复查发现JSON锁外保存仍可能交错，已反馈修正为同锁串行落盘，并新增concurrentLoggingAndFlushKeepJsonComplete测试，100条并发合成日志不缺失且文件可解析。
+- Codex决定统计/交互契约并完成页面，DeepSeek Harness实现后端及测试，Codex核对实际代码、反馈修正并独立验证。未读取开发者真实历史记录，不伪造用户或满意度数据。
+
+![无数据时不伪造满意度](./screenshots/admin-analytics-empty.png)
+
+![三条问答、两条情绪样本与真实0%](./screenshots/admin-analytics-zero.png)
+
+合并提示：本PR从main独立，未包含认证/创意PR。与 #15 的AdminController、工作流、测试依赖和HTTP检查有重叠；与 #18 的AnalyticsService调用、测试和文档有交集，合并后需重新跑双方回归。接口旧字段改null属于有意的语义更正，旧客户端需迁移，不能继续把null替换为95。
