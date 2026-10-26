@@ -47,13 +47,17 @@ python scripts/check_doc_links.py
 python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar
 ```
 
-Python 只用于可选检查脚本与 CI，网页项目运行不依赖 Python、Node.js 或 Docker。当前源码没有业务单元测试；自动检查验证 Maven 构建、文档链接和本地启动后的页面/接口/模型资源。
+Python 只用于可选检查脚本与 CI，网页项目运行不依赖 Python、Node.js 或 Docker。Java 基线没有业务单元测试；本组新增前端行为测试。自动检查验证 Maven 构建、文档链接和本地启动后的页面/接口/模型资源。
 
 ## 当前边界
 
-知识检索是字符串匹配，推荐路线由预设规则生成，语音主要使用浏览器或 Android 系统能力。Haru 是示例角色，最终角色素材与课设创意尚未定案。Android APK 本次未验证构建。
+知识检索是字符串匹配，推荐路线由预设规则生成，语音主要使用浏览器或 Android 系统能力。Haru 是示例角色，最终角色素材尚未定案；观察式导览创意已实现首版。Android APK 本次未验证构建。
 
 压缩包中的编译产物、个人 IDE 配置、真实接口 Key、历史账号和交互记录未提交。具体处理见 [导入记录](docs/import_manifest.json)。
+
+## 创意首版：今天你当导游（#17）
+
+首页领取观察任务、用自己的话讲解、对照资料并保存为个人旅程。支持将发现交给数字人继续提问、下载旅程手册，以及通过 JSON 内容包切换景区；附校园观察示例。关键词对照不判分，课堂演示不冒充到访。玩法、资料边界和90秒演示见 [体验指引](docs/exploration_guide.md#L1)。
 
 ## 聊天发送与重试（#6）
 

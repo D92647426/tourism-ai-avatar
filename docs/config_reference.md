@@ -1,5 +1,9 @@
 # Java 项目配置
 
+## REQ-032 浏览器内容包与本机记录
+
+新增字段不改变 Java 配置。JSON 包字段类型、默认值/必填、长度、用途、版本变更风险与验证方式集中记录在 [exploration_guide.md:L29](./exploration_guide.md#L29)；两份静态示例默认加载灵山观察包，可导入校园包，记录键按 userId/packId/version 隔离。
+
 配置入口：[application.yml:L1](../src/main/resources/application.yml#L1)。
 
 | 字段 | 类型/默认 | 用途与修改影响 |

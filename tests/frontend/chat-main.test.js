@@ -96,3 +96,17 @@ test('starting a new voice session invalidates the prior delayed send', async ()
         p.nodes.get('chatCancelBtn').fire('click');
     }
 });
+
+test('exploration handoff protects busy requests and existing drafts and never automatically sends', async () => {
+    const p = page(); await flush();
+    p.nodes.get('chatInput').value = 'existing draft';
+    assert.equal(p.context.GuideChatDraft('exploration question').accepted, false);
+    assert.equal(p.nodes.get('chatInput').value, 'existing draft');
+    p.send('busy'); await flush();
+    assert.equal(p.context.GuideChatDraft('exploration question').accepted, false);
+    p.nodes.get('chatCancelBtn').fire('click');
+    assert.equal(p.context.GuideChatDraft('exploration question').accepted, true);
+    assert.equal(p.nodes.get('chatInput').value, 'exploration question');
+    assert.equal(p.requests.length, 1);
+    assert.equal(p.context.GuideChatDraft('').accepted, false);
+});

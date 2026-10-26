@@ -253,6 +253,23 @@
     cancelRequestBtn.addEventListener('click', function() { chatRequest.cancel(); });
     retryRequestBtn.addEventListener('click', function() { chatRequest.retry(); });
 
+    /** REQ-032: prepare an explicit, editable exploration question without sending.
+     * Input: nonempty question string (max 5000 chars); output: acceptance/reason.
+     * Busy requests and existing drafts are preserved; no exceptions are expected.
+     * Change handoff policy here; see docs/exploration_design.md, acceptance 5.
+     */
+    window.GuideChatDraft = function(text) {
+        if (typeof text !== 'string' || !text.trim() || text.length > 5000) return { accepted: false, reason: '问题内容无效或过长，请精简后重试。' };
+        if (chatRequest.isPending()) return { accepted: false, reason: '导游还在回答上一个问题，请等回答结束或先取消等待。' };
+        if (chatInput.value.trim()) return { accepted: false, reason: '聊天框里还有草稿，请先发送或清空，再带入这份发现。' };
+        speechGeneration++;
+        stopListen();
+        chatInput.value = text;
+        openChat();
+        chatInput.focus();
+        return { accepted: true };
+    };
+
     function sendMessage() {
         if (chatRequest.isPending()) return;
         var text = chatInput.value.trim(); if (!text) return;

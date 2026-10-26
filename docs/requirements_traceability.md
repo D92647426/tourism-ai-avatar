@@ -30,3 +30,7 @@
 ## REQ-031 聊天发送、超时处理与重试（GitHub #6）
 
 单请求、30秒总超时、取消/关闭隔离迟到回复、显式重试与草稿保护，详见 [chat_reliability.md:L1](./chat_reliability.md#L1)。不修改后端协议，不依赖未合并的 #15。
+
+## REQ-032 观察式导览与可复用内容包（GitHub #17）
+
+用户授权继续发挥开源课设创意，由 Codex 选定“今天你当导游”首版。任务、资料对照、发现到聊天草稿的交接、本机用户隔离、包校验与预览、旅程导出见 [exploration_design.md:L1](./exploration_design.md#L1)、[exploration_guide.md:L1](./exploration_guide.md#L1)。不声称三人已投票定案、模型判分或实际到访认证。

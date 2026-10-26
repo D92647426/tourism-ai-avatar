@@ -1,5 +1,9 @@
 # 当前检查与验证
 
+## TEST-032 观察式导览
+
+对应 REQ-032。执行 `node --test tests/frontend/*.test.js`。规则与异常包见 [exploration-core.test.js:L1](../tests/frontend/exploration-core.test.js#L1)，存储隔离、导入预览、恢复、未保存草稿与安全渲染见 [exploration-page.test.js:L1](../tests/frontend/exploration-page.test.js#L1)，聊天交接保护见 [chat-main.test.js:L1](../tests/frontend/chat-main.test.js#L1)。预期所有用例通过，原聊天测试仍通过；具体数量以执行结果为准。
+
 ## TEST-027 Java 基线导入验收
 
 | 检查 | 命令与预期 |
