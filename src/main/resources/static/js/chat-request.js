@@ -5,6 +5,19 @@
 })(typeof window !== 'undefined' ? window : globalThis, function () {
     'use strict';
 
+    /**
+     * REQ-031: create a single-request lifecycle with a total response deadline.
+     * @param {Object} options request(payload, signal) returns a Promise of a
+     * response with ok and json(); optional onStart(payload, isRetry),
+     * onState(state), onSuccess(result), timeoutMs (default 30000) and timer hooks.
+     * Callbacks run synchronously and must not throw. Payload fields are scalar.
+     * @returns {Object} send/retry/cancel return acceptance booleans;
+     * isPending returns a boolean and getState returns a detached state snapshot.
+     * @throws {TypeError} If request is missing or is not a function.
+     * @throws {RangeError} If timeoutMs is not finite and positive.
+     * Change lifecycle policy here; DOM/voice adapters live in main.js.
+     * @see ../../../../../docs/chat_reliability.md (REQ-031 and integration contract)
+     */
     function create(options) {
         if (!options || typeof options.request !== 'function') throw new TypeError('request is required');
         var timeoutMs = options.timeoutMs === undefined ? 30000 : options.timeoutMs;
@@ -19,6 +32,11 @@
             if (options.onState) options.onState(Object.assign({}, state));
         }
 
+        /** REQ-031: settle only the current request; obsolete identities are ignored.
+         * Inputs: request identity, optional failure reason and parsed result.
+         * Returns nothing; transport errors become state, not thrown exceptions.
+         * Policy and callback contract: docs/chat_reliability.md; change cleanup here.
+         */
         function finish(request, reason, result) {
             if (active !== request) return;
             active = null;
@@ -31,6 +49,11 @@
             if (!reason && options.onSuccess) options.onSuccess(result);
         }
 
+        /** REQ-031: accept a scalar payload snapshot unless empty or already busy.
+         * Returns acceptance; async transport/parse errors are handled by finish.
+         * isRetry controls user-bubble reuse; callback contract is documented above.
+         * See docs/chat_reliability.md; change dispatch/deadline ordering here.
+         */
         function begin(payload, isRetry) {
             if (active || !payload || typeof payload.message !== 'string' || !payload.message.trim()) return false;
             // Values in the existing API are scalar; callers cannot mutate a retry snapshot.
@@ -39,8 +62,8 @@
             active = request;
             retryPayload = null;
             request.timer = schedule(function () { finish(request, 'timeout'); }, timeoutMs);
-            publish('pending');
             if (options.onStart) options.onStart(Object.assign({}, request.payload), !!isRetry);
+            if (active === request) publish('pending');
 
             Promise.resolve().then(function () {
                 if (active !== request) return null;

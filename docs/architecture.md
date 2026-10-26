@@ -13,7 +13,7 @@
 | 应用入口 | Spring Boot 启动，默认 8080 | [GuideApplication.java:L1](../src/main/java/com/guide/GuideApplication.java#L1) |
 | 聊天 | 单次问题与资料拼接，兴趣对应预设路线 | [ChatService.java:L53](../src/main/java/com/guide/service/ChatService.java#L53) |
 | 知识 | JSON 读写，字符串匹配检索 | [KnowledgeService.java:L186](../src/main/java/com/guide/service/KnowledgeService.java#L186) |
-| 数字人 | PIXI + Haru 示例模型，口型和状态 | [main.js:L104](../src/main/resources/static/js/main.js#L108) |
+| 数字人 | PIXI + Haru 示例模型，口型和状态 | [main.js:L108](../src/main/resources/static/js/main.js#L108) |
 | 网页 | 随 Java 应用提供静态页面 | [index.html:L1](../src/main/resources/static/index.html#L1) |
 | Android | WebView 与语音桥接 | [MainActivity.kt:L1](../android/app/src/main/java/com/guide/lingshan/MainActivity.kt#L1) |
 

@@ -4,6 +4,9 @@ const { page, flush, response } = require('./chat-fixture.cjs');
 
 test('all busy entry points preserve the draft, one bubble, one request and one typing indicator', async () => {
     const p = page(); await flush(); p.send('first'); await flush();
+    const messages = p.nodes.get('chatMessages').children;
+    assert.equal(messages[messages.length - 1].id, 'typingIndicator');
+    assert.match(messages[messages.length - 2].innerHTML, /first/);
     const stops = p.stops; p.nodes.get('chatInput').value = 'draft';
     p.nodes.get('chatSendBtn').fire('click');
     p.nodes.get('chatInput').fire('keydown', { key: 'Enter' });
@@ -74,4 +77,22 @@ test('failed HTTP clears waiting and shows a retryable error without speaking', 
     assert.equal(p.typing().length, 0); assert.equal(p.nodes.get('chatSendBtn').disabled, false);
     assert.equal(p.nodes.get('chatRetryBtn').hidden, false); assert.ok(p.nodes.get('chatRequestStatus').textContent);
     assert.equal(p.spoken.length, 0);
+});
+
+test('starting a new voice session invalidates the prior delayed send', async () => {
+    for (const native of [true, false]) {
+        const p = page(); await flush();
+        const result = text => {
+            if (native) p.context.onSpeechResult(text);
+            else p.recognitions[0].onresult({ resultIndex: 0, results: [Object.assign([{ transcript: text }], { isFinal: true })] });
+        };
+        const start = () => native ? p.startNative() : p.nodes.get('voiceBtn').fire('click');
+        start(); result('old recognized'); start();
+        p.time.tick(200); await flush();
+        assert.equal(p.requests.length, 0);
+        assert.equal(p.nodes.get('voiceBtn').textContent, '🔴');
+        result('new recognized'); p.time.tick(200); await flush();
+        assert.equal(p.requests.length, 1); assert.equal(p.requests[0].body.message, 'new recognized');
+        p.nodes.get('chatCancelBtn').fire('click');
+    }
 });

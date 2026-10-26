@@ -528,6 +528,7 @@
                 stopListen();
                 if (chatInput.value.trim()) scheduleSpeechSend(chatInput.value, 300);
             } else {
+                speechGeneration++;
                 nativeSpeechRequested = true;
                 window.AndroidSpeech.startListening();
             }
@@ -541,6 +542,7 @@
 
     function startListen() {
         // Web Speech API 专用
+        speechGeneration++;
         listening = true;
         voiceBtn.classList.add('listening');
         voiceBtn.textContent = '🔴';
