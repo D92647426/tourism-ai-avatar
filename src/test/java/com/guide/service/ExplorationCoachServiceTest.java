@@ -59,10 +59,16 @@ class ExplorationCoachServiceTest {
         assertNotNull(response.getReply());
         assertFalse(response.getReply().isEmpty());
         assertTrue(response.getReply().length() <= ExplorationCoachService.REPLY_MAX_LENGTH);
-        assertTrue(response.getReply().contains("本地观察提示"));
-        assertTrue(response.getReply().contains("基于关键词规则"));
+        // 正文只帮游客继续观察；规则、核验、到访说明由 notice 与卡片 badge 承担。
+        assertTrue(response.getReply().contains("关于「灵山大佛」，先把你看到的细节留下来。"));
+        assertTrue(response.getReply().contains("你的记录里提到了「台阶数量」方向的词。"));
+        assertTrue(response.getReply().contains("还可以再观察「大佛高度」。"));
+        assertTrue(response.getReply().contains("选其中一处，写下你看到了什么，以及还有什么不确定。"));
+        assertFalse(response.getReply().contains("本地观察提示"));
+        assertFalse(response.getReply().contains("不评分"));
+        assertFalse(response.getReply().contains("未经独立核验"));
+        assertFalse(response.getReply().contains("不能证明"));
         assertFalse(response.getReply().contains("未调用模型"));
-        assertTrue(response.getReply().contains("不评分"));
         assertFalse(response.getReply().contains("得分"));
         assertFalse(response.getReply().contains("打分"));
         assertFalse(response.getReply().contains("满分"));
@@ -130,7 +136,7 @@ class ExplorationCoachServiceTest {
 
         assertEquals(ExplorationCoachService.MODE_LOCAL, response.getMode());
         assertTrue(response.isFallback());
-        assertTrue(response.getReply().contains("基于关键词规则"));
+        assertTrue(response.getReply().contains("关于「灵山大佛」，先把你看到的细节留下来。"));
         assertTrue(response.getNotice().contains("本地关键词规则"));
         assertFalse(response.getReply().contains("未调用模型"));
         assertFalse(response.getNotice().contains("未调用模型"));
@@ -146,7 +152,7 @@ class ExplorationCoachServiceTest {
 
         assertEquals(ExplorationCoachService.MODE_LOCAL, response.getMode());
         assertTrue(response.isFallback());
-        assertTrue(response.getReply().contains("基于关键词规则"));
+        assertTrue(response.getReply().contains("关于「灵山大佛」，先把你看到的细节留下来。"));
         assertTrue(response.getNotice().contains("本地关键词规则"));
         assertFalse(response.getReply().contains("未调用模型"));
         assertFalse(response.getNotice().contains("未调用模型"));
@@ -168,7 +174,7 @@ class ExplorationCoachServiceTest {
         // 已经尝试过供应商，结果文案不能声称“未调用模型”。
         assertFalse(response.getReply().contains("未调用模型"));
         assertFalse(response.getNotice().contains("未调用模型"));
-        assertTrue(response.getReply().contains("基于关键词规则"));
+        assertTrue(response.getReply().contains("关于「灵山大佛」，先把你看到的细节留下来。"));
         assertTrue(response.getNotice().contains("本地关键词规则"));
         verify(aiCompletionClient, times(1)).complete(anyString(), anyString(), anyDouble(), anyInt());
     }

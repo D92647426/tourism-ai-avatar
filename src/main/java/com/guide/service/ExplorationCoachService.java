@@ -495,28 +495,25 @@ public class ExplorationCoachService {
     }
 
     /**
-     * 本地提示只描述当前观察与未出现的标签方向；明确不评分、不判定事实。
+     * 本地提示只围绕当前站点与观察方向，帮游客继续观察；不在正文重复“本地观察提示/不评分/
+     * 未经核验/不能证明到访”等说明，这些由统一的 {@link #LOCAL_NOTICE} 与卡片 badge 承担。
      * 文案不声明“未调用模型”：模型调用失败后也会走这里，且此前已尝试过供应商。
      */
     private String buildLocalReply(CoachContext context, List<String> mentioned, List<String> toExplore) {
         StringBuilder reply = new StringBuilder();
-        reply.append("本地观察提示（基于关键词规则，不评分、不判定讲解是否正确）：\n");
-        reply.append("当前站点是「").append(context.spotName).append("」。\n");
+        reply.append("关于「").append(context.spotName).append("」，先把你看到的细节留下来。\n");
         if (!mentioned.isEmpty()) {
-            reply.append("你的观察里出现了资料标签");
+            reply.append("你的记录里提到了");
             appendLabels(reply, mentioned);
-            reply.append("相关的词。关键词只表示提到，不代表讲解正确，也不能证明你已经到访。\n");
-        } else {
-            reply.append("你的观察里暂时没有出现内容包中的关键词标签。\n");
+            reply.append("方向的词。\n");
         }
         if (!toExplore.isEmpty()) {
-            reply.append("接下来可以留意");
+            reply.append("还可以再观察");
             appendLabels(reply, toExplore);
-            reply.append("方向的细节，例如现场标识、位置或资料里提到的特征。\n");
+            reply.append("。选其中一处，写下你看到了什么，以及还有什么不确定。");
         } else {
-            reply.append("内容包里的标签你都已提及，可以补充更具体的细节，例如时间、位置，以及观察和资料描述是否一致。\n");
+            reply.append("试着选一句解释，补上支持它的观察；拿不准的部分可以保留疑问。");
         }
-        reply.append("以上线索来自当前内容包，未经独立核验，请以景区官方信息或现场标识为准。");
         return truncate(reply.toString(), REPLY_MAX_LENGTH);
     }
 

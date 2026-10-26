@@ -56,7 +56,7 @@ class ExplorationCoachControllerTest {
                 .andExpect(jsonPath("$.source.url").value(ExplorationCoachFixtures.SOURCE_URL))
                 .andExpect(jsonPath("$.source.status").value("inherited-unverified"))
                 .andExpect(jsonPath("$.notice", containsString("不评分")))
-                .andExpect(jsonPath("$.reply", containsString("本地观察提示")));
+                .andExpect(jsonPath("$.reply", containsString("先把你看到的细节留下来")));
     }
 
     @Test
