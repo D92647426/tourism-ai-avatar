@@ -171,6 +171,12 @@ class TestValidateKnowledge(unittest.TestCase):
     def test_empty_array_passes(self) -> None:
         self.assertEqual(cdi.validate_knowledge([], "k.json"), [])
 
+    def test_java_integer_id_boundary(self) -> None:
+        self.assertEqual(cdi.validate_knowledge([knowledge_entry(id=2147483647)]), [])
+        for invalid in (2147483648, 10**30, 1.5):
+            with self.subTest(id=invalid):
+                self.assertTrue(cdi.validate_knowledge([knowledge_entry(id=invalid)]))
+
     def test_top_level_null_fails(self) -> None:
         errors = cdi.validate_knowledge(None, "k.json")
         self.assertTrue(errors)
@@ -252,6 +258,12 @@ class TestValidateSpots(unittest.TestCase):
     def test_valid_sample_passes(self) -> None:
         data = [spot_entry(), spot_entry(id=2, name="景点二")]
         self.assertEqual(cdi.validate_spots(data, "s.json"), [])
+
+    def test_java_integer_id_boundary(self) -> None:
+        self.assertEqual(cdi.validate_spots([spot_entry(id=2147483647)]), [])
+        for invalid in (2147483648, 10**30, True, 1.5):
+            with self.subTest(id=invalid):
+                self.assertTrue(cdi.validate_spots([spot_entry(id=invalid)]))
 
     def test_empty_array_passes(self) -> None:
         self.assertEqual(cdi.validate_spots([], "s.json"), [])

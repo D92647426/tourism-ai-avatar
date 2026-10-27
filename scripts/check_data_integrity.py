@@ -112,8 +112,8 @@ def _type_name(value: Any) -> str:
 
 
 def _is_positive_int(value: Any) -> bool:
-    """判断是否为真正的正整数（``bool`` 是 ``int`` 子类，必须排除）。"""
-    return isinstance(value, int) and not isinstance(value, bool) and value > 0
+    """判断是否为 Java int 可加载的正整数，排除 bool 和越界值（REQ-035）。"""
+    return isinstance(value, int) and not isinstance(value, bool) and 1 <= value <= 2147483647
 
 
 def _iter_strings(value: Any, location: str) -> Any:

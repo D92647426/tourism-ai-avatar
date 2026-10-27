@@ -12,7 +12,7 @@
 | data.interactions-file | 路径，data/interactions.json | 本地问答记录，被 Git 忽略 |
 | data.config-file | 路径，data/config.json | 显示和语音设置 |
 
-默认知识库是 classpath 资源 [knowledge.json:L1](../src/main/resources/knowledge.json#L1)，内容须与仓库 [data/knowledge.json:L1](../data/knowledge.json#L1) 语义一致；一致性由 [check_data_integrity.py:L353](../scripts/check_data_integrity.py#L353) 检查，结构通过不等同事实核验。修改外部知识文件前建议备份，损坏文件不会被自动覆盖。
+默认知识库是 classpath 资源 [knowledge.json:L1](../src/main/resources/knowledge.json#L1)，内容须与仓库 [data/knowledge.json:L1](../data/knowledge.json#L1) 语义一致；一致性由 [check_data_integrity.py:L353](../scripts/check_data_integrity.py#L353) 检查，结构通过不等同事实核验。修改外部知识文件前建议备份，初始化时不会覆盖损坏文件；之后的管理员增删改操作仍会保存当前内存库，如需保留原件请先备份。
 
 用户文件由 UserService 固定使用 data/users.json，被 Git 忽略。以上默认值来自导入源码，不代表真实模型 API 已完成联网验收。
 

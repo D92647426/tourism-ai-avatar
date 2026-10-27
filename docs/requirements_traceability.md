@@ -36,7 +36,7 @@
 | 知识数据（外部库） | [data/knowledge.json:L1](../data/knowledge.json#L1) |
 | 知识数据（打包默认库） | [knowledge.json:L1](../src/main/resources/knowledge.json#L1) |
 | 加载、降级与结构校验 | [KnowledgeService.java:L64](../src/main/java/com/guide/service/KnowledgeService.java#L64) |
-| 景点上下文与示例边界 | [SpotService.java:L54](../src/main/java/com/guide/service/SpotService.java#L54) |
+| 景点上下文与示例边界 | [SpotService.java:L90](../src/main/java/com/guide/service/SpotService.java#L90) |
 | 对话资料边界 | [ChatService.java:L31](../src/main/java/com/guide/service/ChatService.java#L31) |
 | 数据检查工具 | [check_data_integrity.py:L516](../scripts/check_data_integrity.py#L516) |
 | 测试 | [KnowledgeServiceTest.java:L39](../src/test/java/com/guide/service/KnowledgeServiceTest.java#L39)、[SpotServiceTest.java:L17](../src/test/java/com/guide/service/SpotServiceTest.java#L17)、[ChatServiceTest.java:L21](../src/test/java/com/guide/service/ChatServiceTest.java#L21)、[test_data_integrity.py:L111](../scripts/test_data_integrity.py#L111) |

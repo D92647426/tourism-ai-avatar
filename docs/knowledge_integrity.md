@@ -9,7 +9,7 @@
 3. 知识初始化改为打包 JSON 资源；该资源与仓库 data/knowledge.json 内容一致，通过自动检查防漂移。用户已有合法文件优先；缺文件创建默认库；坏 JSON、重复 ID、缺必填字段等使用打包默认值降级且不覆盖坏文件；合法空数组保持为空，不静默恢复被用户删掉的数据。支持不含父目录的文件路径。
 4. 修正 SpotService 的【名称】、分类：、历史：、地址：、门票：、亮点：和“、”分隔符；资源流必须关闭。每个景点块保留所有资料字段，统一声明这是未核验的静态课程示例；开放时间、票价、交通按示例字段标注，不推断实时状态。
 5. 模型系统提示明确不得用未核验资料补写事实、待补充不代表已知、变动信息需景区公告确认。本地景点/知识回答和票价/交通分支也明确样例边界；删除票价分支硬编码餐饮价格，不新增实时票价或交通承诺。不改变分支次序和检索匹配。
-6. 自动检查 JSON 类型、正整数且唯一 ID、必填字符串、高亮数组、替换字符、正文等于任一标题、打包/外部默认库一致；不把结构通过等同事实正确。CI 执行同样检查。
+6. 自动检查 JSON 类型、Java int 范围内正整数且唯一 ID（1–2147483647）、必填字符串、高亮数组、替换字符、正文等于任一标题、打包/外部默认库一致；不把结构通过等同事实正确。CI 执行同样检查。
 7. 使用临时数据与空模型密钥验证：缺文件、有效自定义/空库、坏文件不覆盖、默认 ID 对齐、三个景点字段与乱码、待补充检索、本地导览可用。Maven clean verify、文档链接、数据检查、HTTP smoke 均通过。
 
 ## 来源和核对记录
@@ -43,7 +43,7 @@
 
 实现：[KnowledgeService.java:L1](../src/main/java/com/guide/service/KnowledgeService.java#L1)、[SpotService.java:L1](../src/main/java/com/guide/service/SpotService.java#L1)、[ChatService.java:L1](../src/main/java/com/guide/service/ChatService.java#L1)。数据检查入口：[check_data_integrity.py:L1](../scripts/check_data_integrity.py#L1)。知识打包副本：[knowledge.json:L1](../src/main/resources/knowledge.json#L1)。
 
-2026-10-27 本地 JDK 19、Maven 离线缓存运行 `mvn -o clean verify`：22 项 Java 测试，0 失败/错误；Python `scripts/test_data_integrity.py`：42 项通过；数据检查和文档链接通过。额外核对原提交：16 条知识的 ID、标题、分类、关键词和 createTime 全部保持；ID 4–16 仅新增示例前缀，原正文不改写。严格拒绝小数/字符串/布尔/越界 ID、数字正文和尾随垃圾，不依赖 Jackson 自动转换。
+2026-10-27 本地 JDK 19、Maven 离线缓存运行 `mvn -o clean verify`：22 项 Java 测试，0 失败/错误；Python `scripts/test_data_integrity.py`：44 项通过；数据检查和文档链接通过。额外核对原提交：16 条知识的 ID、标题、分类、关键词和 createTime 全部保持；ID 4–16 仅新增示例前缀，原正文不改写。严格拒绝小数/字符串/布尔/越界 ID、数字正文和尾随垃圾，不依赖 Jackson 自动转换。
 
 人工对照了灵山大佛（景点11）、灵山梵宫（景点13）、九龙灌浴（景点6）的原字段和 [上下文测试:L57](../src/test/java/com/guide/service/SpotServiceTest.java#L57)：每块有名称、简介、分类、历史、地址、时间、票、交通和亮点，中文括号、冒号、顿号正常；此抽查只核对代码与字段对应，不证明景区描述准确。空 Key 的 [HTTP 检查:L1](../scripts/smoke_teacher_project.py#L1) 还会从缺失文件启动打包库，并检查三景点回答、待补充检索和票价边界。
 
