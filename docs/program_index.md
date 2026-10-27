@@ -15,3 +15,9 @@
 | Android | [MainActivity.kt:L1](../android/app/src/main/java/com/guide/lingshan/MainActivity.kt#L1) |
 | 启动接口检查 | [smoke_teacher_project.py:L1](../scripts/smoke_teacher_project.py#L1) |
 | GitHub 自动检查 | [checks.yml:L1](../.github/workflows/checks.yml#L1) |
+| 打包默认知识库 | [knowledge.json:L1](../src/main/resources/knowledge.json#L1) |
+| 知识数据结构检查 | [check_data_integrity.py:L516](../scripts/check_data_integrity.py#L516) |
+| 知识数据检查测试 | [test_data_integrity.py:L111](../scripts/test_data_integrity.py#L111) |
+| 对话服务测试 | [ChatServiceTest.java:L21](../src/test/java/com/guide/service/ChatServiceTest.java#L21) |
+| 知识服务测试 | [KnowledgeServiceTest.java:L39](../src/test/java/com/guide/service/KnowledgeServiceTest.java#L39) |
+| 景点服务测试 | [SpotServiceTest.java:L17](../src/test/java/com/guide/service/SpotServiceTest.java#L17) |

@@ -44,7 +44,8 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
         assert work.is_relative_to(Path(tempfile.gettempdir()).resolve())
         data = work / "data"
         data.mkdir()
-        for name in ("knowledge.json", "config.json"):
+        # REQ-035: leave knowledge absent to exercise the JAR's bundled bootstrap.
+        for name in ("config.json",):
             if (root / "data" / name).is_file():
                 shutil.copy2(root / "data" / name, data / name)
         log_path = work / "server.log"
@@ -75,13 +76,27 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                 chat = json.loads(fetch(base + "/api/chat", {"message": "hello"}))
                 assert isinstance(chat.get("reply"), str) and chat["reply"].strip()
                 assert chat.get("fallback") is True, "Smoke test must use offline fallback."
+                library = json.loads((data / "knowledge.json").read_text(encoding="utf-8"))
+                assert [item["id"] for item in library] == list(range(1, 17))
+                assert all("待补充" in item["content"] for item in library[:3])
+                for name in ("灵山大佛", "灵山梵宫", "九龙灌浴"):
+                    reply = json.loads(fetch(base + "/api/chat", {"message": name}))
+                    assert reply["fallback"] is True and name in reply["reply"]
+                    assert "未核验" in reply["reply"] and "景区公告" in reply["reply"]
+                    assert "\ufffd" not in reply["reply"]
+                pending = json.loads(fetch(base + "/api/chat", {"message": "待补充"}))
+                assert pending["fallback"] is True and "原始正文缺失" in pending["reply"]
+                ticket = json.loads(fetch(base + "/api/chat", {"message": "门票多少钱"}))
+                assert "50元/位" not in ticket["reply"] and "35元/位" not in ticket["reply"]
+                assert "景区公告" in ticket["reply"]
                 model_url = base + "/models/haru/haru.model.json"
                 model = json.loads(fetch(model_url))
                 assert model.get("model"), "Live2D model definition is missing."
                 assert fetch(urllib.parse.urljoin(model_url, model["model"]))
                 assert fetch(base + "/js/live2d-helper.js")
                 return {"status": "passed", "spot_count": len(spots),
-                        "checks": ["homepage", "spots", "offline_chat", "live2d_definition",
+                        "checks": ["homepage", "spots", "offline_chat", "bundled_knowledge",
+                                   "three_spot_sample_boundaries", "pending_content", "ticket_boundary", "live2d_definition",
                                    "live2d_model_file", "live2d_helper"]}
             except Exception:
                 log.flush()

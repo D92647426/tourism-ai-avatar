@@ -8,9 +8,11 @@
 | ai.api-key | 字符串，读取 DEEPSEEK_API_KEY，默认空 | 模型凭据，空值进入本地降级回答 |
 | ai.base-url | URL，源码默认 DeepSeek v1 地址 | 模型 API 基址，改变后验证响应兼容性 |
 | ai.model | 字符串，源码默认 deepseek-chat | 模型名称，使用服务商实际支持的名称 |
-| data.knowledge-file | 路径，data/knowledge.json | 可维护知识，当前使用 JSON 与字符串匹配 |
+| data.knowledge-file | 路径，data/knowledge.json | 可维护知识；外部合法文件优先（含空数组），缺文件时写打包默认库，损坏时降级且不覆盖原文件；加载逻辑见 [KnowledgeService.java:L75](../src/main/java/com/guide/service/KnowledgeService.java#L75) |
 | data.interactions-file | 路径，data/interactions.json | 本地问答记录，被 Git 忽略 |
 | data.config-file | 路径，data/config.json | 显示和语音设置 |
+
+默认知识库是 classpath 资源 [knowledge.json:L1](../src/main/resources/knowledge.json#L1)，内容须与仓库 [data/knowledge.json:L1](../data/knowledge.json#L1) 语义一致；一致性由 [check_data_integrity.py:L353](../scripts/check_data_integrity.py#L353) 检查，结构通过不等同事实核验。修改外部知识文件前建议备份，损坏文件不会被自动覆盖。
 
 用户文件由 UserService 固定使用 data/users.json，被 Git 忽略。以上默认值来自导入源码，不代表真实模型 API 已完成联网验收。
 

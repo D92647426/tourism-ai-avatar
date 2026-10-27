@@ -43,14 +43,16 @@ java -jar target/ai-guide-1.0.0.jar
 
 ```bash
 mvn verify
+python scripts/check_data_integrity.py
+python scripts/test_data_integrity.py
 python scripts/check_doc_links.py
 python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar
 ```
 
-Python 只用于可选检查脚本与 CI，网页项目运行不依赖 Python、Node.js 或 Docker。当前源码没有业务单元测试；自动检查验证 Maven 构建、文档链接和本地启动后的页面/接口/模型资源。
+Python 只用于可选检查脚本与 CI，网页项目运行不依赖 Python、Node.js 或 Docker。当前已有 Java 服务测试（ChatService、KnowledgeService、SpotService 共 22 个用例）和 Python 数据检查测试；自动检查验证 Maven 构建与单测、知识/景点数据结构、文档链接和本地启动后的页面/接口/模型资源。结构检查通过不代表景区事实已核验，详见 [知识数据完整性方案](docs/knowledge_integrity.md#L1)。
 
 ## 当前边界
 
-知识检索是字符串匹配，推荐路线由预设规则生成，语音主要使用浏览器或 Android 系统能力。Haru 是示例角色，最终角色素材与课设创意尚未定案。Android APK 本次未验证构建。
+知识检索是字符串匹配，推荐路线由预设规则生成，语音主要使用浏览器或 Android 系统能力。知识库与景点资料是未核验的课程示例，价格、开放时间、交通等变动信息以景区公告为准。Haru 是示例角色，最终角色素材与课设创意尚未定案。Android APK 本次未验证构建。
 
 压缩包中的编译产物、个人 IDE 配置、真实接口 Key、历史账号和交互记录未提交。具体处理见 [导入记录](docs/import_manifest.json)。
