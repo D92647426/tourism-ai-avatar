@@ -38,3 +38,9 @@ Local verification (2026-10-19): Maven build passed with JDK 19; HTTP smoke pass
 对应 REQ-031；执行 `node --test tests/frontend/*.test.js`，预期聊天相关用例通过；创意分支另有新增交接用例，总数见 TEST-032。控制模块的 single-flight、HTTP/网络/JSON错误、超时、取消与迟到回调测试见 [chat-request.test.js:L1](../tests/frontend/chat-request.test.js#L1)；页面入口、状态恢复、重试草稿和语音延迟保护见 [chat-main.test.js:L1](../tests/frontend/chat-main.test.js#L1)。可复现演示矩阵见 [chat_reliability.md:L1](./chat_reliability.md#L1)。失败时按用例标题检查请求状态、计时器清理及对应入口，不使用真实模型排错。Node仅作测试工具，CI使用Node22。
 
 切换含不同测试依赖的分支后，若报告 target/test-classes 中不存在于当前源码的旧测试，先执行 `mvn clean verify` 清除缓存，再运行本页检查；不要据此修改当前分支依赖。2026-10-25 已据此完成本分支构建。
+
+## TEST-036 语音与口型生命周期
+
+对应REQ-036/API-036。`node --test tests/frontend/*.test.js` 当前95项通过：新增 [speech-lifecycle.test.js:L1](../tests/frontend/speech-lifecycle.test.js#L1) 23项测试真实开始/结束、声线延迟、失败超时、暂停/恢复、旧ID、旧APK降级、清理与销毁；[speech-main.test.js:L1](../tests/frontend/speech-main.test.js#L1) 10项运行真实页面脚本，检查UI/文字/口型/取消/后台及探索草稿。假时钟和mock只作用于语音/DOM边界，不声称真实发声。失败先查当前status、语音ID与是否仍有timer，再对照 [speech_lifecycle.md:L1](./speech_lifecycle.md#L1)。
+
+2026-10-27 JDK19 `mvn -o clean verify` 67项Java继承测试通过；空Key隔离HTTP smoke和文档检查通过。Maven不编译Kotlin Android，Android缺工具链，未编译/未真机。截图采用 [浏览器mock:L1](../tests/fixtures/speech-browser-init.js#L1)，桌面/移动验收步骤见 [speech_lifecycle.md:L1](./speech_lifecycle.md#L1)。

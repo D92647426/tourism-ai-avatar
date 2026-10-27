@@ -33,3 +33,7 @@
 Spring Boot 参数可通过命令行覆盖，例如 java -jar target/ai-guide-1.0.0.jar --server.port=8081。普通 .env 文件不会被自动读取。
 
 验证方式：空 Key 下执行 [本地接口检查 smoke_teacher_project.py:L1](../scripts/smoke_teacher_project.py#L1)，真实模型由各成员在本机配置 Key 后单独验收。
+
+## REQ-036 语音故障边界
+
+不新增持久化设置。内部常量：声线等待1500ms、开始事件总等待8000ms、播放故障上限120000ms；位置 [speech-lifecycle.js:L14](../src/main/resources/static/js/speech-lifecycle.js#L14)。仅作异常收尾，不按字数估时或宣称音素同步。Web默认rate1.05/pitch1.1/volume1，Android默认rate1.0/pitch1.1；#14再接管理设置。修改后运行 [语音测试:L1](../tests/frontend/speech-lifecycle.test.js#L1)。完整边界见 [speech_lifecycle.md:L1](./speech_lifecycle.md#L1)。

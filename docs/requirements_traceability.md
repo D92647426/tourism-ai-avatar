@@ -38,3 +38,7 @@
 ## REQ-032 观察式导览与可复用内容包（GitHub #17）
 
 用户授权继续发挥开源课设创意，由 Codex 选定“今天你当导游”首版。任务、资料对照、发现到聊天草稿的交接、本机用户隔离、包校验与预览、旅程导出见 [exploration_design.md:L1](./exploration_design.md#L1)、[exploration_guide.md:L1](./exploration_guide.md#L1)。不声称三人已投票定案、模型判分或实际到访认证。
+
+## REQ-036 语音播报与数字人状态同步（GitHub #7）
+
+真实播报事件驱动口型，任务ID隔离旧回调，声线等待/错误/关闭/后台统一收尾。新增待机/聆听/思考/等待声音/讲解/暂停/失败状态；Android协议2支持带ID回调，旧协议降级Web或文字。方案、分支顺序与未验证边界见 [speech_lifecycle.md:L1](./speech_lifecycle.md#L1)。实现见 [speech-lifecycle.js:L80](../src/main/resources/static/js/speech-lifecycle.js#L80)、[main.js:L336](../src/main/resources/static/js/main.js#L336)、[MainActivity.kt:L255](../android/app/src/main/java/com/guide/lingshan/MainActivity.kt#L255)。

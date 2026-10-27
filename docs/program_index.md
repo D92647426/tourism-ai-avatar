@@ -33,3 +33,9 @@
 ## 聊天请求控制（REQ-031）
 
 新增 [chat-request.js:L21](../src/main/resources/static/js/chat-request.js#L21) 的 create 工厂，返回 send、retry、cancel、isPending、getState；网络与计时器可注入。页面适配与行为说明见 [chat_reliability.md:L1](./chat_reliability.md#L1)。
+
+## 语音生命周期（REQ-036）
+
+- [speech-lifecycle.js:L80](../src/main/resources/static/js/speech-lifecycle.js#L80)：任务/声线/事件/超时与旧ID隔离。
+- [main.js:L336](../src/main/resources/static/js/main.js#L336)：状态文字、口型渲染与语音输入/页面收尾。
+- [MainActivity.kt:L255](../android/app/src/main/java/com/guide/lingshan/MainActivity.kt#L255)：协议2版本/带ID播报桥；[回调分派:L347](../android/app/src/main/java/com/guide/lingshan/MainActivity.kt#L347)。

@@ -43,3 +43,16 @@
 ## REQ-031 客户端请求生命周期
 
 `POST /api/chat` 请求与响应字段不变。页面对一次逻辑请求（含JSON解析）设置30秒总时限；取消/超时仅停止当前浏览器等待，不保证后端计算终止。用户可手动重试，不自动重复生成问答。详情和验收见 [chat_reliability.md:L1](./chat_reliability.md#L1)。
+
+## API-036 Android语音桥协议2（REQ-036）
+
+此为WebView JavaScript桥，无新增HTTP路径/权限策略。入口 [MainActivity.kt:L255](../android/app/src/main/java/com/guide/lingshan/MainActivity.kt#L255)，页面接线 [main.js:L347](../src/main/resources/static/js/main.js#L347)。
+
+| 调用 | 输入/返回 | 语义 |
+|---|---|---|
+| AndroidSpeech.getTtsProtocolVersion() | 无输入；整数2 | 声明可按ID回调 |
+| AndroidSpeech.isTtsReady() | 无输入；布尔值 | 系统中文语言可用，不保证实际已发声 |
+| AndroidSpeech.speakWithId(text,id) | 两个字符串；无返回 | id由网页生成唯一串，主线程提交 |
+| AndroidSpeech.stopSpeaking() | 无输入/返回 | 隔离当前任务、停止引擎、回调stop |
+
+回调：onTtsStart(id)、onTtsEnd(id)、onTtsError(error,id)、onTtsStop(id)，字符串用JSONObject.quote编码；not-ready/speak-failed/playback-error/error-数字为引擎失败，显示文字仍可读。示例 `speakWithId('欢迎','gs-pageNonce-1')` → `onTtsStart('gs-pageNonce-1')` → `onTtsEnd('gs-pageNonce-1')`；只有当前ID生效，重复/旧/无ID回调忽略。保留旧speak(text)给旧网页，新网页拒绝依赖旧协议回调，改用Web或文字提示。测试命令 `node --test tests/frontend/speech*.test.js`；Android仍需构建/真机。见 [完整验收:L1](./speech_lifecycle.md#L1)。
