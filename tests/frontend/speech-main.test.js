@@ -91,3 +91,18 @@ test('failed request is visible and exploration draft handoff safely stops curre
     assert.equal(p.nodes.get('chatInput').value, '我的观察草稿');
     p.nodes.get('chatPanelClose').fire('click'); assert.equal(p.time.size, 0);
 });
+
+test('closing a failed request or backgrounding a recognition error restores idle labels', async () => {
+    const p = page(); await flush();
+    p.send('失败'); await flush(); p.requests[0].reject(new Error('offline')); await flush();
+    assert.equal(status(p), 'error');
+    p.nodes.get('chatPanelClose').fire('click');
+    assert.equal(status(p), 'idle');
+    assert.equal(p.nodes.get('avatarState').textContent, p.nodes.get('avatarChatState').textContent);
+    p.nodes.get('voiceBtn').fire('click');
+    p.recognitions[0].onerror({ error: 'not-allowed' });
+    assert.equal(status(p), 'error');
+    p.hide(); assert.equal(status(p), 'idle');
+    assert.equal(p.nodes.get('voiceStatus').textContent, '');
+    assert.equal(p.time.size, 0);
+});

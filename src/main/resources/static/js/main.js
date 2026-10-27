@@ -429,7 +429,12 @@
 
     /** REQ-036: idempotent explicit stop, including voice-loading/paused tasks. */
     function stopTts() {
-        if (speech) speech.setActivity('idle');
+        if (speech) {
+            speech.setActivity('idle');
+            // Request/recognition errors are displayed by this adapter, so an
+            // unchanged controller state must still clear the displayed error.
+            renderAvatarState(speech.getState());
+        }
         stopMouthAnimation();
     }
 

@@ -67,4 +67,4 @@ Python 只用于可选检查脚本与 CI，网页项目运行不依赖 Python、
 
 ## 数字人语音状态（#7）
 
-人物嘴部跟随实际播报事件，等待声音、无中文声线、失败和停止都有明确状态。生命周期改进、Android协议2兼容与手动验收见 [speech_lifecycle.md:L1](docs/speech_lifecycle.md#L1)。当前分支95项前端、67项Java检查通过；Android未编译/未真机，浏览器截图用不发声的可控mock，不能作为真实声音验收。此改动接在聊天/创意PR之后，知识/认证/统计PR另行评审。
+人物嘴部跟随实际播报事件，等待声音、无中文声线、失败和停止都有明确状态。生命周期改进、Android协议2兼容与手动验收见 [speech_lifecycle.md:L1](docs/speech_lifecycle.md#L1)。当前分支96项前端、67项Java检查通过；Android未编译/未真机，浏览器截图用不发声的可控mock，不能作为真实声音验收。此改动接在聊天/创意PR之后，知识/认证/统计PR另行评审。

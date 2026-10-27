@@ -22,9 +22,9 @@
 
 代码：[生命周期模块:L80](../src/main/resources/static/js/speech-lifecycle.js#L80)、[页面状态与回调:L336](../src/main/resources/static/js/main.js#L336)、[Android 协议入口:L255](../android/app/src/main/java/com/guide/lingshan/MainActivity.kt#L255)、[Android 回调按 ID 分派:L347](../android/app/src/main/java/com/guide/lingshan/MainActivity.kt#L347)。
 
-2026-10-27：Codex 实际运行 `node --test tests/frontend/*.test.js` 95 项通过（继承62项，新增生命周期23项、真实main脚本集成10项）；`mvn -o clean verify` 67 项继承 Java 测试通过，空 Key 隔离 HTTP smoke 通过（含讲解搭档与 Live2D 资源）。此 Maven 检查不编译 Android。
+2026-10-27：Codex 实际运行 `node --test tests/frontend/*.test.js` 96 项通过（继承62项，新增生命周期23项、真实main脚本集成11项）；`mvn -o clean verify` 67 项继承 Java 测试通过，空 Key 隔离 HTTP smoke 通过（含讲解搭档与 Live2D 资源）。此 Maven 检查不编译 Android。
 
-DeepSeek Harness 按已定接口实现生命周期模块/23项测试和 Kotlin 协议；Codex 完成界面、main适配、10项集成回归，并复查真实代码/运行输出。复查修正了 Android 语言可用判断：setLanguage 的 LANG_AVAILABLE、LANG_COUNTRY_AVAILABLE、LANG_COUNTRY_VAR_AVAILABLE 均可用，不能只等于 SUCCESS；依据 [Android 官方 TextToSpeech.setLanguage 文档](https://developer.android.com/reference/android/speech/tts/TextToSpeech#setLanguage(java.util.Locale))，核对日2026-10-27。同时补齐 speak/stop RuntimeException 收尾。
+DeepSeek Harness 按已定接口实现生命周期模块/23项测试和 Kotlin 协议；Codex 完成界面、main适配、11项集成回归，并复查真实代码/运行输出。复查修正了 Android 语言可用判断：setLanguage 的 LANG_AVAILABLE、LANG_COUNTRY_AVAILABLE、LANG_COUNTRY_VAR_AVAILABLE 均可用，不能只等于 SUCCESS；依据 [Android 官方 TextToSpeech.setLanguage 文档](https://developer.android.com/reference/android/speech/tts/TextToSpeech#setLanguage(java.util.Locale))，核对日2026-10-27。同时补齐 speak/stop RuntimeException 收尾。
 
 未安装 Android SDK、Gradle wrapper jar/运行器或 Kotlin 编译器，本轮不下载整个工具链，Android 仅静态复核，**未编译、未真机验证**。网页真实声线、系统发声质量与音素准确度也未验证。固定播放故障上限120秒可能中断超长播报，界面会提示异常，不伪装自然结束。
 
@@ -42,3 +42,12 @@ Android 真机另验：安装新 APK 并设置同一局域网服务地址，确�
 
 
 本轮浏览器观察：1440×1000下mock开始前为queued，注入开始后为speaking且模型已加载/嘴部动画运行；停止后闭嘴。390×844下模拟无中文声线时，聊天栏显示文字仍可阅读，mouth=false；documentElement.scrollWidth与视口均为390，无水平溢出。截图：[桌面mock讲解状态](./screenshots/speech-lifecycle-desktop.png)、[手机mock无声线状态](./screenshots/speech-lifecycle-mobile.png)。测试浏览器与隔离预览进程已关闭。
+
+
+## Standards 审查
+
+以82d99f5为基线检查本议题diff，未发现实质规范违反或确认的新增缺陷；Android结论只限静态检查。
+
+## Spec 审查
+
+发现1项P2：请求/识别错误由页面直接绘制，控制器内部已为idle，关闭时去重导致错误标签残留。已在 [停止适配:L432](../src/main/resources/static/js/main.js#L432) 显式重绘控制器快照，并在 [页面回归:L99](../tests/frontend/speech-main.test.js#L99) 增加失败→关闭、识别错误→后台的验证；11项main集成检查通过。
