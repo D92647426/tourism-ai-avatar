@@ -49,7 +49,7 @@ python scripts/check_doc_links.py
 python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar
 ```
 
-Python 只用于可选检查脚本与 CI，网页项目运行不依赖 Python、Node.js 或 Docker。当前已有 Java 服务测试（ChatService、KnowledgeService、SpotService 及自然检索/聊天，共 49 个用例）和 Python 数据检查测试；自动检查验证 Maven 构建与单测、知识/景点数据结构、文档链接和本地启动后的页面/接口/模型资源。结构检查通过不代表景区事实已核验，详见 [知识数据完整性方案](docs/knowledge_integrity.md#L1)。
+Python 只用于可选检查脚本与 CI，网页项目运行不依赖 Python、Node.js 或 Docker。当前已有 Java 服务测试（ChatService、KnowledgeService、SpotService 及自然检索/聊天，共 64 个用例）和 Python 数据检查测试；自动检查验证 Maven 构建与单测、知识/景点数据结构、文档链接和本地启动后的页面/接口/模型资源。结构检查通过不代表景区事实已核验，详见 [知识数据完整性方案](docs/knowledge_integrity.md#L1)。
 
 ## 当前边界
 

@@ -6,6 +6,8 @@ import com.guide.model.ChatResponse;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.StreamUtils;
 
@@ -24,6 +26,31 @@ import static org.junit.jupiter.api.Assertions.*;
 class NaturalChatTest {
     @TempDir Path temp;
     private final ObjectMapper mapper = new ObjectMapper();
+
+    @ParameterizedTest
+    @CsvSource({
+        "灵山大佛有什么故事？,4", "大佛有什么故事？,4", "我想了解梵 宫怎么逛？,5",
+        "东方卢浮宫讲什么？,5", "九龙灌浴在演什么？,6", "九龙喷泉有什么故事？,6",
+        "白塔值得看吗？,15", "小布达拉宫是什么？,7", "赵朴初纪念馆介绍,14",
+        "佛陀成道故事,13", "灵山胜境门票与交通指南,9", "祥符寺的历史是什么？,3"
+    })
+    void finalOfflineReplyReturnsTheRelevantCandidateForEveryMatrixQuestion(String question, int expectedId) {
+        ChatResponse response = chat(defaults()).chat(question, null);
+        assertTrue(response.isFallback());
+        assertFalse(response.getReply().trim().isEmpty());
+        JsonNode refs = mapper.valueToTree(response).path("knowledgeReferences");
+        boolean found = false;
+        for (JsonNode ref : refs) if (ref.path("id").asInt() == expectedId) found = true;
+        assertTrue(found, response.getReply());
+    }
+
+    @Test void foreignNameDoesNotReturnTheLocalScenicCard() {
+        ChatResponse response = chat(defaults()).chat("乐山大佛有什么故事？", null);
+        assertFalse(response.getReply().contains("您好！关于【灵山大佛】"));
+        for (JsonNode ref : mapper.valueToTree(response).path("knowledgeReferences")) {
+            assertNotEquals(4, ref.path("id").asInt());
+        }
+    }
 
     @Test void aliasFinalReplyContainsActualKnowledgeReference() throws Exception {
         ChatResponse response = chat(defaults()).chat("大佛有什么故事？", null);

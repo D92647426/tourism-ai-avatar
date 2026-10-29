@@ -53,15 +53,13 @@ public final class KnowledgeRetriever {
      */
     public KnowledgeRetrieval retrieve(String question, List<KnowledgeItem> library) {
         String query = normalize(question);
-        String entityQuery = query;
-        for (String excluded : dictionary.excludedNames) entityQuery = entityQuery.replace(normalize(excluded), "");
-        final String masked = entityQuery;
+        final String masked = maskExcluded(query);
         List<Entity> entities = dictionary.entities.stream().filter(e -> firstMention(masked, e) >= 0)
                 .sorted(Comparator.comparingInt(e -> firstMention(masked, e))).collect(Collectors.toList());
         List<Candidate> ranked = new ArrayList<>();
         if (!query.isEmpty() && library != null) for (KnowledgeItem item : library) {
             if (item == null || item.getId() <= 0 || item.getTitle() == null || item.getContent() == null) continue;
-            Candidate candidate = score(query, entities, item);
+            Candidate candidate = score(query, masked, entities, item);
             if (candidate.score > 0) ranked.add(candidate);
         }
         ranked.sort(Comparator.comparingInt((Candidate c) -> c.score).reversed()
@@ -88,11 +86,17 @@ public final class KnowledgeRetriever {
                 entities.stream().map(e -> e.name).collect(Collectors.toList()));
     }
 
-    private Candidate score(String query, List<Entity> entities, KnowledgeItem item) {
+    private Candidate score(String query, String localQuery, List<Entity> entities, KnowledgeItem item) {
         int terms = 0;
-        if (!GENERIC.contains(query) && query.length() >= 2 && normalize(item.getTitle()).contains(query)) terms += 80;
+        String title = normalize(item.getTitle());
+        boolean localTitle = localQuery.length() >= 2 && !GENERIC.contains(localQuery)
+                && (title.contains(localQuery) || (title.length() >= 2 && !GENERIC.contains(title) && localQuery.contains(title)));
+        if (localTitle || (isExcludedName(title) && query.contains(title))) terms += 80;
         for (String term : keywords(item)) {
-            if (term.length() >= 2 && !GENERIC.contains(term) && query.contains(term)) terms += 30 + Math.min(term.length(), 20);
+            if (term.length() >= 2 && !GENERIC.contains(term)
+                    && (localQuery.contains(term) || (isExcludedName(term) && query.contains(term)))) {
+                terms += 30 + Math.min(term.length(), 20);
+            }
         }
         if ((query.equals("待补充") || query.equals("原始正文缺失")) && normalize(item.getContent()).contains(query)) terms += 30;
         int entityScore = 0;
@@ -120,6 +124,17 @@ public final class KnowledgeRetriever {
         Set<String> words = new LinkedHashSet<>();
         if (item.getKeywords() != null) for (String term : item.getKeywords().split("[,，、;；\\s]+")) words.add(normalize(term));
         return words;
+    }
+
+    /** Remove explicit external names before short local alias/title/keyword matching.
+     * An exact external title/keyword may still retrieve a genuinely named reference.
+     */
+    private String maskExcluded(String query) {
+        for (String excluded : dictionary.excludedNames) query = query.replace(normalize(excluded), "");
+        return query;
+    }
+    private boolean isExcludedName(String term) {
+        return dictionary.excludedNames.stream().anyMatch(name -> normalize(name).equals(term));
     }
 
     private static void addUnique(List<Candidate> selected, Candidate candidate) {

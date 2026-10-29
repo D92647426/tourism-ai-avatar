@@ -45,3 +45,6 @@ Java 测试用 @TempDir 与反射直接构造服务，不启动 Spring 上下文
 [NaturalChatTest.java:L1](../src/test/java/com/guide/service/NaturalChatTest.java#L1)另验简称的最终回复/引用、无命中提示、多个实体、空库景点降级；本机HttpServer模拟模型200/503，验证真实请求体带同一有界资料快照、失败降级只查一次。所有读写使用临时目录，不发请求到真实模型、不读取用户历史。
 
 命令：`mvn -o clean verify`（网络可用可省-o）；`python scripts/check_data_integrity.py`；`python scripts/test_data_integrity.py`；`python scripts/check_doc_links.py`；`python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar`。HTTP smoke新增natural_knowledge_references与ambiguous_question，确认打包JAR的实际API行为。失败先对照别名字典、关键词、评分与返回引用，勿把数据结构检查当作景区事实核验。
+
+
+2026-10-29 TEST-037最终验收：24项NaturalRetrievalTest、18项NaturalChatTest（含同组12题最终回复）与继承22项合计64项Java；44项Python数据检查测试。完整标题自然句与外景短关键词旁路两项审查发现均有先红后绿回归；查询实际模型使用本机HTTP mock，不是付费联网模型。

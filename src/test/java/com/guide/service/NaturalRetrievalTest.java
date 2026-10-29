@@ -109,6 +109,19 @@ class NaturalRetrievalTest {
         assertThrows(UnsupportedOperationException.class, () -> result.getReferences().clear());
     }
 
+    @Test void wholeTitleInsideANaturalQuestionIsRelevantWithoutKeywordOverlap() throws Exception {
+        KnowledgeService service = custom(Arrays.asList(item(8, "海边露营", "沙滩")));
+        KnowledgeRetrieval result = service.retrieve("海边露营有什么故事？");
+        assertEquals(1, result.getReferences().size());
+        assertEquals(8, result.getReferences().get(0).getId());
+    }
+
+    @Test void excludedForeignNameCannotReenterThroughAShortLocalKeyword() throws Exception {
+        KnowledgeService service = custom(Arrays.asList(item(4, "灵山大佛", "大佛")));
+        assertTrue(service.retrieve("乐山大佛有什么故事？").getReferences().isEmpty());
+        assertEquals(4, service.retrieve("大佛有什么故事？").getReferences().get(0).getId());
+    }
+
     private KnowledgeService defaults() { return load(temp.resolve("defaults.json")); }
     private KnowledgeService custom(List<KnowledgeItem> items) throws Exception {
         Path path = temp.resolve("custom.json");
