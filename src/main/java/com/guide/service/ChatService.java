@@ -63,20 +63,22 @@ public class ChatService {
      * 处理对话并返回完整响应
      */
     public ChatResponse chat(String userMessage, String interest) {
+        userMessage = userMessage == null ? "" : userMessage;
+        KnowledgeRetrieval knowledge = knowledgeService.retrieve(userMessage);
         boolean fallback = false;
         String reply;
 
-        if (apiKey != null && !apiKey.trim().isEmpty()) {
+        if (!userMessage.trim().isEmpty() && apiKey != null && !apiKey.trim().isEmpty()) {
             try {
-                reply = callAiApi(userMessage, interest);
+                reply = callAiApi(userMessage, interest, knowledge);
             } catch (Exception e) {
                 log.warn("AI API调用失败，降级到本地匹配: {}", e.getMessage());
                 fallback = true;
-                reply = localFallback(userMessage, interest);
+                reply = localFallback(userMessage, interest, knowledge);
             }
         } else {
             fallback = true;
-            reply = localFallback(userMessage, interest);
+            reply = localFallback(userMessage, interest, knowledge);
         }
 
         // 记录交互日志
@@ -88,6 +90,7 @@ public class ChatService {
 
         ChatResponse response = new ChatResponse(reply, fallback);
         response.setInterest(interest);
+        response.setKnowledgeReferences(knowledge.getReferences());
         // 只有游客选择了兴趣标签时才附带推荐路线
         if (interest != null && !interest.isEmpty()) {
             response.setRecommendedRoutes(generateRoutes(interest));
@@ -104,9 +107,9 @@ public class ChatService {
 
     // ===== AI API 调用 =====
 
-    private String callAiApi(String userMessage, String interest) throws Exception {
+    private String callAiApi(String userMessage, String interest, KnowledgeRetrieval knowledge) throws Exception {
         String spotContext = spotService.buildSpotContext();
-        String knowledgeContext = knowledgeService.retrieveRelevantContext(userMessage);
+        String knowledgeContext = knowledge.getContext();
 
         ObjectNode requestBody = objectMapper.createObjectNode();
         requestBody.put("model", model);
@@ -171,6 +174,7 @@ public class ChatService {
         content.append("8. 只能使用上面提供的景点资料和知识库参考作答；不得用未核验资料补写事实，资料里没有的内容不要编造或猜测\n");
         content.append("9. 知识条目中标注「待补充」或「原始正文缺失」表示内容尚未核实，不代表已知事实，不要据此补写故事\n");
         content.append("10. 门票、开放时间、演出场次、交通班次、天气路况等会变动的信息，必须提示游客以景区公告为准，不要给实时承诺\n");
+        content.append("11. 资料 K编号仅指本次本地候选条目，不是官方来源或已核验证据。引用时使用已有编号，未找到知识资料时明确说明，不编造编号或出处\n");
 
         // 个性化推荐倾向
         if (interest != null && !interest.isEmpty()) {
@@ -206,21 +210,26 @@ public class ChatService {
     /**
      * 无模型密钥或 API 调用失败时的本地离线回答。
      *
-     * <p>REQ-035 第 5 条：保留原有分支次序、条件与关键词集合；门票分支删除硬编码餐饮价格，
-     * 只保留通用门票说明与示例边界；交通分支和知识库兜底回答补充示例边界；见
-     * {@code docs/knowledge_integrity.md} 第 5 条。</p>
+     * REQ-037: reuse exactly the supplied retrieval snapshot; aliases resolve scenic
+     * names, multiple entities share candidate context, missing knowledge stays explicit.
+     * Legacy greeting/route/ticket/traffic rules remain after entity handling.
+     * Policy: docs/natural_retrieval.md; evidence boundary: docs/knowledge_integrity.md.
      */
-    private String localFallback(String userMessage, String interest) {
-        String msg = userMessage.toLowerCase();
-
-        // 知识库检索
-        String knowledgeContext = knowledgeService.retrieveRelevantContext(userMessage);
-
-        // 先尝试匹配数据库中的景点
-        List<Spot> spots = spotService.getAllSpots();
-        for (Spot spot : spots) {
-            if (msg.contains(spot.getName())) {
-                return buildSpotReply(spot, interest);
+    private String localFallback(String userMessage, String interest, KnowledgeRetrieval knowledge) {
+        String msg = userMessage.toLowerCase(Locale.ROOT);
+        String knowledgeContext = knowledge.getContext();
+        List<String> entities = knowledge.getEntityNames();
+        if (entities.size() > 1) {
+            return "你提到了多个景点：" + String.join("、", entities) + "。\n\n"
+                    + (knowledgeContext.isEmpty() ? "没有匹配的知识条目，请补充景点名称或具体想了解的问题。" :
+                    KNOWLEDGE_BOUNDARY_PREFIX + "\n\n" + knowledgeContext)
+                    + "\n可以指定其中一个景点，告诉我你想了解什么。";
+        }
+        if (entities.size() == 1) {
+            for (Spot spot : spotService.getAllSpots()) if (spot.getName().equals(entities.get(0))) {
+                return buildSpotReply(spot, interest) + "\n\n" + (knowledgeContext.isEmpty()
+                        ? "目前没有匹配的知识条目，以上是景点卡片中的参考信息。你想进一步了解哪方面？"
+                        : knowledgeContext);
             }
         }
 
@@ -279,14 +288,9 @@ public class ChatService {
                    "\n请问还有什么需要了解的吗？";
         }
 
-        return "感谢您的提问！作为您的灵山胜境AI导游，我了解以下16个核心景点：\n\n" +
-               "灵山大照壁、五明桥、佛足坛、五智门、菩提大道、\n" +
-               "九龙灌浴、降魔浮雕、阿育王柱、百子戏弥勒、\n" +
-               "祥符禅寺、灵山大佛、佛教文化博览馆、灵山梵宫、\n" +
-               "五印坛城、曼飞龙塔、无尽意斋\n\n" +
-               "您可以问我任何景点的详细信息、交通路线、\n" +
-               "门票价格、历史故事等。也欢迎问我'推荐哪些景点'~\n" +
-               "愿您在此感悟灵山，吉祥平安！";
+        return "当前本地资料没有找到匹配的知识条目。请补充景点名称，"
+                + "例如灵山大佛、灵山梵宫或九龙灌浴，再告诉我想了解的问题。"
+                + "也可以告诉我“它”指的是哪处景点，我再继续介绍。";
     }
 
     /**

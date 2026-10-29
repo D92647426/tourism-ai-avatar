@@ -89,6 +89,16 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                 ticket = json.loads(fetch(base + "/api/chat", {"message": "门票多少钱"}))
                 assert "50元/位" not in ticket["reply"] and "35元/位" not in ticket["reply"]
                 assert "景区公告" in ticket["reply"]
+                # REQ-037: check knowledge evidence separately from scenic fallback.
+                for question, expected_id in (("大佛有什么故事？", 4), ("梵宫怎么逛？", 5)):
+                    result = json.loads(fetch(base + "/api/chat", {"message": question}))
+                    refs = result["knowledgeReferences"]
+                    assert result["fallback"] is True and refs[0]["id"] == expected_id
+                    assert refs[0]["source"] == f"local-knowledge:{expected_id}"
+                    assert f"资料 K{expected_id}】" in result["reply"]
+                ambiguous = json.loads(fetch(base + "/api/chat", {"message": "它有什么故事？"}))
+                assert ambiguous["knowledgeReferences"] == []
+                assert "请补充景点名称" in ambiguous["reply"]
                 model_url = base + "/models/haru/haru.model.json"
                 model = json.loads(fetch(model_url))
                 assert model.get("model"), "Live2D model definition is missing."
@@ -96,7 +106,8 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                 assert fetch(base + "/js/live2d-helper.js")
                 return {"status": "passed", "spot_count": len(spots),
                         "checks": ["homepage", "spots", "offline_chat", "bundled_knowledge",
-                                   "three_spot_sample_boundaries", "pending_content", "ticket_boundary", "live2d_definition",
+                                   "three_spot_sample_boundaries", "pending_content", "ticket_boundary",
+                                   "natural_knowledge_references", "ambiguous_question", "live2d_definition",
                                    "live2d_model_file", "live2d_helper"]}
             except Exception:
                 log.flush()

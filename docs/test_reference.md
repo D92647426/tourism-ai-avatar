@@ -37,3 +37,11 @@ Local verification (2026-10-19): Maven build passed with JDK 19; HTTP smoke pass
 Java 测试用 @TempDir 与反射直接构造服务，不启动 Spring 上下文、不写仓库 data/。样例位置：[KnowledgeServiceTest.java:L39](../src/test/java/com/guide/service/KnowledgeServiceTest.java#L39)、[SpotServiceTest.java:L17](../src/test/java/com/guide/service/SpotServiceTest.java#L17)、[ChatServiceTest.java:L21](../src/test/java/com/guide/service/ChatServiceTest.java#L21)、[test_data_integrity.py:L111](../scripts/test_data_integrity.py#L111)。CI 在 [checks.yml:L1](../.github/workflows/checks.yml#L1) 中执行同样的数据检查与坏样本测试。
 
 真实景区事实、Android APK 与真实模型 API 不在本次验证范围；数据检查只证明结构与打包一致性，不等同事实核验。
+
+## TEST-037 自然提问检索与最终回复
+
+对应REQ-037/API-037；[NaturalRetrievalTest.java:L1](../src/test/java/com/guide/service/NaturalRetrievalTest.java#L1)直接验证知识检索，覆盖12个默认库问题、空白/无关/歧义、多个实体、外景短别名、稳定排序、自定义ID复用、长文本预算、重复关键词、16景点字典及最多3条引用。不能用最终景点回复替代此测试。
+
+[NaturalChatTest.java:L1](../src/test/java/com/guide/service/NaturalChatTest.java#L1)另验简称的最终回复/引用、无命中提示、多个实体、空库景点降级；本机HttpServer模拟模型200/503，验证真实请求体带同一有界资料快照、失败降级只查一次。所有读写使用临时目录，不发请求到真实模型、不读取用户历史。
+
+命令：`mvn -o clean verify`（网络可用可省-o）；`python scripts/check_data_integrity.py`；`python scripts/test_data_integrity.py`；`python scripts/check_doc_links.py`；`python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar`。HTTP smoke新增natural_knowledge_references与ambiguous_question，确认打包JAR的实际API行为。失败先对照别名字典、关键词、评分与返回引用，勿把数据结构检查当作景区事实核验。

@@ -1,6 +1,7 @@
 package com.guide.model;
 
 import java.util.List;
+import java.util.Collections;
 
 /**
  * 对话响应模型
@@ -10,6 +11,7 @@ public class ChatResponse {
     private boolean fallback;
     private List<String> recommendedRoutes;  // 推荐路线
     private String interest;                 // 回显兴趣标签
+    private List<KnowledgeReference> knowledgeReferences = Collections.emptyList();
 
     public ChatResponse(String reply, boolean fallback) {
         this.reply = reply;
@@ -24,4 +26,7 @@ public class ChatResponse {
     public void setRecommendedRoutes(List<String> recommendedRoutes) { this.recommendedRoutes = recommendedRoutes; }
     public String getInterest() { return interest; }
     public void setInterest(String interest) { this.interest = interest; }
+    /** REQ-037/API-037: supplied local candidates, not verified or model-used citations. */
+    public List<KnowledgeReference> getKnowledgeReferences() { return knowledgeReferences; }
+    public void setKnowledgeReferences(List<KnowledgeReference> references) { this.knowledgeReferences = references; }
 }

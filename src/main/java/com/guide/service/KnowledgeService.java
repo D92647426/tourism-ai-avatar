@@ -59,6 +59,7 @@ public class KnowledgeService {
             .enable(SerializationFeature.INDENT_OUTPUT)
             .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
     private List<KnowledgeItem> items = new ArrayList<>();
+    private final KnowledgeRetriever retriever = new KnowledgeRetriever();
 
     /**
      * 应用启动初始化入口（REQ-035）。行为矩阵见类注释与
@@ -289,30 +290,16 @@ public class KnowledgeService {
     }
 
     /**
-     * 检索与用户消息相关的知识条目，用于增强 AI 回答（REQ-035）。
-     *
-     * <p>匹配顺序、命中字段、最多 3 条以及单条正文 200 字符截断保持原有行为不变。
-     * 打包默认库把「课程示例资料，未完成事实核验，不作为实时出行依据。」或
-     * 「待补充：…」这类边界提示放在正文开头，因此 200 字符截断不会丢失该提示。
-     * 见 docs/knowledge_integrity.md 第 3 条。</p>
+     * REQ-037: retrieve an immutable snapshot for one model/fallback exchange.
+     * Ranking/budget policy is in KnowledgeRetriever; see docs/natural_retrieval.md.
+     * Does not change admin search(), read history or mutate stored knowledge.
      */
-    public String retrieveRelevantContext(String userMessage) {
-        if (userMessage == null || userMessage.trim().isEmpty()) return "";
-        List<KnowledgeItem> relevant = search(userMessage);
-        if (relevant.size() > 3) {
-            relevant = relevant.subList(0, 3); // 最多取3条
-        }
-        if (relevant.isEmpty()) return "";
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("【知识库参考资料】\n");
-        for (KnowledgeItem item : relevant) {
-            sb.append("- [").append(item.getTitle()).append("] ");
-            sb.append(item.getContent().substring(0, Math.min(200, item.getContent().length())));
-            sb.append("\n");
-        }
-        return sb.toString();
+    public KnowledgeRetrieval retrieve(String userMessage) {
+        return retriever.retrieve(userMessage, new ArrayList<>(items));
     }
+
+    /** REQ-037: compatible string-context entry point; empty means no supplied evidence. */
+    public String retrieveRelevantContext(String userMessage) { return retrieve(userMessage).getContext(); }
 
     public int getCount() {
         return items.size();

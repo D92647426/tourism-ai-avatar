@@ -21,3 +21,12 @@
 | 对话服务测试 | [ChatServiceTest.java:L21](../src/test/java/com/guide/service/ChatServiceTest.java#L21) |
 | 知识服务测试 | [KnowledgeServiceTest.java:L39](../src/test/java/com/guide/service/KnowledgeServiceTest.java#L39) |
 | 景点服务测试 | [SpotServiceTest.java:L17](../src/test/java/com/guide/service/SpotServiceTest.java#L17) |
+
+## 自然提问检索（REQ-037）
+
+| 功能 | 位置 |
+|---|---|
+| 名称/别名、确定性排序和上下文预算 | [KnowledgeRetriever.java:L54](../src/main/java/com/guide/service/KnowledgeRetriever.java#L54) |
+| 一次检索快照/兼容字符串入口 | [KnowledgeService.java:L297](../src/main/java/com/guide/service/KnowledgeService.java#L297)、[KnowledgeRetrieval.java:L1](../src/main/java/com/guide/service/KnowledgeRetrieval.java#L1) |
+| 候选引用DTO/响应 | [KnowledgeReference.java:L1](../src/main/java/com/guide/model/KnowledgeReference.java#L1)、[ChatResponse.java:L30](../src/main/java/com/guide/model/ChatResponse.java#L30) |
+| 人工维护的16景点别名 | [retrieval-entities.json:L1](../src/main/resources/retrieval-entities.json#L1) |
