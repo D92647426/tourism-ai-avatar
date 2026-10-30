@@ -151,9 +151,9 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                 assert login.get("success") is True
                 csrf = json.loads(fetch(base + "/api/auth/csrf", opener=opener))
                 headers = {csrf["headerName"]:csrf["token"]}
-                patch = {"name":"山川向导", "welcomeMessage":"欢迎来到山川之间。\n一起发现风景。",
+                patch = {"name":"\u3000山川向导\u00a0", "welcomeMessage":"欢迎来到山川之间。\n一起发现风景。",
                          "primaryColor":"#245D73", "volume":0}
-                expected = {**public_config, **patch, "primaryColor":"#245d73"}
+                expected = {**public_config, **patch, "name":"山川向导", "primaryColor":"#245d73"}
                 saved = json.loads(fetch(base + "/api/admin/digital-human-config", patch,
                                          headers, opener, method="PUT"))
                 assert saved == expected, "Partial update reset omitted settings or volume zero."

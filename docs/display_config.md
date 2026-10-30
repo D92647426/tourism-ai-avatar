@@ -31,7 +31,7 @@
 ## 实现与验证记录
 
 - 实现：[ConfigService.java:L128](../src/main/java/com/guide/service/ConfigService.java#L128)、[AdminController.java:L116](../src/main/java/com/guide/controller/AdminController.java#L116)、[display-config.js:L1](../src/main/resources/static/js/display-config.js#L1)、[admin.js:L479](../src/main/resources/static/js/admin.js#L479)。
-- Java 全量 `mvn -o clean verify`：64 tests，0 failure/error/skipped；Node全量：41通过、0失败。新增20项配置服务测试、3项安全接口测试、14项展示前端测试。
+- Java 全量 `mvn -o verify`：65 tests，0 failure/error/skipped；Node全量：41通过、0失败。新增21项配置服务测试、3项安全接口测试、14项展示前端测试。
 - JAR HTTP smoke 15项检查通过：临时管理员真实Cookie/CSRF部分保存（含音量0）→匿名读取匹配→非法修改400且文件不变→重启JAR后仍匹配，管理配置接口仍401。测试凭据仅临时进程、随机生成，不记录；测试不读写真实用户或交互数据。
 - 严格JSON文件回归先复现2项RED（尾随垃圾/第二对象被错误读取），启用服务私有mapper的严格尾随token校验后20项服务测试GREEN，已独立完整验证；不更改Spring全局mapper。
 - 支持原子移动的文件系统采用原子替换；不支持时回退普通替换移动，不承诺所有文件系统的断电/故障恢复。校验失败不写盘；实际IO失败不发布候选内存并清理临时文件。
@@ -49,3 +49,17 @@
 - [游客手机](screenshots/display-config-mobile.png)
 
 实际浏览器补验通过：配置音量0载入再保存仍0；0.15音量与1.15语速不因range步长量化，既有自定义声线在菜单中可表示并保存；手机聊天发送按钮在面板边界内完整可见。原生约束与视觉截图由浏览器验证，单元沙箱不替代该项检查。
+
+## 双轴审查与修正
+
+### Standards
+
+规范轴：无实质硬违反或值得报告的 Fowler 气味。字段映射与计时器注入具有明确用途，不为消除表面重复增加抽象。同步文档、实现定位、核心注释和必要测试，未新增真实凭据或用户数据。
+
+### Spec
+
+需求轴发现1项P2：Java trim 不移除NBSP/全角空格，而后台JS trim会移除，已成功保存的配置可能无法重新加载。新增 Unicode 空白回归先实测失败，再统一服务端首尾空白规范化（含NBSP、全角空格、BOM，保留内部文本），并将实际HTTP smoke的名称改为含首尾Unicode空白输入，检查回包/匿名读/重启后均为标准化名称。
+
+语音播放、模型替换、Android仍属边界之外；审查不把这些未实现事项计入本议题完成范围。
+
+复核结论：需求轴P2已关闭；规范轴0项、需求轴剩余0项。复核确认浏览器trim涉及的25种空白均被服务端规范化覆盖，加载与保存共同使用该规则，内部文本不变。最终65项Java、41项前端及15项HTTP检查通过。

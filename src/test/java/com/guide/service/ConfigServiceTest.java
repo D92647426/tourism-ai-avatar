@@ -230,6 +230,20 @@ class ConfigServiceTest {
     }
 
     @Test
+    void unicodeEdgeWhitespaceIsNormalizedForBrowserRoundTrip() throws IOException {
+        ConfigService service = initializedService();
+        ObjectNode patch = new ObjectMapper().createObjectNode();
+        patch.put("name", "\u00a0\u3000小旅\ufeff");
+        patch.put("welcomeMessage", "\u3000欢迎\u00a0");
+        DigitalHumanConfig saved = service.updateConfig(patch);
+        assertEquals("小旅", saved.getName());
+        assertEquals("欢迎", saved.getWelcomeMessage());
+        ConfigService restarted = initializedService();
+        assertEquals("小旅", restarted.getConfig().getName());
+        assertEquals("欢迎", restarted.getConfig().getWelcomeMessage());
+    }
+
+    @Test
     void volumeBoundariesAreEnforced() throws IOException {
         ConfigService service = initializedService();
 

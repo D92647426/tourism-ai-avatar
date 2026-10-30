@@ -59,6 +59,6 @@ Spring Boot 参数可通过命令行覆盖，例如 java -jar target/ai-guide-1.
 
 `data.config-file` 仍默认 `data/config.json`；名称、欢迎语、颜色经公开配置接口用于游客页。默认名称“灵灵”、默认金色 `#c8963e`，完整默认值见 [DigitalHumanConfig.java:L1](../src/main/java/com/guide/model/DigitalHumanConfig.java#L1)。管理员保存后游客刷新生效。声线/音量/语速继续保存，播放端消费留给 #14。
 
-配置校验、部分更新、快照与同目录临时文件替换见 [ConfigService.java:L128](../src/main/java/com/guide/service/ConfigService.java#L128)、[save:L338](../src/main/java/com/guide/service/ConfigService.java#L338)。支持原子移动时使用原子替换，不支持时回退普通替换移动；不承诺所有文件系统上的断电恢复。读取无父目录的文件名也可用。
+配置校验、部分更新、快照与同目录临时文件替换见 [ConfigService.java:L128](../src/main/java/com/guide/service/ConfigService.java#L128)、[save:L357](../src/main/java/com/guide/service/ConfigService.java#L357)。支持原子移动时使用原子替换，不支持时回退普通替换移动；不承诺所有文件系统上的断电恢复。读取无父目录的文件名也可用。
 
 缺文件可写默认值；已有文件损坏、尾随垃圾/第二JSON对象或非法字段时整份默认并告警，原文件保留，不自动覆盖修复；有效旧文件缺字段则补默认，未知旧字段忽略并告警。请管理员检查并备份坏文件后再明确保存。返回防御性副本，校验/写盘失败不发布候选内存。详见 [display_config.md:L1](display_config.md#L1)。

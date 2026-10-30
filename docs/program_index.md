@@ -44,5 +44,5 @@
 | [main.js:L1](../src/main/resources/static/js/main.js#L1) | 将聊天开始状态传给展示模块，防迟到欢迎语覆盖 |
 | [admin.js:L479](../src/main/resources/static/js/admin.js#L479) | 已加载快照才允许保存、单次提交、返回确认、失败保留输入 |
 | [ConfigService.java:L128](../src/main/java/com/guide/service/ConfigService.java#L128) | 配置快照、校验部分更新、持久化与容错读取 |
-| [ConfigServiceTest.java:L1](../src/test/java/com/guide/service/ConfigServiceTest.java#L1) | 20项配置持久化与校验回归 |
+| [ConfigServiceTest.java:L1](../src/test/java/com/guide/service/ConfigServiceTest.java#L1) | 21项配置持久化与校验回归 |
 | [display-config.test.js:L1](../tests/frontend/display-config.test.js#L1) | 14项真实页面脚本验收 |

@@ -80,7 +80,7 @@ node --test tests/frontend/*.test.js
 
 ## TEST-038 展示配置全链路（REQ-038 / #8）
 
-- `mvn verify`：本分支64项 Java 全通过（0失败/错误/跳过）。新增20项 [ConfigServiceTest.java:L1](../src/test/java/com/guide/service/ConfigServiceTest.java#L1) 覆盖部分更新、类型/长度/颜色/数值边界、音量0、返回副本、保存失败、坏文件/尾随JSON与原文件保留、重建服务读取落盘配置。权限/CSRF 与 API 错误见 [SecurityIntegrationTest.java:L1](../src/test/java/com/guide/security/SecurityIntegrationTest.java#L1)。
+- `mvn verify`：本分支65项 Java 全通过（0失败/错误/跳过）。新增21项 [ConfigServiceTest.java:L1](../src/test/java/com/guide/service/ConfigServiceTest.java#L1) 覆盖部分更新、类型/长度/颜色/数值边界、音量0、返回副本、保存失败、坏文件/尾随JSON与原文件保留、重建服务读取落盘配置。权限/CSRF 与 API 错误见 [SecurityIntegrationTest.java:L1](../src/test/java/com/guide/security/SecurityIntegrationTest.java#L1)。
 - `node --test tests/frontend/*.test.js`：41项全通过；新增14项 [display-config.test.js:L24](../tests/frontend/display-config.test.js#L24) 执行真实页面脚本，验证默认/HTML字面文本/迟到欢迎语/JSON解析超时/明暗主题，后台失败、重复提交、音量0和旧响应隔离。
 - `python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar`：15项检查通过。新增临时管理员+真实Cookie/CSRF保存、匿名读取、非法更新原文件不变、重新启动JAR仍读到新值、管理接口仍401。凭据临时随机生成且不打印，数据全部临时隔离，空模型Key，不读取真实用户/交互文件。
 - `python scripts/check_doc_links.py`：检查所有文档定位与链接。

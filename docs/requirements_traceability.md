@@ -64,4 +64,4 @@
 | 后台加载与保存确认 | [admin.js:L479](../src/main/resources/static/js/admin.js#L479) |
 | 行为与真实 HTTP | [display-config.test.js:L24](../tests/frontend/display-config.test.js#L24)、[smoke_teacher_project.py:L1](../scripts/smoke_teacher_project.py#L1) |
 
-结果：64 Java、41 前端测试通过；JAR HTTP 覆盖管理员保存→匿名读取→非法拒绝→重启读取。语音参数播放消费属 #14；本次没有更换 Live2D 模型。
+结果：65 Java、41 前端测试通过；JAR HTTP 覆盖管理员保存→匿名读取→非法拒绝→重启读取。语音参数播放消费属 #14；本次没有更换 Live2D 模型。

@@ -271,7 +271,7 @@ public class ConfigService {
         if (value == null) {
             throw new IllegalArgumentException("配置字段 " + field + " 不能为 null");
         }
-        String trimmed = value.trim();
+        String trimmed = trimDisplayText(value);
         if (trimmed.isEmpty()) {
             throw new IllegalArgumentException("配置字段 " + field + " 不能为空");
         }
@@ -291,6 +291,25 @@ public class ConfigService {
             }
         }
         return trimmed;
+    }
+
+    /**
+     * REQ-038: trim browser whitespace (including NBSP, ideographic space and BOM),
+     * while retaining legacy String.trim ASCII padding behavior; interior text is unchanged.
+     * Explicit ranges keep the Java 8 API compatible and independent of Unicode database versions.
+     */
+    private static String trimDisplayText(String value) {
+        int start = 0;
+        int end = value.length();
+        while (start < end && isDisplayPadding(value.charAt(start))) start++;
+        while (end > start && isDisplayPadding(value.charAt(end - 1))) end--;
+        return value.substring(start, end);
+    }
+
+    private static boolean isDisplayPadding(char ch) {
+        return ch <= 0x20 || ch == 0x00a0 || ch == 0x1680
+                || (ch >= 0x2000 && ch <= 0x200a) || ch == 0x2028 || ch == 0x2029
+                || ch == 0x202f || ch == 0x205f || ch == 0x3000 || ch == 0xfeff;
     }
 
     /**
