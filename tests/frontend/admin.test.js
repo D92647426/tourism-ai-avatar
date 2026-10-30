@@ -44,7 +44,7 @@ function setup(state) {
     doc._selectors['.nav-item.active'] = () => navItems.find((item) => item._classes.has('active')) || null;
 
     loadScript(env, 'security.js');
-    loadScript(env, 'admin.js');
+    loadScript(env, 'display-config.js'); loadScript(env, 'admin.js');
 
     const activeTab = (tab) => {
         navItems.forEach((item) => {

@@ -78,3 +78,17 @@ API-004 响应示例：`{"name":"灵灵","welcomeMessage":"...","voiceType":"fem
 - 后台 API 的保护由 [SecurityConfig.java:L137-L138](../src/main/java/com/guide/config/SecurityConfig.java#L137-L138) 的 `authorizeRequests` 强制执行；
 - 管理页进入时通过 [admin.js:L150](../src/main/resources/static/js/admin.js#L150) 调 `/api/auth/me` 校验身份，未登录显示管理员登录入口（[admin.html:L13](../src/main/resources/static/admin.html#L13)），游客显示无权限并可真正切换账号；
 - 管理员由启动环境变量 `APP_ADMIN_USERNAME`/`APP_ADMIN_PASSWORD` 初始化，默认不创建，见 [config_reference.md](./config_reference.md)。
+
+## API-038 数字人展示配置（REQ-038 / #8）
+
+`GET /api/digital-human-config` 公开只读；管理员 `GET/PUT /api/admin/digital-human-config` 保留会话/ADMIN，PUT 还需 CSRF。返回字段仅 name、welcomeMessage、primaryColor、voiceType、modelName、volume、speechRate。
+
+PUT 接受部分对象，例如 `{"name":"山川向导","welcomeMessage":"欢迎一起发现风景。","primaryColor":"#245D73"}`；200 返回完整配置，颜色标准化为小写，缺字段保持原值（包括音量0）。空对象只读回当前快照。
+
+- 名称 trim 后1–40，欢迎语1–500；名称不能含控制字符，欢迎语允许 LF/制表。使用文本显示，不解析 HTML。
+- 颜色只支持六位 `#RRGGBB`；voiceType/modelName 非空无控制字符，分别最多200/100字符；volume 有限数0–1，speechRate 有限数0.5–2。
+- 非对象、null、未知字段、错类型或非法值：400 `{"code":"INVALID_CONFIG","message":"具体校验提示"}`，整次不保存。空/损坏 HTTP JSON 由 Spring 返回400。
+- 写盘失败：500 `{"code":"CONFIG_SAVE_FAILED","message":"…未保存…"}`，不发布候选内存、不泄露文件路径；客户端保留草稿。
+- 401/403/CSRF 规则沿用 API-030；游客页面不能为展示配置读取管理接口。
+
+实现：[AdminController.java:L116](../src/main/java/com/guide/controller/AdminController.java#L116)、[ConfigService.java:L128](../src/main/java/com/guide/service/ConfigService.java#L128)。完整规则与故障边界见 [display_config.md:L1](display_config.md#L1)。

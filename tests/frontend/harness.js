@@ -14,6 +14,7 @@ class Element {
         this.tagName = 'DIV';
         this.dataset = Object.assign({}, dataset);
         this.style = {};
+        this.style.setProperty = function(name, value) { this[name] = value; };
         this.textContent = '';
         this.innerHTML = '';
         this.value = '';

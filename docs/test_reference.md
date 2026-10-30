@@ -77,3 +77,12 @@ node --test tests/frontend/*.test.js
 1. 游客登录后访问 `/admin.html`，应提示无权限，可点“切换账号登录”真正退出并回到管理员登录层；
 2. 管理员登录后可读写管理后台，退出后刷新应回到登录入口；
 3. 页面 30 分钟无操作后会话过期，管理页应重新要求登录且不产生重定向循环。
+
+## TEST-038 展示配置全链路（REQ-038 / #8）
+
+- `mvn verify`：本分支64项 Java 全通过（0失败/错误/跳过）。新增20项 [ConfigServiceTest.java:L1](../src/test/java/com/guide/service/ConfigServiceTest.java#L1) 覆盖部分更新、类型/长度/颜色/数值边界、音量0、返回副本、保存失败、坏文件/尾随JSON与原文件保留、重建服务读取落盘配置。权限/CSRF 与 API 错误见 [SecurityIntegrationTest.java:L1](../src/test/java/com/guide/security/SecurityIntegrationTest.java#L1)。
+- `node --test tests/frontend/*.test.js`：41项全通过；新增14项 [display-config.test.js:L24](../tests/frontend/display-config.test.js#L24) 执行真实页面脚本，验证默认/HTML字面文本/迟到欢迎语/JSON解析超时/明暗主题，后台失败、重复提交、音量0和旧响应隔离。
+- `python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar`：15项检查通过。新增临时管理员+真实Cookie/CSRF保存、匿名读取、非法更新原文件不变、重新启动JAR仍读到新值、管理接口仍401。凭据临时随机生成且不打印，数据全部临时隔离，空模型Key，不读取真实用户/交互文件。
+- `python scripts/check_doc_links.py`：检查所有文档定位与链接。
+
+本机 Java19、Node24、Python3.12.7环境验证；GitHub CI 使用Java17/Node20/Python3.12，结果以PR检查为准。本轮未验证真实模型、系统发声或Android；语音参数消费属 #14。浏览器截图与操作记录见 [display_config.md:L1](display_config.md#L1)。

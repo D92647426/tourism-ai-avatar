@@ -25,6 +25,7 @@
     var chatHeaderName = S('chatHeaderName');
 
     var allSpots = [], isChatOpen = false;
+    var hasStartedChat = false;
     var api = window.AuthGuard.apiFetch;
     // 从登录信息读取（localStorage 只作显示缓存，真实身份以 /api/auth/me 为准）
     var currentUserId = localStorage.getItem('userId') || '';
@@ -201,6 +202,7 @@
         // 立即停止当前所有说话和口型
         stopTts();
         var text = chatInput.value.trim(); if (!text) return;
+        hasStartedChat = true;
         addMsg('user', text); chatInput.value = ''; showTyping();
         var body = { message: text, userId: currentUserId };
         if (currentInterest) body.interest = currentInterest;
@@ -377,14 +379,10 @@
         }
     }
 
-    // 加载声线配置（公开只读端点，无需登录；管理端配置接口仍需 ADMIN）
-    fetch('/api/digital-human-config').then(function(r) { return r.json(); }).then(function(c) {
-        if (c && c.name) {
-            var lbl = document.querySelector('.live2d-label');
-            if (lbl) lbl.textContent = 'AI导游' + c.name;
-            if (chatHeaderName) chatHeaderName.textContent = 'AI导游' + c.name;
-        }
-    }).catch(function() {});
+    // REQ-038: labels/theme may load late; welcome cannot rewrite started chat.
+    var displayConfig = window.GuideDisplayConfig.load({ document: document,
+        fetch: window.fetch.bind(window), canUpdateWelcome: function() { return !hasStartedChat; } });
+    window.addEventListener('pagehide', function() { displayConfig.stop(); });
 
     // ===== 语音输入（优先原生 Android，兜底 Web Speech API） =====
     var recognition = null, listening = false;

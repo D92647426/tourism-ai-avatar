@@ -49,3 +49,19 @@
 
 验收事实：匿名访问 `/api/admin/**` 返回 401；游客返回 403；管理员可读写；退出后服务端会话失效；缺少/错误 CSRF 返回 403 且与匿名 401 区分；注册忽略客户端注入的角色；所有认证响应不含 `password`/`passwordHash`；新注册只存 BCrypt；旧明文记录迁移前备份、迁移保留 ID/用户名/兴趣/时间；`APP_ADMIN_*` 未配置时不创建管理员；用户名冲突拒绝初始化；落盘失败会回滚内存；重复 ID/用户名与空数据根会被拒绝且不覆盖原文件。自动化覆盖为 41 个 Java 测试 + 27 个前端行为测试（`node:test` + `vm` 执行真实脚本）。详见 [TEST-030](./test_reference.md) 与 [API 说明](./api_reference.md)。
 
+
+## REQ-038 展示设置（GitHub #8）
+
+管理员保存名称、首次欢迎语和主题色后，游客刷新即生效；只读接口保留公开访问，管理写入保留 ADMIN/CSRF。配置失败有默认显示，迟到欢迎语不改写聊天；非法更新整次拒绝，落盘失败不发布内存。
+
+| 环节 | 实现 / 验收定位 |
+|---|---|
+| 设计与边界 | [display_config.md:L1](display_config.md#L1) |
+| 公开只读 | [PublicConfigController.java:L21](../src/main/java/com/guide/controller/PublicConfigController.java#L21) |
+| 校验、快照与持久化 | [ConfigService.java:L128](../src/main/java/com/guide/service/ConfigService.java#L128) |
+| 管理 API 失败状态 | [AdminController.java:L116](../src/main/java/com/guide/controller/AdminController.java#L116) |
+| 页面默认、主题、超时 | [display-config.js:L1](../src/main/resources/static/js/display-config.js#L1) |
+| 后台加载与保存确认 | [admin.js:L479](../src/main/resources/static/js/admin.js#L479) |
+| 行为与真实 HTTP | [display-config.test.js:L24](../tests/frontend/display-config.test.js#L24)、[smoke_teacher_project.py:L1](../scripts/smoke_teacher_project.py#L1) |
+
+结果：64 Java、41 前端测试通过；JAR HTTP 覆盖管理员保存→匿名读取→非法拒绝→重启读取。语音参数播放消费属 #14；本次没有更换 Live2D 模型。

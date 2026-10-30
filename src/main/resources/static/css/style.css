@@ -1,8 +1,10 @@
 /* ===== 景区AI数字人导览系统 v2 ===== */
 :root {
-    --primary: #2d8f4e;
-    --primary-dark: #1a6b37;
-    --primary-light: #e8f5e9;
+    --primary: #c8963e;
+    --on-primary: #000;
+    --primary-text: #503c19;
+    --primary-dark: #503c19;
+    --primary-light: #fbf7f0;
     --gold: #c9a84c;
     --gold-light: #f5f0e0;
     --bg: #f5f3ee;
@@ -178,7 +180,7 @@ body {
 }
 
 .search-input:focus {
-    border-color: var(--primary);
+    border-color: var(--primary-text, var(--primary-dark));
     box-shadow: 0 0 0 4px rgba(45,143,78,0.1);
 }
 
@@ -300,7 +302,7 @@ body {
     align-items: center;
     justify-content: space-between;
     font-size: 12px;
-    color: var(--primary);
+    color: var(--primary-text, var(--primary-dark));
     font-weight: 600;
 }
 
@@ -384,7 +386,7 @@ body {
 .detail-category {
     display: inline-block;
     font-size: 13px;
-    color: var(--primary);
+    color: var(--primary-text, var(--primary-dark));
     background: var(--primary-light);
     padding: 4px 12px;
     border-radius: 12px;
@@ -664,8 +666,8 @@ body {
 }
 
 .quick-btn:hover {
-    border-color: var(--primary);
-    color: var(--primary);
+    border-color: var(--primary-text, var(--primary-dark));
+    color: var(--primary-text, var(--primary-dark));
     background: var(--primary-light);
 }
 
@@ -689,7 +691,7 @@ body {
     color: var(--text);
 }
 
-.chat-input:focus { border-color: var(--primary); }
+.chat-input:focus { border-color: var(--primary-text, var(--primary-dark)); }
 
 .chat-send-btn {
     padding: 10px 20px;
@@ -739,7 +741,7 @@ body {
     flex-shrink: 0;
 }
 
-.voice-btn:hover { border-color: var(--primary); background: var(--primary-light); }
+.voice-btn:hover { border-color: var(--primary-text, var(--primary-dark)); background: var(--primary-light); }
 
 .voice-btn.listening {
     background: #ff4444;
@@ -888,3 +890,18 @@ body {
     border: 1px solid #e74c3c;
 }
 #profileLogout:hover { background: #e74c3c; color: #fff; }
+
+/* REQ-038: display theme; flat dark surfaces preserve contrast for light colors. */
+.header,.chat-panel-header { background: var(--primary-dark); color: #fff; }
+.live2d-label,.chat-fab { background: var(--primary); color: var(--on-primary, #fff); }
+.chat-send-btn,.chat-msg.user .msg-bubble { color: var(--on-primary, #fff); }
+.chat-send-btn:hover { color: #fff; }
+:focus-visible { outline: 2px solid var(--primary-dark); outline-offset: 3px; }
+#chatWelcome { white-space: pre-wrap; }
+
+
+.live2d-label { max-width: 90%; overflow-wrap: anywhere; text-align: center; box-shadow: 0 4px 16px #0002; }
+.chat-header-info { min-width: 0; }
+.chat-header-name { overflow-wrap: anywhere; }
+.chat-input { min-width: 0; }
+.chat-send-btn { flex-shrink: 0; white-space: nowrap; }

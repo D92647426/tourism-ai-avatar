@@ -26,6 +26,7 @@ import java.util.Comparator;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -436,5 +437,112 @@ class SecurityIntegrationTest {
         mockMvc.perform(get("/")).andExpect(status().isOk());
         mockMvc.perform(get("/api/spots")).andExpect(status().isOk());
         mockMvc.perform(get("/api/auth/csrf")).andExpect(status().isOk());
+    }
+
+    // ===== REQ-038 展示配置：部分更新 / 非法值 / 落盘失败 =====
+
+    /** 读取管理端配置（ADMIN 会话）。 */
+    private JsonNode adminConfig(MockHttpSession admin) throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/admin/digital-human-config").session(admin))
+                .andExpect(status().isOk())
+                .andReturn();
+        return objectMapper.readTree(jsonBody(result));
+    }
+
+    /** 读取游客端公开配置（匿名）。 */
+    private JsonNode publicConfig() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/digital-human-config"))
+                .andExpect(status().isOk())
+                .andReturn();
+        return objectMapper.readTree(jsonBody(result));
+    }
+
+    /**
+     * 合规的部分更新：只改提交的字段，其余字段保持原值；颜色统一保存为小写。
+     */
+    @Test
+    void adminPartialConfigUpdateKeepsOtherFieldsAndNormalizesColor() throws Exception {
+        MockHttpSession admin = login(ADMIN_USERNAME, ADMIN_PASSWORD);
+        JsonNode before = adminConfig(admin);
+        String beforeWelcome = before.path("welcomeMessage").asText();
+
+        Csrf csrf = csrf(admin);
+        mockMvc.perform(csrf.apply(put("/api/admin/digital-human-config"))
+                        .session(admin)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"展示名称\",\"primaryColor\":\"#AABBCC\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("展示名称"))
+                .andExpect(jsonPath("$.primaryColor").value("#aabbcc"))
+                .andExpect(jsonPath("$.welcomeMessage").value(beforeWelcome));
+
+        mockMvc.perform(get("/api/digital-human-config"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("展示名称"));
+    }
+
+    /**
+     * 非法更新整次拒绝：400 + code=INVALID_CONFIG + 中文原因，且不部分改写已有配置。
+     */
+    @Test
+    void invalidConfigReturns400AndKeepsPreviousConfig() throws Exception {
+        MockHttpSession admin = login(ADMIN_USERNAME, ADMIN_PASSWORD);
+        String beforeName = publicConfig().path("name").asText();
+        Csrf csrf = csrf(admin);
+
+        String[] invalidPayloads = {
+                "{\"primaryColor\":\"red\"}",
+                "{\"name\":\"  \"}",
+                "{\"volume\":-0.1}",
+                "{\"unknownField\":1}",
+                "{\"name\":null}"
+        };
+        for (String payload : invalidPayloads) {
+            mockMvc.perform(csrf.apply(put("/api/admin/digital-human-config"))
+                            .session(admin)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(payload))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("INVALID_CONFIG"))
+                    .andExpect(jsonPath("$.message").isNotEmpty());
+        }
+
+        assertEquals(beforeName, publicConfig().path("name").asText(),
+                "非法更新必须整次拒绝，不能部分改写配置");
+    }
+
+    /**
+     * 落盘失败：目标路径被占用成目录导致原子替换失败，必须返回 500 + CONFIG_SAVE_FAILED，
+     * 且旧内存配置与旧文件都不变。
+     */
+    @Test
+    void configSaveFailureReturns500AndKeepsPreviousConfig() throws Exception {
+        MockHttpSession admin = login(ADMIN_USERNAME, ADMIN_PASSWORD);
+        String beforeName = publicConfig().path("name").asText();
+        Csrf csrf = csrf(admin);
+
+        Path configFile = DATA_DIR.resolve("config.json");
+        byte[] original = Files.readAllBytes(configFile);
+        try {
+            // 目标路径变成目录：同目录临时文件的原子替换/替换移动在 Windows/Linux 都会失败。
+            Files.delete(configFile);
+            Files.createDirectory(configFile);
+
+            mockMvc.perform(csrf.apply(put("/api/admin/digital-human-config"))
+                            .session(admin)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"name\":\"保存失败测试\"}"))
+                    .andExpect(status().isInternalServerError())
+                    .andExpect(jsonPath("$.code").value("CONFIG_SAVE_FAILED"))
+                    .andExpect(jsonPath("$.message", containsString("未保存")));
+
+            assertEquals(beforeName, publicConfig().path("name").asText(),
+                    "落盘失败必须保持旧内存配置");
+        } finally {
+            if (Files.isDirectory(configFile)) {
+                Files.delete(configFile);
+            }
+            Files.write(configFile, original);
+        }
     }
 }

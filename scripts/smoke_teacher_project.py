@@ -1,4 +1,4 @@
-"""REQ-027 / REQ-030: build-artifact HTTP verification; see docs/test_reference.md."""
+"""REQ-027 / REQ-030 / REQ-038: build-artifact HTTP verification; see docs/test_reference.md."""
 from __future__ import annotations
 
 import argparse
@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import secrets
 import socket
 import subprocess
 import tempfile
@@ -21,14 +22,14 @@ def make_opener() -> urllib.request.OpenerDirector:
     return urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
 
 
-def _request(url: str, payload: dict | None, headers: dict | None) -> urllib.request.Request:
+def _request(url: str, payload: dict | None, headers: dict | None, method: str | None = None) -> urllib.request.Request:
     merged = {"Content-Type": "application/json"} if payload is not None else {}
     if headers:
         merged.update(headers)
     return urllib.request.Request(
         url,
         data=json.dumps(payload).encode("utf-8") if payload is not None else None,
-        headers=merged,
+        headers=merged, method=method,
     )
 
 
@@ -41,20 +42,34 @@ def _open(request: urllib.request.Request,
 
 
 def fetch(url: str, payload: dict | None = None, headers: dict | None = None,
-          opener: urllib.request.OpenerDirector | None = None) -> bytes:
+          opener: urllib.request.OpenerDirector | None = None, method: str | None = None) -> bytes:
     """Read a local HTTP endpoint, optionally sending JSON and browser-like headers."""
-    with _open(_request(url, payload, headers), opener) as response:
+    with _open(_request(url, payload, headers, method), opener) as response:
         return response.read()
 
 
 def status_of(url: str, payload: dict | None = None, headers: dict | None = None,
-              opener: urllib.request.OpenerDirector | None = None) -> tuple[int, bytes]:
+              opener: urllib.request.OpenerDirector | None = None, method: str | None = None) -> tuple[int, bytes]:
     """Return (status code, body) and turn expected 4xx responses into data, not exceptions."""
     try:
-        with _open(_request(url, payload, headers), opener) as response:
+        with _open(_request(url, payload, headers, method), opener) as response:
             return response.status, response.read()
     except urllib.error.HTTPError as error:
         return error.code, error.read()
+
+
+def wait_ready(process: subprocess.Popen, base: str, timeout: float) -> bytes:
+    """REQ-038: bounded readiness check shared by initial launch and persistence restart."""
+    deadline = time.monotonic() + timeout
+    while True:
+        if process.poll() is not None:
+            raise RuntimeError("Java server exited before becoming ready.")
+        try:
+            return fetch(base + "/")
+        except (urllib.error.URLError, TimeoutError, OSError):
+            if time.monotonic() >= deadline:
+                raise RuntimeError("Java server did not become ready in time.")
+            time.sleep(0.25)
 
 
 def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
@@ -81,26 +96,21 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                 shutil.copy2(root / "data" / name, data / name)
         log_path = work / "server.log"
         with log_path.open("w", encoding="utf-8") as log:
-            process = subprocess.Popen(
-                [java, "-jar", str(jar), f"--server.port={port}",
-                 "--server.address=127.0.0.1", "--ai.api-key="],
-                cwd=work,
-                stdout=log,
-                stderr=subprocess.STDOUT,
-                creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
-            )
+            # REQ-038: disposable credentials exist only in this isolated test process.
+            password = secrets.token_urlsafe(24)
+            environment = {**os.environ, "APP_ADMIN_USERNAME": "display-smoke-admin",
+                           "APP_ADMIN_PASSWORD": password}
+
+            def start_server():
+                return subprocess.Popen(
+                    [java, "-jar", str(jar), f"--server.port={port}",
+                     "--server.address=127.0.0.1", "--ai.api-key="],
+                    cwd=work, env=environment, stdout=log, stderr=subprocess.STDOUT,
+                    creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
+
+            process = start_server()
             try:
-                deadline = time.monotonic() + timeout
-                while True:
-                    if process.poll() is not None:
-                        raise RuntimeError("Java server exited before becoming ready.")
-                    try:
-                        home = fetch(base + "/")
-                        break
-                    except (urllib.error.URLError, TimeoutError, OSError):
-                        if time.monotonic() >= deadline:
-                            raise RuntimeError("Java server did not become ready in time.")
-                        time.sleep(0.25)
+                home = wait_ready(process, base, timeout)
                 assert b"live2d" in home.lower(), "Homepage does not reference Live2D."
                 spots = json.loads(fetch(base + "/api/spots"))
                 assert isinstance(spots, list) and spots, "No scenic spots returned."
@@ -134,11 +144,39 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                 assert model.get("model"), "Live2D model definition is missing."
                 assert fetch(urllib.parse.urljoin(model_url, model["model"]))
                 assert fetch(base + "/js/live2d-helper.js")
+                # Real ADMIN + CSRF partial update, anonymous read, reject rollback, restart.
+                login = json.loads(fetch(base + "/api/auth/login",
+                                         {"username":"display-smoke-admin", "password":password},
+                                         {csrf_header:token}, opener))
+                assert login.get("success") is True
+                csrf = json.loads(fetch(base + "/api/auth/csrf", opener=opener))
+                headers = {csrf["headerName"]:csrf["token"]}
+                patch = {"name":"山川向导", "welcomeMessage":"欢迎来到山川之间。\n一起发现风景。",
+                         "primaryColor":"#245D73", "volume":0}
+                expected = {**public_config, **patch, "primaryColor":"#245d73"}
+                saved = json.loads(fetch(base + "/api/admin/digital-human-config", patch,
+                                         headers, opener, method="PUT"))
+                assert saved == expected, "Partial update reset omitted settings or volume zero."
+                assert json.loads(fetch(base + "/api/digital-human-config")) == expected
+                before = (data / "config.json").read_bytes()
+                status, body = status_of(base + "/api/admin/digital-human-config",
+                                         {"name":"不应保存", "primaryColor":"red"},
+                                         headers, opener, method="PUT")
+                assert status == 400 and json.loads(body)["code"] == "INVALID_CONFIG"
+                assert json.loads(fetch(base + "/api/digital-human-config")) == expected
+                assert (data / "config.json").read_bytes() == before
+                process.terminate(); process.wait(timeout=10)
+                process = start_server()
+                wait_ready(process, base, timeout)
+                assert json.loads(fetch(base + "/api/digital-human-config")) == expected
+                assert status_of(base + "/api/admin/digital-human-config")[0] == 401
                 return {"status": "passed", "spot_count": len(spots),
                         "checks": ["homepage", "spots", "csrf_token", "public_config",
                                    "admin_anonymous_401", "csrf_missing_rejected",
                                    "offline_chat", "live2d_definition",
-                                   "live2d_model_file", "live2d_helper"]}
+                                   "live2d_model_file", "live2d_helper", "admin_display_partial_save",
+                                   "anonymous_saved_display", "invalid_display_rollback",
+                                   "display_survives_restart", "admin_config_still_protected"]}
             except Exception:
                 log.flush()
                 print(log_path.read_text(encoding="utf-8", errors="replace")[-4000:])

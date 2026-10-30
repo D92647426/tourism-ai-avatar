@@ -12,9 +12,13 @@
     var adminGateError = S('adminGateError');
     var adminIdentity = S('adminIdentity');
     var adminStarted = false;
+    var configEpoch = 0, configLoaded = false, configSaving = false, savedVoiceOption = null;
 
     // 会话失效/被拒绝时结束页面上的管理员状态，避免继续展示或误用此前的数据
     function endAdminSession() {
+        configEpoch++;
+        configLoaded = false; configSaving = false;
+        configControls();
         adminStarted = false;
         if (adminIdentity) adminIdentity.textContent = '';
         // 清掉上一次会话加载的敏感列表，避免退出/被拒绝后仍可从 DOM 读到旧数据
@@ -471,52 +475,101 @@
 
     // ===== 数字人形象管理 =====
 
-    function loadDigitalHumanConfig() {
-        apiFetch('/api/admin/digital-human-config')
-            .then(function(res) { return res.json(); })
-            .then(function(config) {
-                document.getElementById('cfgName').value = config.name || '灵灵';
-                document.getElementById('cfgWelcome').value = config.welcomeMessage || '';
-                document.getElementById('cfgVoice').value = config.voiceType || 'female';
-                document.getElementById('cfgColor').value = config.primaryColor || '#2d8f4e';
-                document.getElementById('cfgVolume').value = config.volume || 1.0;
-                document.getElementById('cfgSpeed').value = config.speechRate || 1.0;
-                document.getElementById('cfgVolumeLabel').textContent = config.volume || 1.0;
-                document.getElementById('cfgSpeedLabel').textContent = config.speechRate || 1.0;
-            })
-            .catch(function() { /* 使用默认值 */ });
+    /** REQ-038: only a loaded, verified snapshot can be edited/saved. See docs/display_config.md. */
+    function configControls() {
+        var disabled = !configLoaded || configSaving;
+        ['cfgName','cfgWelcome','cfgVoice','cfgColor','cfgVolume','cfgSpeed','btnSaveConfig'].forEach(function(id) {
+            if (S(id)) S(id).disabled = disabled;
+        });
+        if (S('btnReloadConfig')) S('btnReloadConfig').disabled = configSaving;
     }
-
-    // 范围滑块联动
-    document.getElementById('cfgVolume').addEventListener('input', function() {
-        document.getElementById('cfgVolumeLabel').textContent = this.value;
+    function configStatus(message) { S('cfgStatus').textContent = message; }
+    function validConfig(data) {
+        if (!data || Array.isArray(data) || typeof data !== 'object') throw new Error('展示设置响应无效，请重新加载');
+        var display = window.GuideDisplayConfig.normalize(data);
+        if (['name','welcomeMessage','primaryColor'].some(function(k) { return data[k] !== display[k]; }) ||
+            typeof data.voiceType !== 'string' || !data.voiceType || typeof data.modelName !== 'string' || !data.modelName ||
+            !Number.isFinite(data.volume) || data.volume < 0 || data.volume > 1 ||
+            !Number.isFinite(data.speechRate) || data.speechRate < 0.5 || data.speechRate > 2) {
+            throw new Error('展示设置响应无效，请重新加载');
+        }
+        return data;
+    }
+    function readConfig(res) {
+        return res.json().then(function(data) {
+            if (!res.ok) throw new Error(data && data.message || '配置请求失败，请重试');
+            return validConfig(data);
+        });
+    }
+    function showConfig(config) {
+        // Preserve configured voice IDs that the legacy female/male menu cannot represent.
+        if (config.voiceType !== 'female' && config.voiceType !== 'male') {
+            if (!savedVoiceOption) {
+                savedVoiceOption = document.createElement('option'); S('cfgVoice').appendChild(savedVoiceOption);
+            }
+            savedVoiceOption.value = config.voiceType;
+            savedVoiceOption.textContent = '已保存声线：' + config.voiceType;
+        }
+        S('cfgName').value = config.name; S('cfgWelcome').value = config.welcomeMessage;
+        S('cfgVoice').value = config.voiceType; S('cfgColor').value = config.primaryColor;
+        S('cfgVolume').value = config.volume; S('cfgSpeed').value = config.speechRate;
+        S('cfgVolumeLabel').textContent = config.volume; S('cfgSpeedLabel').textContent = config.speechRate;
+        renderConfigPreview();
+    }
+    /** REQ-038: draft-only preview shares safe display normalization; it never writes config. */
+    function renderConfigPreview() {
+        var display = window.GuideDisplayConfig.normalize({name:S('cfgName').value,
+            welcomeMessage:S('cfgWelcome').value, primaryColor:S('cfgColor').value});
+        var colors = window.GuideDisplayConfig.palette(display.primaryColor);
+        S('cfgPreviewName').textContent = 'AI导游' + display.name;
+        S('cfgPreviewWelcome').textContent = display.welcomeMessage;
+        S('cfgPreview').style.setProperty('--preview-primary', display.primaryColor);
+        S('cfgPreview').style.setProperty('--preview-on', colors['--on-primary']);
+        S('cfgPreview').style.setProperty('--preview-light', colors['--primary-light']);
+    }
+    function loadDigitalHumanConfig() {
+        if (!adminStarted || configSaving) return;
+        var epoch = ++configEpoch;
+        configLoaded = false; configControls(); configStatus('正在加载展示设置…');
+        apiFetch('/api/admin/digital-human-config').then(readConfig).then(function(data) {
+            if (epoch !== configEpoch) return;
+            showConfig(data); configLoaded = true; configControls(); configStatus('已加载。保存后游客刷新生效。');
+        }).catch(function() {
+            if (epoch !== configEpoch) return;
+            configLoaded = false; configControls(); configStatus('加载失败，请点击重新加载后再保存。');
+        });
+    }
+    S('btnReloadConfig').addEventListener('click', loadDigitalHumanConfig);
+    ['cfgName','cfgWelcome','cfgColor','cfgVoice','cfgVolume','cfgSpeed'].forEach(function(id) {
+        S(id).addEventListener('input', function() {
+            renderConfigPreview();
+            if (configLoaded && !configSaving) configStatus('有未保存的更改。保存后游客刷新生效。');
+        });
     });
-    document.getElementById('cfgSpeed').addEventListener('input', function() {
-        document.getElementById('cfgSpeedLabel').textContent = this.value;
-    });
+    S('cfgVolume').addEventListener('input', function() { S('cfgVolumeLabel').textContent = this.value; });
+    S('cfgSpeed').addEventListener('input', function() { S('cfgSpeedLabel').textContent = this.value; });
 
-    // 保存配置
-    document.getElementById('btnSaveConfig').addEventListener('click', function() {
-        var config = {
-            name: document.getElementById('cfgName').value.trim(),
-            welcomeMessage: document.getElementById('cfgWelcome').value.trim(),
-            voiceType: document.getElementById('cfgVoice').value,
-            primaryColor: document.getElementById('cfgColor').value,
-            volume: parseFloat(document.getElementById('cfgVolume').value),
-            speechRate: parseFloat(document.getElementById('cfgSpeed').value)
-        };
-
-        apiFetch('/api/admin/digital-human-config', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(config)
-        })
-        .then(function(res) { return res.json(); })
-        .then(function() {
-            alert('配置保存成功！游客端将在刷新后生效。');
-        })
-        .catch(function() { alert('保存失败'); });
+    S('btnSaveConfig').addEventListener('click', function() {
+        if (!adminStarted || !configLoaded || configSaving) return;
+        var expected = {name:S('cfgName').value.trim(), welcomeMessage:S('cfgWelcome').value.trim(),
+            voiceType:S('cfgVoice').value, primaryColor:S('cfgColor').value,
+            volume:parseFloat(S('cfgVolume').value), speechRate:parseFloat(S('cfgSpeed').value)};
+        var epoch = ++configEpoch;
+        configSaving = true; configControls(); configStatus('正在保存…');
+        apiFetch('/api/admin/digital-human-config', {method:'PUT', headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(expected)}).then(readConfig).then(function(saved) {
+            if (epoch !== configEpoch) return;
+            if (Object.keys(expected).some(function(k) { return saved[k] !== expected[k]; })) {
+                throw new Error('保存结果未确认，请重新加载后核对。');
+            }
+            showConfig(saved); configStatus('已保存。游客刷新页面后生效。');
+        }).catch(function(error) {
+            if (epoch === configEpoch) configStatus(error && error.message || '未保存，请重试。');
+        }).finally(function() {
+            if (epoch === configEpoch) { configSaving = false; configControls(); }
+        });
     });
+    configControls();
 
     // ===== 感受度报告 =====
 

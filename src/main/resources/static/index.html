@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>旅游 AI 数字人</title>
-<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/style.css?v=display-1">
 </head>
 <body>
 <!-- 身份以服务端会话为准，页面脚本通过 /api/auth/me 校验（见 /js/main.js） -->
@@ -91,7 +91,7 @@
       <button class="chat-panel-close" id="chatPanelClose">✕</button>
     </div>
     <div class="chat-messages" id="chatMessages">
-      <div class="chat-msg bot"><div class="msg-bubble">阿弥陀佛！我是您的AI导游灵灵 👋<br>我可以为您介绍灵山胜境各景点、推荐游览路线、解答交通门票等问题。愿您在此感悟灵山，吉祥平安！</div></div>
+      <div class="chat-msg bot"><div class="msg-bubble" id="chatWelcome">阿弥陀佛！我是您的AI导游灵灵，欢迎来到灵山胜境，愿您在此感悟灵山，吉祥平安！</div></div>
     </div>
     <div class="chat-quick-actions" id="quickActions">
       <button class="quick-btn" data-msg="灵山胜境有哪些必看景点？">推荐景点</button>
@@ -119,6 +119,7 @@
 <script src="/lib/pixi-live2d-display.min.js"></script>
 <!-- 主逻辑 -->
 <script src="/js/security.js"></script>
-<script src="/js/main.js"></script>
+<script src="/js/display-config.js?v=display-1"></script>
+<script src="/js/main.js?v=display-1"></script>
 </body>
 </html>
