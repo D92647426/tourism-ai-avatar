@@ -137,10 +137,12 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                     {"message":"它什么时候开放", "spotId":first["id"],
                      "conversationId":chat["conversationId"]}, {csrf_header:token}, opener))
                 assert opening["spotId"] == first["id"] and first["name"] in opening["reply"]
+                assert first["openingHours"] in opening["reply"], "Opening-hour follow-up must answer the fact."
                 switched = json.loads(fetch(base + "/api/chat",
                     {"message":"它有什么故事", "spotId":second["id"],
                      "conversationId":chat["conversationId"]}, {csrf_header:token}, opener))
                 assert switched["spotId"] == second["id"] and second["name"] in switched["reply"]
+                assert second["history"][:20] in switched["reply"], "Story follow-up must use the new place's history."
                 other = make_opener()
                 other_csrf = json.loads(fetch(base + "/api/auth/csrf", opener=other))
                 stolen_status, _ = status_of(base + "/api/chat",

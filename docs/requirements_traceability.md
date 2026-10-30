@@ -51,4 +51,4 @@
 
 ## REQ-039 会话隔离与景点上下文
 
-游客的多轮追问、景点切换、显式新对话、六轮上限与 20 分钟过期，见 [功能与验收说明](conversation_context.md)、[实现](../src/main/java/com/guide/service/ConversationService.java#L21) 和 [测试](../src/test/java/com/guide/service/ConversationServiceTest.java#L1)。
+游客的多轮追问、景点切换、显式新对话、六轮上限与 20 分钟过期，见 [功能与验收说明](conversation_context.md#L3)、[实现](../src/main/java/com/guide/service/ConversationService.java#L25) 和 [测试](../src/test/java/com/guide/service/ConversationServiceTest.java#L1)。

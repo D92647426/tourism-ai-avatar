@@ -80,4 +80,13 @@ node --test tests/frontend/*.test.js
 
 ## TEST-039 多轮对话验收
 
-[会话单测](../src/test/java/com/guide/service/ConversationServiceTest.java#L1)、[模型请求 mock](../src/test/java/com/guide/service/ChatHistoryRequestTest.java#L1)、[网页回归](../tests/frontend/conversation.test.js#L1) 和 [HTTP 冒烟](../scripts/smoke_teacher_project.py#L1) 对应 [REQ-039](conversation_context.md)。本分支运行结果：Java 46/46、Node 29/29；无模型密钥的 HTTP 冒烟通过。
+对应 [REQ-039](conversation_context.md#L3)。本分支预期：Java 47/47、Node 29/29；无模型密钥的 HTTP 冒烟通过。
+
+| 测试函数 / 脚本 | 运行命令 | 预期结果 | 失败排查 |
+|---|---|---|---|
+| [twoSessionsAndPrincipalChangesCannotReadEachOthersHistory](../src/test/java/com/guide/service/ConversationServiceTest.java#L51)、[explicitSpotSwitchResetsHistoryAndNewConversationInvalidatesOldId](../src/test/java/com/guide/service/ConversationServiceTest.java#L69) | `mvn -o -Dtest=ConversationServiceTest test` | 第二个 Cookie/主体不能沿用 ID；换景点清空旧轮次，重开获得新 ID | 查 `ConversationService.owner`、Session 属性与景点识别 |
+| [failedAnswerDoesNotPublishTurnAndIdleHistoryExpires](../src/test/java/com/guide/service/ConversationServiceTest.java#L83)、[historyRetainsOnlySixCompletedExchangesAndRejectsUnknownSpot](../src/test/java/com/guide/service/ConversationServiceTest.java#L97) | 同上 | 失败轮次不入历史；闲置 20 分钟 410；仅留六轮；未知景点 400 | 查时钟注入、提交时机与 `MAX_TURNS` |
+| [sendsSystemContextThenBoundedHistoryThenCurrentQuestion](../src/test/java/com/guide/service/ChatHistoryRequestTest.java#L24) | `mvn -o -Dtest=ChatHistoryRequestTest test` | 模型请求依次包含当前景点、历史问答、新问题 | 查 `ChatService.callAiApi` 消息序列与 mock JSON |
+| [pronounFollowupsUseCurrentSpotHistoryAndHours](../src/test/java/com/guide/service/ChatFallbackContextTest.java#L15) | `mvn -o -Dtest=ChatFallbackContextTest test` | 无模型密钥时“它有什么故事/什么时候开放”引用所选景点的历史和时间 | 查 `spotReplyForQuestion` 与景点数据字段 |
+| [conversation.test.js](../tests/frontend/conversation.test.js#L6) 的两项 Node 测试 | `node --test tests/frontend/*.test.js` | 第二轮沿用 ID、重开换 ID 且携带 CSRF、410 显示可操作提示 | 查 `main.js` 会话变量、`AuthGuard.apiFetch` 和测试 DOM harness |
+| [smoke_teacher_project.py](../scripts/smoke_teacher_project.py#L1) 的真实 HTTP 校验 | `python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar --java <java可执行文件> --port 18080` | 两个 Cookie 隔离、重开失效、换景点的故事和时间来自新景点 | 查服务器日志、Cookie/CSRF 是否同一 opener，以及景点数据 |

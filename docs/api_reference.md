@@ -81,4 +81,36 @@ API-004 响应示例：`{"name":"灵灵","welcomeMessage":"...","voiceType":"fem
 
 ## API-039 会话聊天
 
-`POST /api/chat` 接受 `message`，可选 `conversationId`、`spotId`；响应返回这两个上下文字段及已有的 `reply`、`fallback`。`POST /api/chat/new` 清空当前会话，返回新的 ID。写请求需要 CSRF。错误码、限制和示例见 [接口约定](conversation_context.md)。实现见 [ChatController.java](../src/main/java/com/guide/controller/ChatController.java#L25)。
+对应 [REQ-039](conversation_context.md#L3)。两条接口均允许游客访问、以 Cookie 绑定会话，写请求须携带现有 CSRF 令牌。服务函数是 [ChatController.chat](../src/main/java/com/guide/controller/ChatController.java#L24) → [ConversationService.chat](../src/main/java/com/guide/service/ConversationService.java#L63) 和 [ChatController.start](../src/main/java/com/guide/controller/ChatController.java#L31) → [ConversationService.start](../src/main/java/com/guide/service/ConversationService.java#L49)。
+
+| API | 方法与路径 | 请求参数 | 响应字段 | 错误码 |
+|---|---|---|---|---|
+| API-039a | `POST /api/chat` | JSON `message` 必填（1–600 字符）；`conversationId`、`spotId`、`interest` 可选 | `reply` 文本、`fallback` 布尔值、`conversationId` 服务端随机 ID、`spotId` 当前景点 ID 或 `null`，以及原有路线字段 | 400 消息为空/过长或景点不存在；403 CSRF 错误、其他会话/已重置 ID；410 当前会话闲置过期；502 空回复 |
+| API-039b | `POST /api/chat/new` | 无请求体要求，可发送 `{}` | `conversationId` 新 ID、`spotId: null` | 403 CSRF 错误 |
+
+示例（省略从 `GET /api/auth/csrf` 取得的 Cookie 和令牌值）：
+
+```http
+POST /api/chat
+Content-Type: application/json
+X-XSRF-TOKEN: <token>
+
+{"message":"它有什么故事","spotId":11}
+```
+
+```json
+{"reply":"【灵山大佛】的故事：……","fallback":true,"conversationId":"550e8400-e29b-41d4-a716-446655440000","spotId":11}
+```
+
+```http
+POST /api/chat/new
+X-XSRF-TOKEN: <token>
+
+{}
+```
+
+```json
+{"conversationId":"e5215c50-3b20-4d88-93bb-a56e82f87ca1","spotId":null}
+```
+
+测试命令：`mvn -o clean verify`、`node --test tests/frontend/*.test.js`、`python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar --java <java可执行文件> --port 18080`。具体上下文和限制见 [会话设计](conversation_context.md#L9)。

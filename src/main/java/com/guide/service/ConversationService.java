@@ -16,7 +16,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-/** REQ-039: one bounded conversation per server session, bound to the authenticated identity. */
+/**
+ * REQ-039: keep one bounded conversation per HTTP Session and authenticated identity.
+ * Inputs, responses and error statuses: docs/conversation_context.md#L9.
+ * Change limits here and recheck TEST-039: docs/conversation_context.md#L21.
+ */
 @Service
 public class ConversationService {
     private static final String ATTRIBUTE = ConversationService.class.getName() + ".active";
@@ -37,7 +41,11 @@ public class ConversationService {
         this.clock = clock;
     }
 
-    /** Start a fresh conversation. The old identifier and history become unusable. */
+    /**
+     * REQ-039: replace the conversation for this HTTP Session.
+     * Input: current session. Output: new ID and empty spot. No normal API error;
+     * Spring Security rejects missing CSRF before this method. See API-039 in docs/api_reference.md.
+     */
     public Snapshot start(HttpSession session) {
         synchronized (session) {
             State state = new State(owner(), clock.millis());
@@ -46,7 +54,12 @@ public class ConversationService {
         }
     }
 
-    /** Validate input and ownership before calling AI; publish history only after a successful reply. */
+    /**
+     * REQ-039: validate request/session/spot and append only a successful model or fallback reply.
+     * Input: session and message with optional ID/spot. Output: reply with bound ID/spot.
+     * Errors: 400 malformed message/spot, 403 foreign or replaced ID, 410 idle expiry,
+     * 502 empty guide reply. See API-039 in docs/api_reference.md and TEST-039 in docs/test_reference.md.
+     */
     public ChatResponse chat(HttpSession session, ChatRequest request) {
         if (request == null || request.getMessage() == null || request.getMessage().trim().isEmpty()
                 || request.getMessage().length() > 600) {

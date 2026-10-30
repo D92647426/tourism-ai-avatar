@@ -212,12 +212,12 @@ public class ChatService {
         List<Spot> spots = spotService.getAllSpots();
         for (Spot spot : spots) {
             if (msg.contains(spot.getName())) {
-                return buildSpotReply(spot, interest);
+                return spotReplyForQuestion(spot, msg, interest);
             }
         }
 
         if (currentSpot != null && containsAny(msg, "它", "这个景点", "这里", "故事", "开放", "几点")) {
-            return buildSpotReply(currentSpot, interest);
+            return spotReplyForQuestion(currentSpot, msg, interest);
         }
 
         // 扩展的本地关键词匹配
@@ -279,6 +279,21 @@ public class ChatService {
                "您可以问我任何景点的详细信息、交通路线、\n" +
                "门票价格、历史故事等。也欢迎问我'推荐哪些景点'~\n" +
                "愿您在此感悟灵山，吉祥平安！";
+    }
+
+    /** REQ-039: answer the referenced place's requested fact before using its general card. */
+    private String spotReplyForQuestion(Spot spot, String question, String interest) {
+        if (containsAny(question, "故事", "历史")) {
+            return "【" + spot.getName() + "】的故事：\n\n"
+                    + (spot.getHistory() == null || spot.getHistory().trim().isEmpty()
+                    ? "目前还没有收录这个景点的历史故事。" : spot.getHistory());
+        }
+        if (containsAny(question, "开放", "几点")) {
+            return "【" + spot.getName() + "】的开放时间："
+                    + (spot.getOpeningHours() == null || spot.getOpeningHours().trim().isEmpty()
+                    ? "目前还没有收录开放时间。" : spot.getOpeningHours());
+        }
+        return buildSpotReply(spot, interest);
     }
 
     private String buildSpotReply(Spot spot, String interest) {
