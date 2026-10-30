@@ -49,3 +49,6 @@
 
 验收事实：匿名访问 `/api/admin/**` 返回 401；游客返回 403；管理员可读写；退出后服务端会话失效；缺少/错误 CSRF 返回 403 且与匿名 401 区分；注册忽略客户端注入的角色；所有认证响应不含 `password`/`passwordHash`；新注册只存 BCrypt；旧明文记录迁移前备份、迁移保留 ID/用户名/兴趣/时间；`APP_ADMIN_*` 未配置时不创建管理员；用户名冲突拒绝初始化；落盘失败会回滚内存；重复 ID/用户名与空数据根会被拒绝且不覆盖原文件。自动化覆盖为 41 个 Java 测试 + 27 个前端行为测试（`node:test` + `vm` 执行真实脚本）。详见 [TEST-030](./test_reference.md) 与 [API 说明](./api_reference.md)。
 
+## REQ-039 会话隔离与景点上下文
+
+游客的多轮追问、景点切换、显式新对话、六轮上限与 20 分钟过期，见 [功能与验收说明](conversation_context.md)、[实现](../src/main/java/com/guide/service/ConversationService.java#L21) 和 [测试](../src/test/java/com/guide/service/ConversationServiceTest.java#L1)。

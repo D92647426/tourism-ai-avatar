@@ -15,6 +15,7 @@
     var chatFab = S('chatFab');
     var chatPanelOverlay = S('chatPanelOverlay');
     var chatPanelClose = S('chatPanelClose');
+    var chatNewBtn = S('chatNewBtn');
     var chatMessages = S('chatMessages');
     var chatInput = S('chatInput');
     var chatSendBtn = S('chatSendBtn');
@@ -24,7 +25,8 @@
     var quickActions = S('quickActions');
     var chatHeaderName = S('chatHeaderName');
 
-    var allSpots = [], isChatOpen = false;
+    var allSpots = [], isChatOpen = false, pendingChats = 0;
+    var conversationId = null;
     var api = window.AuthGuard.apiFetch;
     // 从登录信息读取（localStorage 只作显示缓存，真实身份以 /api/auth/me 为准）
     var currentUserId = localStorage.getItem('userId') || '';
@@ -197,12 +199,27 @@
     }
 
     // ===== 发送消息 =====
+    chatNewBtn.addEventListener('click', function() {
+        if (pendingChats || chatNewBtn.disabled) return;
+        chatNewBtn.disabled = true;
+        api('/api/chat/new', {method:'POST'}).then(function(r) {
+            if (!r.ok) throw new Error('new conversation ' + r.status);
+            return r.json();
+        }).then(function(data) {
+            conversationId = data.conversationId;
+            stopTts();
+            chatMessages.innerHTML = '';
+            addMsg('bot', '新对话已开始。您可以继续提问。');
+        }).catch(function() { addMsg('bot', '暂时无法开始新对话，请重试。'); })
+          .then(function() { chatNewBtn.disabled = false; });
+    });
     function sendMessage() {
         // 立即停止当前所有说话和口型
         stopTts();
         var text = chatInput.value.trim(); if (!text) return;
+        pendingChats++; chatNewBtn.disabled = true;
         addMsg('user', text); chatInput.value = ''; showTyping();
-        var body = { message: text, userId: currentUserId };
+        var body = { message: text, conversationId: conversationId };
         if (currentInterest) body.interest = currentInterest;
 
         api('/api/chat', {
@@ -210,9 +227,11 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         }).then(function(r) {
+            if (r.status === 410) { throw new Error('对话已过期，请点“新对话”继续。'); }
             if (!r.ok) { throw new Error('chat ' + r.status); }
             return r.json();
         }).then(function(d) {
+            conversationId = d.conversationId || conversationId;
             removeTyping();
             addMsg('bot', d.reply);
             if (d.recommendedRoutes && d.recommendedRoutes.length) {
@@ -223,7 +242,8 @@
             }
             // 播放语音
             speak(d.reply);
-        }).catch(function() { removeTyping(); addMsg('bot', '抱歉，我暂时无法回答。'); });
+        }).catch(function(error) { removeTyping(); addMsg('bot', error && /对话已过期/.test(error.message) ? error.message : '抱歉，我暂时无法回答。'); })
+          .then(function() { pendingChats--; chatNewBtn.disabled = pendingChats > 0; });
     }
 
     function showTyping() {

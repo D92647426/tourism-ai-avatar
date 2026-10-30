@@ -9,6 +9,12 @@ const vm = require('node:vm');
 const STATIC_JS = path.resolve(__dirname, '..', '..', 'src', 'main', 'resources', 'static', 'js');
 
 class Element {
+    get textContent() { return this._textContent; }
+    set textContent(value) {
+        this._textContent = String(value);
+        this.innerHTML = this._textContent.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
     constructor(id, dataset, classes) {
         this.id = id || '';
         this.tagName = 'DIV';

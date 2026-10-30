@@ -78,3 +78,7 @@ API-004 响应示例：`{"name":"灵灵","welcomeMessage":"...","voiceType":"fem
 - 后台 API 的保护由 [SecurityConfig.java:L137-L138](../src/main/java/com/guide/config/SecurityConfig.java#L137-L138) 的 `authorizeRequests` 强制执行；
 - 管理页进入时通过 [admin.js:L150](../src/main/resources/static/js/admin.js#L150) 调 `/api/auth/me` 校验身份，未登录显示管理员登录入口（[admin.html:L13](../src/main/resources/static/admin.html#L13)），游客显示无权限并可真正切换账号；
 - 管理员由启动环境变量 `APP_ADMIN_USERNAME`/`APP_ADMIN_PASSWORD` 初始化，默认不创建，见 [config_reference.md](./config_reference.md)。
+
+## API-039 会话聊天
+
+`POST /api/chat` 接受 `message`，可选 `conversationId`、`spotId`；响应返回这两个上下文字段及已有的 `reply`、`fallback`。`POST /api/chat/new` 清空当前会话，返回新的 ID。写请求需要 CSRF。错误码、限制和示例见 [接口约定](conversation_context.md)。实现见 [ChatController.java](../src/main/java/com/guide/controller/ChatController.java#L25)。

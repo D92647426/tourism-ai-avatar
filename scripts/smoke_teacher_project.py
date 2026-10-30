@@ -129,6 +129,33 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                                         {csrf_header: token}, opener))
                 assert isinstance(chat.get("reply"), str) and chat["reply"].strip()
                 assert chat.get("fallback") is True, "Smoke test must use offline fallback."
+
+                # REQ-039: real cookie/CSRF requests, distinct visitors and spot switches.
+                assert chat.get("conversationId"), "Server must establish a conversation id."
+                first, second = spots[0], spots[1]
+                opening = json.loads(fetch(base + "/api/chat",
+                    {"message":"它什么时候开放", "spotId":first["id"],
+                     "conversationId":chat["conversationId"]}, {csrf_header:token}, opener))
+                assert opening["spotId"] == first["id"] and first["name"] in opening["reply"]
+                switched = json.loads(fetch(base + "/api/chat",
+                    {"message":"它有什么故事", "spotId":second["id"],
+                     "conversationId":chat["conversationId"]}, {csrf_header:token}, opener))
+                assert switched["spotId"] == second["id"] and second["name"] in switched["reply"]
+                other = make_opener()
+                other_csrf = json.loads(fetch(base + "/api/auth/csrf", opener=other))
+                stolen_status, _ = status_of(base + "/api/chat",
+                    {"message":"偷看", "conversationId":chat["conversationId"]},
+                    {other_csrf["headerName"]:other_csrf["token"]}, other)
+                assert stolen_status == 403, "Conversation id from another cookie must be rejected."
+                fresh = json.loads(fetch(base + "/api/chat/new", {}, {csrf_header:token}, opener))
+                assert fresh["conversationId"] != chat["conversationId"] and fresh["spotId"] is None
+                old_status, _ = status_of(base + "/api/chat",
+                    {"message":"旧的", "conversationId":chat["conversationId"]},
+                    {csrf_header:token}, opener)
+                assert old_status == 403, "Old conversation id must be unusable after reset."
+                bad_spot, _ = status_of(base + "/api/chat",
+                    {"message":"错误景点", "spotId":999999}, {csrf_header:token}, opener)
+                assert bad_spot == 400, "Invalid spotId must be rejected."
                 model_url = base + "/models/haru/haru.model.json"
                 model = json.loads(fetch(model_url))
                 assert model.get("model"), "Live2D model definition is missing."
@@ -137,7 +164,9 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                 return {"status": "passed", "spot_count": len(spots),
                         "checks": ["homepage", "spots", "csrf_token", "public_config",
                                    "admin_anonymous_401", "csrf_missing_rejected",
-                                   "offline_chat", "live2d_definition",
+                                   "offline_chat", "session_bound_conversation", "spot_switch",
+                               "other_cookie_rejected", "new_conversation", "invalid_spot_rejected",
+                               "live2d_definition",
                                    "live2d_model_file", "live2d_helper"]}
             except Exception:
                 log.flush()

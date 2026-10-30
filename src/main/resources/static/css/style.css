@@ -518,6 +518,8 @@ body {
 .chat-header-info { display: flex; align-items: center; gap: 12px; }
 .chat-header-avatar { font-size: 32px; }
 .chat-header-name { font-size: 16px; font-weight: 700; }
+.chat-new-btn { margin-left: auto; padding: 6px 10px; border: 1px solid currentColor; border-radius: 16px; color: inherit; background: transparent; cursor: pointer; white-space: nowrap; }
+.chat-new-btn:disabled { opacity: .45; cursor: wait; }
 .chat-header-status { font-size: 12px; opacity: 0.8; }
 
 .chat-panel-close {

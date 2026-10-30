@@ -75,3 +75,7 @@ Python 只用于可选检查脚本与 CI，Node.js 只用于前端行为测试�
 知识检索是字符串匹配，推荐路线由预设规则生成，语音主要使用浏览器或 Android 系统能力。Haru 是示例角色，最终角色素材与课设创意尚未定案。Android APK 本次未验证构建；网页已改为服务端会话与 CSRF，但 Android WebView 内 Cookie/CSRF 行为尚未验证，Android 原生代码未改动。
 
 压缩包中的编译产物、个人 IDE 配置、真实接口 Key、历史账号和交互记录未提交。具体处理见 [导入记录](docs/import_manifest.json)。
+
+### 多轮导览对话
+
+游客现在可以在当前景点连续追问，并用“新对话”清除上下文。会话保存在当前浏览器对应的服务端 Session，闲置 20 分钟过期，最多保留六轮问答。接口、限制与验证见 [会话隔离与景点上下文](docs/conversation_context.md)。

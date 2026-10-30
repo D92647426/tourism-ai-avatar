@@ -77,3 +77,7 @@ node --test tests/frontend/*.test.js
 1. 游客登录后访问 `/admin.html`，应提示无权限，可点“切换账号登录”真正退出并回到管理员登录层；
 2. 管理员登录后可读写管理后台，退出后刷新应回到登录入口；
 3. 页面 30 分钟无操作后会话过期，管理页应重新要求登录且不产生重定向循环。
+
+## TEST-039 多轮对话验收
+
+[会话单测](../src/test/java/com/guide/service/ConversationServiceTest.java#L1)、[模型请求 mock](../src/test/java/com/guide/service/ChatHistoryRequestTest.java#L1)、[网页回归](../tests/frontend/conversation.test.js#L1) 和 [HTTP 冒烟](../scripts/smoke_teacher_project.py#L1) 对应 [REQ-039](conversation_context.md)。本分支运行结果：Java 46/46、Node 29/29；无模型密钥的 HTTP 冒烟通过。

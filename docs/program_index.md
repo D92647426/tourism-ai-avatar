@@ -35,3 +35,7 @@
 | Cookie/真实 HTTP 认证测试 | [CookieAttributeTest.java:L41](../src/test/java/com/guide/security/CookieAttributeTest.java#L41) |
 | 前端行为测试（Node vm） | [security.test.js](../tests/frontend/security.test.js) 等 |
 | GitHub 自动检查 | [checks.yml:L1](../.github/workflows/checks.yml#L1) |
+
+## Issue #11：会话导览
+
+[会话设计、接口与验收](conversation_context.md)；核心实现为 [ConversationService.java](../src/main/java/com/guide/service/ConversationService.java#L21) 与 [ChatService.java](../src/main/java/com/guide/service/ChatService.java#L110)。
