@@ -102,3 +102,6 @@
 
 
 整合后的服务/页面边界见 [REQ-041](integration_first_round.md#L7)。
+
+
+[voice-settings.js](../src/main/resources/static/js/voice-settings.js#L1) 是REQ-042配置/设备声线的纯模块；调用边界见 [实现记录](voice_settings.md#L17)。

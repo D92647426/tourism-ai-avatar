@@ -70,15 +70,13 @@ test('recognition shows listening only after real start, does not restart on end
     assert.equal(status(p), 'error'); assert.match(p.nodes.get('voiceStatus').textContent, /麦克风/);
 });
 
-test('protocol 2 native events require exact task ID, including pause/close races', async () => {
-    const calls = [], bridge = { getTtsProtocolVersion: () => 2, isTtsReady: () => true,
-        speakWithId: (text, id) => calls.push({ text, id }), stopSpeaking() {}, startListening() {}, stopListening() {} };
-    const p = page({ bridge }); model(p); await flush(); await answer(p);
-    assert.equal(p.spoken.length, 0); assert.equal(status(p), 'queued');
-    p.context.onTtsStart(); assert.equal(status(p), 'queued');
-    const id = calls[0].id; p.context.onTtsStart(id); assert.equal(status(p), 'speaking');
-    p.send('新问题'); await flush(); p.context.onTtsEnd(id); assert.equal(status(p), 'thinking');
-    p.nodes.get('chatPanelClose').fire('click'); p.context.onTtsStart(id); assert.equal(status(p), 'idle');
+test('configured playback explicitly falls back from native bridge to parameter-capable Web speech', async () => {
+    const calls=[],bridge={getTtsProtocolVersion:()=>2,isTtsReady:()=>true,speakWithId:(...args)=>calls.push(args)};
+    const p=page({bridge});await flush();p.send('问题');await flush();
+    p.requests[0].resolve(response({reply:'回答'}));await flush();
+    assert.equal(calls.length,0);assert.equal(p.utterances.length,1);
+    assert.match(p.nodes.get('speechSettingsStatus').textContent,/Android.*浏览器/);
+    p.nodes.get('chatPanelClose').fire('click');assert.equal(status(p),'idle');
 });
 
 test('failed request is visible and exploration draft handoff safely stops current speech', async () => {

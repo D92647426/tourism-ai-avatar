@@ -68,14 +68,15 @@ function page(options = {}) {
     class Recognition { constructor() { recognitions.push(this); } start() { if (!options.manualRecognition && this.onstart) this.onstart(); } stop() {} }
     const utterances = [], voiceEvents = new Element();
     let voices = options.voices || [{ lang: 'zh-CN' }];
-    const synthesis = { getVoices: () => voices, speak: u => { spoken.push(u.text); utterances.push(u); }, cancel: () => { stops++; },
+    const synthesis = { getVoices: () => voices.map((v,i)=>({...v,voiceURI:v.voiceURI || "device-"+i})), speak: u => { spoken.push(u.text); utterances.push(u); }, cancel: () => { stops++; },
         addEventListener: voiceEvents.addEventListener.bind(voiceEvents),
         removeEventListener: (type, fn) => { voiceEvents.events[type] = (voiceEvents.events[type] || []).filter(x => x !== fn); } };
-    function fetch(url, options) {
+    function fetch(url, requestOptions) {
         if(url === '/api/auth/me') return Promise.resolve(response({userId:'test',username:'test'}));
         if(url === '/api/auth/csrf') return Promise.resolve(response({headerName:'X-XSRF-TOKEN',token:'test'}));
+        if(url === '/api/digital-human-config') return Promise.resolve(response(options.config || {}));
         if (url !== '/api/chat') return Promise.resolve(response(url === '/api/spots' ? [] : {}));
-        const job = deferred(); requests.push({ ...job, options, body: JSON.parse(options.body) }); return job.promise;
+        const job = deferred(); requests.push({ ...job, options:requestOptions, body: JSON.parse(requestOptions.body) }); return job.promise;
     }
     const localStorage = { getItem: key => key === 'interest' ? 'history' : 'demo-user', setItem() {}, removeItem() {} };
     const context = vm.createContext({ document, localStorage, fetch, AbortController, console: { log() {}, error() {} },
@@ -85,7 +86,7 @@ function page(options = {}) {
         addEventListener: windowEvents.addEventListener.bind(windowEvents),
         location: {}, requestAnimationFrame: fn => time.setTimeout(fn, 16), cancelAnimationFrame: time.clearTimeout });
     context.window = context;
-    for (const name of ['security.js', 'chat-request.js', 'speech-lifecycle.js', 'display-config.js', 'main.js']) {
+    for (const name of ['voice-settings.js', 'security.js', 'chat-request.js', 'speech-lifecycle.js', 'display-config.js', 'main.js']) {
         vm.runInContext(fs.readFileSync(path.join(root, 'src/main/resources/static/js', name), 'utf8'), context, { filename: name });
     }
     return { time, nodes, requests, spoken, utterances, synthesis, context, quick, recognitions,

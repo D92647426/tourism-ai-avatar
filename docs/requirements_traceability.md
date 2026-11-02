@@ -113,3 +113,6 @@
 
 
 REQ-041：第一轮组合整合与验收，见 [整合记录](integration_first_round.md#L3)。
+
+
+REQ-042 / #14：语音设置进入实际播报，含0音量、设备声线与Android回退，见 [设计与验收](voice_settings.md#L3)。

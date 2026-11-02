@@ -271,9 +271,9 @@
                 utterance = new UtteranceCtor(task.text);
                 utterance.lang = 'zh-CN';
                 utterance.voice = voice;
-                utterance.rate = 1.05;
+                utterance.rate = task.settings ? task.settings.speechRate : 1.05;
                 utterance.pitch = 1.1;
-                utterance.volume = 1;
+                utterance.volume = task.settings ? task.settings.volume : 1;
             } catch (error) {
                 finish(task, 'error', MESSAGES.unsupported, false);
                 return;
@@ -300,7 +300,7 @@
             if (synthesis && typeof synthesis.addEventListener === 'function') {
                 task.voiceListener = function () {
                     if (active !== task) return;
-                    var voice = findChineseVoice(readVoices());
+                    var voice = (options.selectVoice ? options.selectVoice(readVoices(), task.settings) : findChineseVoice(readVoices()));
                     if (voice) speakThroughWeb(task, voice);
                 };
                 try {
@@ -312,7 +312,7 @@
             task.timers.voices = schedule(function () {
                 if (active !== task) return;
                 task.timers.voices = null;
-                var voice = findChineseVoice(readVoices());
+                var voice = (options.selectVoice ? options.selectVoice(readVoices(), task.settings) : findChineseVoice(readVoices()));
                 if (voice) speakThroughWeb(task, voice);
                 else finish(task, 'error', noVoiceMessage(task), false);
             }, VOICE_WAIT_MS);
@@ -323,7 +323,7 @@
                 finish(task, 'error', MESSAGES.unsupported, false);
                 return;
             }
-            var voice = findChineseVoice(readVoices());
+            var voice = (options.selectVoice ? options.selectVoice(readVoices(), task.settings) : findChineseVoice(readVoices()));
             if (voice) speakThroughWeb(task, voice);
             else waitForVoices(task);
         }
@@ -336,6 +336,7 @@
          * @returns {boolean} true when a native task was submitted.
          */
         function beginNative(task) {
+            if (typeof options.getSettings === "function") return false; // Current native protocol cannot apply settings.
             var bridge = currentBridge();
             if (!bridge) return false;
             var version = null;
@@ -380,6 +381,7 @@
             var task = {
                 id: 'gs-' + nonce + '-' + (++sequence),
                 text: clean,
+                settings: typeof options.getSettings === 'function' ? options.getSettings() : null,
                 engine: null,
                 bridge: null,
                 utterance: null,

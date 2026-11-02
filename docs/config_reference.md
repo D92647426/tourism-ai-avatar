@@ -96,3 +96,6 @@ Spring Boot 参数可通过命令行覆盖，例如 java -jar target/ai-guide-1.
 不新增环境变量或配置接口。打包字典 [retrieval-entities.json:L1](../src/main/resources/retrieval-entities.json#L1) 的entities为name/aliases数组，excludedNames排除明确外景名称里的短别名；没有绑定知识ID。修改时核对现有16景点正式名，别名需至少2字符，重建JAR后生效。不是通用实体识别，未列的别名/外景可能需要后续维护，不宣称自动消歧所有中文句子。原知识ID与内容不改。
 
 排序：实体标题300、精确关键词180、正文提及20；正文单纯列过景点不能独立成为候选，需另有相关关键词。查询完整/部分标题80，去重关键词30+min(长度,20)，历史/故事等泛词不单独召回。按分数降序/ID升序稳定排序，多实体先各给一个主要候选再填余位。知识预算最多3条、标题80字符、正文200字符、总1200个Java字符串字符（UTF-16单位），裁剪避免割裂代理对。位置 [KnowledgeRetriever.java:L18](../src/main/java/com/guide/service/KnowledgeRetriever.java#L18)，回归 [NaturalRetrievalTest.java:L1](../src/test/java/com/guide/service/NaturalRetrievalTest.java#L1)。
+
+
+REQ-042：volume 数值0–1（默认1）、speechRate数值0.5–2（默认1）、voiceType非空字符串最多200字符（历史默认female，兼容male/female，新增auto或设备voiceURI）。省略字段保留当前值。使用位置、修改风险与验证见 [语音设置](voice_settings.md#L11)。

@@ -168,3 +168,6 @@ Java 测试用 @TempDir 与反射直接构造服务，不启动 Spring 上下文
 
 
 TEST-041：完整命令、组合回归和失败排查见 [整合验收](integration_first_round.md#L13)。
+
+
+TEST-042：对应REQ-042，具体测试函数行为、文件、命令、预期与排查见 [语音验收](voice_settings.md#L17)。完整Node当前预期156/156、Java221/221；真实音质另行设备验收。
