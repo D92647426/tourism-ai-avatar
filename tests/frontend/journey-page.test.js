@@ -46,6 +46,7 @@ test('draft or busy refusal never moves selection; last station has no next and 
     let finish;const h=await setup(()=>new Promise(resolve=>{finish=resolve;}));
     const plan=h.env.GuideTour.snapshot(),a=plan.stops[0],b=plan.stops[1];
     h.el('chatInput').value='原草稿';assert.equal(h.env.GuideTour.prepare(a.id).accepted,false);assert.equal(h.env.GuideTour.snapshot().current,null);
+    h.el('quickActions').dispatch('click',{target:{closest:()=>({dataset:{msg:'快捷问题'}})}});assert.equal(h.el('chatInput').value,'原草稿');
     h.el('chatInput').value='';h.env.GuideTour.prepare(a.id);click(h.el('chatSendBtn'));await flush(h.env);
     assert.equal(h.env.GuideTour.prepare(b.id).accepted,false);assert.equal(h.env.GuideTour.snapshot().current.id,a.id);
     finish(response(200,{reply:'完成',spotId:a.id,narrationMode:'family'}));await flush(h.env);
@@ -58,9 +59,14 @@ test('replanning preserves draft, drops old retry and requires explicit re-selec
     const h=await setup(()=>response(503,{})),a=h.env.GuideTour.snapshot().stops[0];
     h.env.GuideTour.prepare(a.id);click(h.el('chatSendBtn'));await flush(h.env);assert.equal(h.el('chatRetryBtn').hidden,false);
     h.el('chatInput').value='未发送的想法';click(h.el('directorHalf'));
+    h.el('quickActions').dispatch('click',{target:{closest:()=>({dataset:{msg:'快捷问题'}})}});
     assert.equal(h.el('chatInput').value,'未发送的想法');assert.equal(h.env.GuideTour.snapshot().current,null);
     click(h.el('chatRetryBtn'));click(h.el('chatSendBtn'));await flush(h.env);assert.equal(h.calls.length,1);
     assert.match(h.el('chatRequestStatus').textContent,/重新选站|重新选择/);
+    h.el('chatInput').value='';
+    assert.equal(h.env.GuideChatDraft('观察页准备的问题').accepted,false);
+    assert.equal(h.env.GuideChatDraft('未知站点的问题',{spotId:99999}).accepted,false);
+    h.el('chatInput').value='手动追问';click(h.el('chatSendBtn'));await flush(h.env);assert.equal(h.calls.length,1);
     h.el('chatInput').value='';const next=h.env.GuideTour.snapshot().stops[0];assert.equal(h.env.GuideTour.prepare(next.id).accepted,true);
     click(h.el('chatSendBtn'));await flush(h.env);assert.equal(h.calls[1].spotId,next.id);
 });

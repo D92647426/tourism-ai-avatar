@@ -396,6 +396,7 @@
     window.GuideChatDraft = function(text, context) {
         if (typeof text !== 'string' || !text.trim() || text.length > 5000) return { accepted: false, reason: '问题内容无效或过长，请精简后重试。' };
         if (!contextReady) return {accepted:false,reason:'会话状态尚未同步，请稍后重试，或先在聊天中点击“新对话”。'};
+        if(tourNeedsSelection&&!(context&&Number.isSafeInteger(context.spotId)&&allSpots.some(function(spot){return spot.id===context.spotId;})))return {accepted:false,reason:'方案已更新，请先重新选择讲解站，或点击“新对话”；未发送草稿会保留。'};
         if (chatRequest.isPending() || resettingConversation) return { accepted: false, reason: '导游还在回答上一个问题，请等回答结束或先取消等待。' };
         if (chatInput.value.trim()) return { accepted: false, reason: '聊天框里还有草稿，请先发送或清空，再带入这份发现。' };
         if (context && context.spotId) {
@@ -850,7 +851,13 @@
     // ===== 快捷按钮 =====
     chatSendBtn.addEventListener('click', sendMessage);
     chatInput.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
-    quickActions.addEventListener('click', function(e) { if (chatRequest.isPending()) return; var b = e.target.closest('.quick-btn'); if (!b) return; chatInput.value = b.dataset.msg; sendMessage(); });
+    quickActions.addEventListener('click', function(e) {
+        if(chatRequest.isPending()||resettingConversation||!contextReady)return;
+        var b=e.target.closest('.quick-btn');if(!b)return;
+        if(tourNeedsSelection){sendMessage();return;}
+        if(chatInput.value.trim()){requestStatus.textContent='聊天框里有草稿，请先发送或清空，再选择快捷问题。';return;}
+        chatInput.value=b.dataset.msg;sendMessage();
+    });
 
     /** REQ-047: invalidate only itinerary-origin chat when its plan changes.
      * Preserve draft, cancel late callbacks/retries, block stale context until explicit selection/reset.
