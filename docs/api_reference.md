@@ -81,7 +81,7 @@ API-004 响应示例：`{"name":"灵灵","welcomeMessage":"...","voiceType":"fem
 
 ## API-039 会话聊天
 
-对应 [REQ-039](conversation_context.md#L3)。两条接口均允许游客访问、以 Cookie 绑定会话，写请求须携带现有 CSRF 令牌。服务函数是 [ChatController.chat](../src/main/java/com/guide/controller/ChatController.java#L24) → [ConversationService.chat](../src/main/java/com/guide/service/ConversationService.java#L63) 和 [ChatController.start](../src/main/java/com/guide/controller/ChatController.java#L31) → [ConversationService.start](../src/main/java/com/guide/service/ConversationService.java#L49)。
+对应 [REQ-039](conversation_context.md#L3)。两条接口均允许游客访问、以 Cookie 绑定会话，写请求须携带现有 CSRF 令牌。服务函数是 [ChatController.chat](../src/main/java/com/guide/controller/ChatController.java#L24) → [ConversationService.chat](../src/main/java/com/guide/service/ConversationService.java#L74) 和 [ChatController.start](../src/main/java/com/guide/controller/ChatController.java#L31) → [ConversationService.start](../src/main/java/com/guide/service/ConversationService.java#L49)。
 
 | API | 方法与路径 | 请求参数 | 响应字段 | 错误码 |
 |---|---|---|---|---|
@@ -118,3 +118,6 @@ X-XSRF-TOKEN: <token>
 ## API-040 景点详情提问
 
 复用 API-039 的 `POST /api/chat` 与 `/api/chat/new`，参数/响应/错误码/服务函数/示例保持上节约定。入口和数据流见 [交互约定](spot_chat_entry.md#L9)，测试命令 `node --test tests/frontend/*.test.js`。
+
+
+API-040b：`GET /api/chat/context` 无请求参数，Cookie 识别当前会话；200 响应示例 `{"conversationId":"服务端ID","spotId":11}`，空/过期/其他身份时两字段为 `null`。服务函数 [ConversationService.current](../src/main/java/com/guide/service/ConversationService.java#L60)，控制器 [ChatController.current](../src/main/java/com/guide/controller/ChatController.java#L37)。不返回聊天历史、不接受外部会话 ID，无业务错误码；测试 `mvn -o -Dtest=ConversationServiceTest test`，HTTP 验证由冒烟脚本覆盖。

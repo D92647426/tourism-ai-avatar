@@ -31,4 +31,10 @@ public class ChatController {
     public ResponseEntity<ConversationService.Snapshot> start(HttpSession session) {
         return ResponseEntity.ok(conversationService.start(session));
     }
+
+    /** REQ-040: restore only the calling session's ID and spot, never its messages. */
+    @GetMapping("/chat/context")
+    public ConversationService.Snapshot current(HttpSession session) {
+        return conversationService.current(session);
+    }
 }

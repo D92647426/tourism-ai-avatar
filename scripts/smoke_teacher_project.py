@@ -132,6 +132,8 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
 
                 # REQ-039: real cookie/CSRF requests, distinct visitors and spot switches.
                 assert chat.get("conversationId"), "Server must establish a conversation id."
+                snapshot = json.loads(fetch(base + "/api/chat/context", opener=opener))
+                assert snapshot["conversationId"] == chat["conversationId"]
                 first, second = spots[0], spots[1]
                 opening = json.loads(fetch(base + "/api/chat",
                     {"message":"它什么时候开放", "spotId":first["id"],
@@ -145,6 +147,7 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                 assert second["history"][:20] in switched["reply"], "Story follow-up must use the new place's history."
                 other = make_opener()
                 other_csrf = json.loads(fetch(base + "/api/auth/csrf", opener=other))
+                assert json.loads(fetch(base + "/api/chat/context", opener=other))["conversationId"] is None
                 stolen_status, _ = status_of(base + "/api/chat",
                     {"message":"偷看", "conversationId":chat["conversationId"]},
                     {other_csrf["headerName"]:other_csrf["token"]}, other)

@@ -28,6 +28,7 @@
     var allSpots = [], isChatOpen = false, pendingChats = 0;
     var conversationId = null;
     var selectedSpot = null, resettingConversation = false;
+    var pendingSpot = null, contextReady = false;
     var chatContext = S('chatContext');
     var api = window.AuthGuard.apiFetch;
     // 从登录信息读取（localStorage 只作显示缓存，真实身份以 /api/auth/me 为准）
@@ -38,6 +39,14 @@
     function loadSpots() {
         fetch('/api/spots').then(function(r) { return r.json(); }).then(function(d) {
             allSpots = d; renderSpots(d);
+            return api('/api/chat/context').then(function(r) {
+                if (!r.ok) throw new Error('context ' + r.status);
+                return r.json();
+            }).then(function(snapshot) {
+                conversationId = snapshot.conversationId || null;
+                selectedSpot = allSpots.find(function(spot) { return spot.id === snapshot.spotId; }) || null;
+                contextReady = true; renderChatContext();
+            }).catch(function() { chatContext.textContent = '会话状态未同步，请点击“新对话”后提问。'; });
         }).catch(function() {
             spotsGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:60px;color:#999;">景点数据加载中...</p>';
         });
@@ -101,11 +110,12 @@
         ask.textContent = '问问 AI 导游';
         ask.addEventListener('click', function(e) {
             e.stopPropagation();
-            if (pendingChats || resettingConversation) {
+            if (pendingChats || resettingConversation || !contextReady) {
                 ask.textContent = '请等待当前请求结束，再选择景点';
                 return;
             }
             selectedSpot = s;
+            pendingSpot = s;
             renderChatContext(); closeDetail(); openChat();
         });
         modalBody.appendChild(ask);
@@ -191,6 +201,7 @@
     }
 
     // ===== 聊天面板 =====
+    // REQ-040: render local selection/server snapshot as text; no requests. See docs/spot_chat_entry.md#L3.
     function renderChatContext() {
         chatContext.textContent = selectedSpot ? '当前景点：' + selectedSpot.name + '（下次提问时使用）' : '当前：通用导览';
     }
@@ -227,7 +238,7 @@
             return r.json();
         }).then(function(data) {
             conversationId = data.conversationId;
-            selectedSpot = null; renderChatContext();
+            selectedSpot = null; pendingSpot = null; contextReady = true; renderChatContext();
             stopTts();
             chatMessages.innerHTML = '';
             addMsg('bot', '新对话已开始。您可以继续提问。');
@@ -235,14 +246,14 @@
           .then(function() { resettingConversation = false; chatNewBtn.disabled = false; });
     });
     function sendMessage() {
-        if (pendingChats || resettingConversation) return;
+        if (pendingChats || resettingConversation || !contextReady) return;
         // 立即停止当前所有说话和口型
         stopTts();
         var text = chatInput.value.trim(); if (!text) return;
         pendingChats++; chatNewBtn.disabled = true;
         addMsg('user', text); chatInput.value = ''; showTyping();
         var body = { message: text, conversationId: conversationId };
-        if (selectedSpot) body.spotId = selectedSpot.id;
+        if (pendingSpot) body.spotId = pendingSpot.id;
         if (currentInterest) body.interest = currentInterest;
 
         api('/api/chat', {
@@ -255,6 +266,7 @@
             return r.json();
         }).then(function(d) {
             conversationId = d.conversationId || conversationId;
+            pendingSpot = null;
             selectedSpot = allSpots.find(function(spot) { return spot.id === d.spotId; }) || null;
             renderChatContext();
             removeTyping();

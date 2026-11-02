@@ -42,4 +42,4 @@
 
 ## 景点上下文入口
 
-[main.js 入口绑定](../src/main/resources/static/js/main.js#L98)、[上下文渲染](../src/main/resources/static/js/main.js#L194)，需求与测试见 [REQ-040](spot_chat_entry.md#L3)。
+[main.js 入口绑定](../src/main/resources/static/js/main.js#L107)、[上下文渲染](../src/main/resources/static/js/main.js#L205)，需求与测试见 [REQ-040](spot_chat_entry.md#L3)。

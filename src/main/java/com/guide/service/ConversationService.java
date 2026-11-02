@@ -54,6 +54,17 @@ public class ConversationService {
         }
     }
 
+    /** REQ-040: read this session's unexpired ID/spot without history or side effects.
+     * Input: HTTP Session. Output: current snapshot or null fields; no normal API errors.
+     * See API-040 in docs/api_reference.md; change identity/expiry policy alongside chat(). */
+    public Snapshot current(HttpSession session) {
+        synchronized (session) {
+            State state = (State) session.getAttribute(ATTRIBUTE);
+            return state != null && state.owner.equals(owner()) && clock.millis() - state.lastActive <= IDLE_MILLIS
+                    ? state.snapshot() : new Snapshot(null, null);
+        }
+    }
+
     /**
      * REQ-039: validate request/session/spot and append only a successful model or fallback reply.
      * Input: session and message with optional ID/spot. Output: reply with bound ID/spot.

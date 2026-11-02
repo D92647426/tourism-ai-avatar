@@ -94,3 +94,6 @@ node --test tests/frontend/*.test.js
 ## TEST-040 景点提问
 
 对应 REQ-040。文件、测试函数行为、命令、预期和失败排查见 [验收记录](spot_chat_entry.md#L13)。桌面与手机布局通过实际浏览器操作验证，截图附在同一文档。
+
+
+TEST-040 的具体 Node 用例：[detail selects real spotId without sending; followups, reopening and reset preserve clear context](../tests/frontend/spot-chat.test.js#L6)、[reload restores server context and text can switch it without sending a stale spotId](../tests/frontend/spot-chat.test.js#L46)、[pending question cannot race a new spot selection or send twice](../tests/frontend/spot-chat.test.js#L63)。命令 `node --test tests/frontend/*.test.js`，预期 32/32；异常时检查详情待发送选择、服务端快照恢复和忙碌标记。Java [snapshotRestoresOnlyCurrentOwnersUnexpiredSpot](../src/test/java/com/guide/service/ConversationServiceTest.java#L111) 用 `mvn -o -Dtest=ConversationServiceTest test` 验证当前/其他身份/过期快照；失败查 owner 与 Clock，完整 Java 预期 48/48。

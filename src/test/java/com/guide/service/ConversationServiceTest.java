@@ -108,6 +108,20 @@ class ConversationServiceTest {
                 () -> service.chat(session,request("   ",null,null))).getRawStatusCode());
     }
 
+    @Test void snapshotRestoresOnlyCurrentOwnersUnexpiredSpot() {
+        answer(); as("alice");
+        Spot place=spot(11,"灵山大佛");
+        when(spots.getSpotById(11)).thenReturn(Optional.of(place));
+        MockHttpSession session=new MockHttpSession();
+        String id=service.chat(session,request("介绍",11,null)).getConversationId();
+        assertEquals(id,service.current(session).getConversationId());
+        assertEquals(11,service.current(session).getSpotId());
+        assertNull(service.current(new MockHttpSession()).getConversationId());
+        as("bob");assertNull(service.current(session).getConversationId());
+        as("alice");clock.now += 20 * 60 * 1000L + 1;
+        assertNull(service.current(session).getConversationId());
+    }
+
     static class MutableClock extends Clock {
         long now = 1_000_000L;
         public ZoneId getZone() { return ZoneOffset.UTC; }
