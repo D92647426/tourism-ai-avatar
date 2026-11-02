@@ -25,3 +25,9 @@
 ## Q-0030 数字人形象如何实现，是否容易改进和替换？
 
 实现原理、配置边界与数字人制作路线见 [avatar_replacement.md:L1](./avatar_replacement.md#L1)。游客端实际由 main.js 直接加载 Haru；后台 modelName 尚未连接到加载器，不能只改配置字段或替换三视图图片。
+
+## Q-0031 可以融合哪些开源项目形成创意亮点？
+
+2026-11-02 核查官方仓库和文档后，推荐 inkjs 的分支故事配 MindAR 的实体证据卡，接现有观察、资料对照与数字人；Yjs 双人证据板后置，Pannellum 等合法全景素材，Transformers.js 等具体离线需求和设备基准。本轮是研究与实施计划，尚未接入这些引擎。
+
+方案与验收：[创意路线](research/2026-11-02-creative-roadmap.md#L1)；官方证据：[来源核查](research/2026-11-02-ar-story-panorama-sources.md#L1)；现有接入位置：[观察包规则](../src/main/resources/static/js/exploration-core.js#L1)、[观察页面](../src/main/resources/static/js/exploration.js#L1)、[数字人/聊天逻辑](../src/main/resources/static/js/main.js#L1)。本轮影响仅文档与议题，运行 `python scripts/check_doc_links.py` 和 `git diff --check` 验证。
