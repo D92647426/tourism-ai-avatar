@@ -22,17 +22,15 @@
 | [#19](https://github.com/D92647426/tourism-ai-avatar/issues/19) | 有来源的讲解搭档 | [#18](https://github.com/D92647426/tourism-ai-avatar/pull/18) | 已合并并关闭 |
 | [#12](https://github.com/D92647426/tourism-ai-avatar/issues/12) | 景点详情提问入口 | [#26](https://github.com/D92647426/tourism-ai-avatar/pull/26) | 已合并并关闭 |
 | [#14](https://github.com/D92647426/tourism-ai-avatar/issues/14) | 语速、静音与设备声线 | [#28](https://github.com/D92647426/tourism-ai-avatar/pull/28) | 已合并并关闭 |
+| [#29](https://github.com/D92647426/tourism-ai-avatar/issues/29) | 游览导演与情境方案 | [#32](https://github.com/D92647426/tourism-ai-avatar/pull/32) | 已合并并关闭 |
+| [#30](https://github.com/D92647426/tourism-ai-avatar/issues/30) | 可选观察与草稿衔接 | [#32](https://github.com/D92647426/tourism-ai-avatar/pull/32) | 已合并并关闭 |
+| [#31](https://github.com/D92647426/tourism-ai-avatar/issues/31) | 游客界面与手机聊天 | [#32](https://github.com/D92647426/tourism-ai-avatar/pull/32) | 已合并并关闭 |
 
-## 本轮新开发
+## 本轮开发（主题收拢）
 
-#14 / PR #28 已合并并关闭。本轮按用户确认的主次实现：
+PR #32 已合入 main（a40f763），#29/#30/#31均关闭。用户确认主线为景区数字人导览，本轮实施 [#37](https://github.com/D92647426/tourism-ai-avatar/issues/37) 标准/亲子/精简讲解，已提交 [PR #40](https://github.com/D92647426/tourism-ai-avatar/pull/40)，待组员评审/合并，议题仍开放。设计见 [REQ-046](narration_design.md#L1)。
 
-| 议题 | 内容 | 状态 |
-|---|---|---|
-| [#29](https://github.com/D92647426/tourism-ai-avatar/issues/29) | 游览导演、情境重排、逐站理由 | 刚提交 [PR #32](https://github.com/D92647426/tourism-ai-avatar/pull/32)，待评审 |
-| [#30](https://github.com/D92647426/tourism-ai-avatar/issues/30) | 观察写作辅助、草稿保留、旅程衔接 | 刚提交 [PR #32](https://github.com/D92647426/tourism-ai-avatar/pull/32)，待评审 |
-| [#31](https://github.com/D92647426/tourism-ai-avatar/issues/31) | 游客界面美化、手机聊天修正 | 刚提交 [PR #32](https://github.com/D92647426/tourism-ai-avatar/pull/32)，待评审 |
-
+研究PR [#36](https://github.com/D92647426/tourism-ai-avatar/pull/36)关闭保留；[#33](https://github.com/D92647426/tourism-ai-avatar/issues/33)、[#34](https://github.com/D92647426/tourism-ai-avatar/issues/34)、[#35](https://github.com/D92647426/tourism-ai-avatar/issues/35)以not planned关闭并退回备选，不是开发完成。不会自动继续剧情、AR或多人证据板。
 
 第一轮总计划 [#4](https://github.com/D92647426/tourism-ai-avatar/issues/4) 已全部勾选并关闭。
 
@@ -40,6 +38,8 @@
 
 | 议题 | 后续内容 |
 |---|---|
+| [#38](https://github.com/D92647426/tourism-ai-avatar/issues/38) | 游览方案接力讲解，沿用当前方式并明确切站；待开发 |
+| [#39](https://github.com/D92647426/tourism-ai-avatar/issues/39) | 展示本次资料候选和待核验状态；待开发 |
 | [#1](https://github.com/D92647426/tourism-ai-avatar/issues/1) | 三人确认主创意、分工和 90 秒演示脚本；已有创意功能原型，仍需小组决定 |
 | [#2](https://github.com/D92647426/tourism-ai-avatar/issues/2) | 各成员实际跑通环境、提交与互审首个 PR |
 | [#3](https://github.com/D92647426/tourism-ai-avatar/issues/3) | 汇总上游复用与小组新增证据，核对素材和代码授权 |
@@ -51,3 +51,5 @@
 此前各功能文档中的分支依赖属于提交时状态，整合已完成；后续开发从最新main开始。本表不替小组成员记录不存在的开发或评审贡献。
 
 本轮新功能与截图见 [设计验收](director_design.md#L3)。后续仍需#1/#2/#3的团队确认、互审联调与来源证据，以及真实场景/模型/设备验收。
+
+本轮#37：Java228/228、Node164/164、文档链接、隔离HTTP冒烟及桌面/手机/短横屏验证通过；双轴复查3项需求发现均修正，规范无剩余问题。详情与截图见 [交付记录](narration_design.md#L33)。

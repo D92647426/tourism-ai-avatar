@@ -108,3 +108,7 @@
 
 
 [director-core.js](../src/main/resources/static/js/director-core.js#L1) 负责编排；[director.js](../src/main/resources/static/js/director.js#L1) 适配DOM；[界面与边界](director_design.md#L15) 说明观察和样式扩展。
+
+## REQ-046 讲解方式模块
+
+[NarrationMode](../src/main/java/com/guide/model/NarrationMode.java#L1) 负责白名单与模型提示；[ConversationService](../src/main/java/com/guide/service/ConversationService.java#L78) 负责模式隔离与成功提交；[ChatService](../src/main/java/com/guide/service/ChatService.java#L79) 兼容旧调用、传模型提示并在 [本地组装](../src/main/java/com/guide/service/ChatService.java#L310) 复用实际字段；[main.js](../src/main/resources/static/js/main.js#L240) 负责选择、恢复、重试废弃和回答标签。见 [行为与修改边界](narration_design.md#L7)。

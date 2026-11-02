@@ -13,6 +13,7 @@ public class ChatResponse {
     private String interest;                 // 回显兴趣标签
     private String conversationId;
     private Integer spotId;
+    private String narrationMode = "standard";
     private List<KnowledgeReference> knowledgeReferences = Collections.emptyList();
 
     public ChatResponse(String reply, boolean fallback) {
@@ -32,6 +33,8 @@ public class ChatResponse {
     public void setConversationId(String conversationId) { this.conversationId = conversationId; }
     public Integer getSpotId() { return spotId; }
     public void setSpotId(Integer spotId) { this.spotId = spotId; }
+    public String getNarrationMode() { return narrationMode; }
+    public void setNarrationMode(String narrationMode) { this.narrationMode = narrationMode; }
     /** REQ-037/API-037: supplied local candidates, not verified or model-used citations. */
     public List<KnowledgeReference> getKnowledgeReferences() { return knowledgeReferences; }
     public void setKnowledgeReferences(List<KnowledgeReference> references) { this.knowledgeReferences = references; }

@@ -3,6 +3,7 @@ package com.guide.service;
 import com.guide.model.ChatRequest;
 import com.guide.model.ChatResponse;
 import com.guide.model.Spot;
+import com.guide.model.NarrationMode;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpSession;
@@ -44,7 +45,7 @@ class ConversationServiceTest {
         Spot spot = new Spot(); spot.setId(id); spot.setName(name); return spot;
     }
     private void answer() {
-        when(chat.chat(anyString(), any(), anyList(), any())).thenAnswer(call ->
+        when(chat.chat(anyString(), any(), anyList(), any(), any())).thenAnswer(call ->
                 new ChatResponse("回答：" + call.getArgument(0), true));
     }
 
@@ -60,7 +61,7 @@ class ConversationServiceTest {
         assertEquals(403, stolen.getRawStatusCode());
         service.chat(bob, request("普通提问", null, null));
         as("alice"); service.chat(alice, request("它什么时候开放", null, first.getConversationId()));
-        verify(chat).chat(eq("它什么时候开放"), isNull(), argThat((List<ChatService.Turn> h) -> h.size() == 2), eq(buddha));
+        verify(chat).chat(eq("它什么时候开放"), isNull(), argThat((List<ChatService.Turn> h) -> h.size() == 2), eq(buddha), eq(NarrationMode.STANDARD));
         as("bob"); // Reusing the same cookie after switching identity must reset its old history.
         assertEquals(403, assertThrows(ResponseStatusException.class,
                 () -> service.chat(alice, request("旧会话", null, first.getConversationId()))).getRawStatusCode());
@@ -74,7 +75,7 @@ class ConversationServiceTest {
         MockHttpSession session = new MockHttpSession(); as("alice");
         String id = service.chat(session, request("第一个",11,null)).getConversationId();
         assertEquals(12, service.chat(session, request("第二个",12,id)).getSpotId());
-        verify(chat).chat(eq("第二个"), isNull(), argThat((List<ChatService.Turn> h) -> h.isEmpty()), eq(b));
+        verify(chat).chat(eq("第二个"), isNull(), argThat((List<ChatService.Turn> h) -> h.isEmpty()), eq(b), eq(NarrationMode.STANDARD));
         String next = service.start(session).getConversationId(); assertNotEquals(id,next);
         assertEquals(403,assertThrows(ResponseStatusException.class,
                 () -> service.chat(session,request("旧的",null,id))).getRawStatusCode());
@@ -84,10 +85,10 @@ class ConversationServiceTest {
         when(spots.getAllSpots()).thenReturn(Collections.emptyList()); answer();
         MockHttpSession session = new MockHttpSession(); as("alice");
         String id = service.chat(session,request("一",null,null)).getConversationId();
-        when(chat.chat(eq("失败"),any(),anyList(),any())).thenThrow(new IllegalStateException("model down"));
+        when(chat.chat(eq("失败"),any(),anyList(),any(),any())).thenThrow(new IllegalStateException("model down"));
         assertThrows(IllegalStateException.class, () -> service.chat(session,request("失败",null,id)));
         service.chat(session,request("二",null,id));
-        verify(chat).chat(eq("二"),isNull(),argThat((List<ChatService.Turn> h) -> h.size()==2),isNull());
+        verify(chat).chat(eq("二"),isNull(),argThat((List<ChatService.Turn> h) -> h.size()==2),isNull(),eq(NarrationMode.STANDARD));
         clock.now += 21 * 60 * 1000L;
         assertEquals(410,assertThrows(ResponseStatusException.class,
                 () -> service.chat(session,request("旧请求",null,id))).getRawStatusCode());
@@ -101,7 +102,7 @@ class ConversationServiceTest {
         for (int i = 1; i <= 20; i++) service.chat(session,request("问题" + i,null,null));
         verify(chat).chat(eq("问题20"),isNull(),
                 argThat((List<ChatService.Turn> h) -> h.size() == 12
-                        && h.get(0).content.equals("问题14")),isNull());
+                        && h.get(0).content.equals("问题14")),isNull(),eq(NarrationMode.STANDARD));
         assertEquals(400,assertThrows(ResponseStatusException.class,
                 () -> service.chat(session,request("转到未知景点",999,null))).getRawStatusCode());
         assertEquals(400,assertThrows(ResponseStatusException.class,

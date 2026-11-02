@@ -217,3 +217,7 @@ API-042：复用公开配置GET和管理员GET/PUT；路径、参数、示例、
 
 
 API-043：复用景点GET与聊天POST，输入输出、错误码和实现位置见 [接口约定](director_design.md#L23)。测试 `node --test tests/frontend/*.test.js`、`mvn -o verify`。
+
+## API-046 讲解方式
+
+复用 POST /api/chat，新增可选 narrationMode=standard/family/brief；省略沿用会话，非法值400且无状态修改，响应与 GET /api/chat/context、POST /api/chat/new 快照回显模式。完整输入输出示例、错误码、兼容与验证命令见 [契约](narration_design.md#L13)，控制器仍为 [ChatController](../src/main/java/com/guide/controller/ChatController.java#L24)，状态与白名单在 [ConversationService.chat](../src/main/java/com/guide/service/ConversationService.java#L78)。无新配置字段或管理API。

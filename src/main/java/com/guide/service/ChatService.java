@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.guide.model.ChatResponse;
 import com.guide.model.Spot;
+import com.guide.model.NarrationMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,6 +51,7 @@ public class ChatService {
     private final AnalyticsService analyticsService;
     private final AiCompletionClient aiCompletionClient;
     private final ObjectMapper objectMapper;
+    private final KnowledgeRetriever scopeResolver = new KnowledgeRetriever();
 
     public ChatService(SpotService spotService, KnowledgeService knowledgeService,
                        AnalyticsService analyticsService, AiCompletionClient aiCompletionClient) {
@@ -67,6 +69,15 @@ public class ChatService {
         return chat(userMessage, interest, Collections.emptyList(), null);
     }
     public ChatResponse chat(String userMessage, String interest, List<Turn> history, Spot currentSpot) {
+        return chat(userMessage, interest, history, currentSpot, NarrationMode.STANDARD);
+    }
+
+    /** REQ-046: answer with validated narration and one retrieval snapshot.
+     * Inputs: message/interest, bounded history/current spot, non-null mode. Output: reply/mode.
+     * Model failure uses marked local data; existing input validation belongs to ConversationService.
+     * Change narration policy with docs/narration_design.md and TEST-046. */
+    public ChatResponse chat(String userMessage, String interest, List<Turn> history, Spot currentSpot, NarrationMode mode) {
+        Objects.requireNonNull(mode, "mode");
         userMessage = userMessage == null ? "" : userMessage;
         KnowledgeRetrieval knowledge = knowledgeService.retrieve(userMessage);
         boolean fallback = false;
@@ -74,15 +85,15 @@ public class ChatService {
 
         if (!userMessage.trim().isEmpty() && aiCompletionClient.isEnabled()) {
             try {
-                reply = callAiApi(userMessage, interest, knowledge, history, currentSpot);
+                reply = callAiApi(userMessage, interest, knowledge, history, currentSpot, mode);
             } catch (Exception e) {
                 log.warn("AI API调用失败，降级到本地匹配: {}", e.getClass().getSimpleName());
                 fallback = true;
-                reply = localFallback(userMessage, interest, knowledge, currentSpot);
+                reply = localFallback(userMessage, interest, knowledge, currentSpot, mode);
             }
         } else {
             fallback = true;
-            reply = localFallback(userMessage, interest, knowledge, currentSpot);
+            reply = localFallback(userMessage, interest, knowledge, currentSpot, mode);
         }
 
         // 记录交互日志
@@ -94,6 +105,7 @@ public class ChatService {
 
         ChatResponse response = new ChatResponse(reply, fallback);
         response.setInterest(interest);
+        response.setNarrationMode(mode.getValue());
         response.setKnowledgeReferences(knowledge.getReferences());
         // 只有游客选择了兴趣标签时才附带推荐路线
         if (interest != null && !interest.isEmpty()) {
@@ -111,11 +123,13 @@ public class ChatService {
 
     // ===== AI API 调用 =====
 
-    private String callAiApi(String userMessage, String interest, KnowledgeRetrieval knowledge, List<Turn> history, Spot currentSpot) throws Exception {
+    private String callAiApi(String userMessage, String interest, KnowledgeRetrieval knowledge, List<Turn> history, Spot currentSpot, NarrationMode mode) throws Exception {
         String spotContext = spotService.buildSpotContext();
         String knowledgeContext = knowledge.getContext();
 
         String system = buildSystemMessage(spotContext, knowledgeContext, interest).path("content").asText();
+        system += "\n【本次讲解方式】" + mode.getLabel() + "：" + mode.getInstruction()
+                + " 本次方式优先于历史回答的语气，历史内容仍供理解问题。不要编造故事，不省略未核验或待补充提示，不承诺实时信息。";
         if (currentSpot != null) system += "\n【当前景点】" + currentSpot.getName();
         return history.isEmpty() && currentSpot == null ? aiCompletionClient.complete(system,userMessage,0.7,800)
                 : aiCompletionClient.completeWithHistory(system,userMessage,history,0.7,800);
@@ -150,7 +164,7 @@ public class ChatService {
         content.append("1. 像真人导游一样自然地聊天，不要用固定模板套答案\n");
         content.append("2. 先直接回答游客问的问题，不要上来就推荐路线\n");
         content.append("3. 游客问具体景点时，用数据库信息生动介绍，可以穿插历史典故和游览小贴士\n");
-        content.append("4. 回答简洁，控制在200-300字，避免长篇大论\n");
+        content.append("4. 回答简洁，按本次讲解方式控制长度，避免长篇大论\n");
         content.append("5. 遇到与景区完全无关的问题（如代码、股票等），幽默地引导回景区话题\n");
         content.append("6. 不要在每句话后面都加路线推荐，只有游客表现出'不知道去哪''推荐一下'等需求时才推荐\n");
         content.append("7. 允许聊一些轻松话题（天气、美食、当地文化等），不用每句话都严肃地介绍景点\n");
@@ -198,10 +212,25 @@ public class ChatService {
      * Legacy greeting/route/ticket/traffic rules remain after entity handling.
      * Policy: docs/natural_retrieval.md; evidence boundary: docs/knowledge_integrity.md.
      */
-    private String localFallback(String userMessage, String interest, KnowledgeRetrieval knowledge, Spot currentSpot) {
+    private String localFallback(String userMessage, String interest, KnowledgeRetrieval knowledge, Spot currentSpot, NarrationMode mode) {
         String msg = userMessage.toLowerCase(Locale.ROOT);
         String knowledgeContext = knowledge.getContext();
         List<String> entities = knowledge.getEntityNames();
+        // 扩展的本地关键词匹配
+        if (scopeResolver.mentionsExcludedName(msg) || entities.isEmpty() && containsAny(msg, "拈花湾", "三圣殿", "慈恩塔", "灵山精舍",
+                "鼋头渚", "太湖", "三国", "水浒", "惠山",
+                "梅园", "蠡园", "南禅寺", "清名桥")) {
+            if (!knowledgeContext.isEmpty()) return "问题涉及当前景点之外的地点，以下仅为匹配的资料候选：\n" + KNOWLEDGE_BOUNDARY_PREFIX + "\n" + knowledgeContext;
+            return "您问的这个地方非常值得一游！不过它暂时不在我当前的16个导览卡片中。\n\n" +
+                   "当前没有足够的本地资料为这个地方作可靠讲解，建议查询对应景区的官方信息。\n\n" +
+                   "目前我的数据库中包含以下16个核心景点：\n" +
+                   "灵山大照壁、五明桥、佛足坛、五智门、菩提大道、\n" +
+                   "九龙灌浴、降魔浮雕、阿育王柱、百子戏弥勒、\n" +
+                   "祥符禅寺、灵山大佛、佛教文化博览馆、灵山梵宫、\n" +
+                   "五印坛城、曼飞龙塔、无尽意斋\n\n" +
+                   "点击左下角卡片可以查看详细介绍哦~";
+        }
+
         if (entities.size() > 1) {
             return "你提到了多个景点：" + String.join("、", entities) + "。\n\n"
                     + (knowledgeContext.isEmpty() ? "没有匹配的知识条目，请补充景点名称或具体想了解的问题。" :
@@ -210,26 +239,23 @@ public class ChatService {
         }
         if (entities.size() == 1) {
             for (Spot spot : spotService.getAllSpots()) if (spot.getName().equals(entities.get(0))) {
+                if (mode != NarrationMode.STANDARD) return narratedSpotReply(spot, msg, mode);
                 return spotReplyForQuestion(spot, msg, interest) + "\n" + SAMPLE_BOUNDARY + "\n\n" + (knowledgeContext.isEmpty()
                         ? "目前没有匹配的知识条目，以上是景点卡片中的参考信息。你想进一步了解哪方面？"
                         : knowledgeContext);
             }
         }
 
-        if (currentSpot != null && containsAny(msg, "它", "这里", "这个景点", "故事", "开放", "几点")) return spotReplyForQuestion(currentSpot, msg, interest) + "\n" + SAMPLE_BOUNDARY;
-
-        // 扩展的本地关键词匹配
-        if (containsAny(msg, "拈花湾", "三圣殿", "慈恩塔", "灵山精舍",
-                "鼋头渚", "太湖", "三国", "水浒", "惠山",
-                "梅园", "蠡园", "南禅寺", "清名桥")) {
-            return "您问的这个地方非常值得一游！不过它暂时不在我当前的16个导览卡片中。\n\n" +
-                   "配置AI API Key后，我可以用更智能的方式为您介绍灵山胜境及无锡周边所有景点。\n\n" +
-                   "目前我的数据库中包含以下16个核心景点：\n" +
-                   "灵山大照壁、五明桥、佛足坛、五智门、菩提大道、\n" +
-                   "九龙灌浴、降魔浮雕、阿育王柱、百子戏弥勒、\n" +
-                   "祥符禅寺、灵山大佛、佛教文化博览馆、灵山梵宫、\n" +
-                   "五印坛城、曼飞龙塔、无尽意斋\n\n" +
-                   "点击左下角卡片可以查看详细介绍哦~";
+        boolean currentQuestion = mode == NarrationMode.STANDARD
+                ? containsAny(msg, "它", "这里", "这个景点", "故事", "开放", "几点") : isNarrationFollowup(msg);
+        if (currentSpot != null && currentQuestion) {
+            return mode == NarrationMode.STANDARD ? spotReplyForQuestion(currentSpot, msg, interest) + "\n" + SAMPLE_BOUNDARY
+                    : narratedSpotReply(currentSpot, msg, mode);
+        }
+        if (currentSpot != null && mode != NarrationMode.STANDARD && spotTopic(msg) != SpotTopic.OTHER
+                && !msg.contains("灵山胜境")) {
+            return "没有确认这次问题指向哪个景点。当前选中的是【" + currentSpot.getName()
+                    + "】；如果继续问它，可以说“它的门票”或“有什么特点”，也可以明确提供其他景点名称。";
         }
 
         if (containsAny(msg, "推荐", "好玩", "值得", "必去", "最")) {
@@ -276,6 +302,50 @@ public class ChatService {
         return "当前本地资料没有找到匹配的知识条目。请补充景点名称，"
                 + "例如灵山大佛、灵山梵宫或九龙灌浴，再告诉我想了解的问题。"
                 + "也可以告诉我“它”指的是哪处景点，我再继续介绍。";
+    }
+
+    /** REQ-046: present existing fields without rewriting facts or cutting qualifiers.
+     * Input: resolved single spot, question and family/brief mode. Output: marked local reply.
+     * Missing fields get an explicit message; no model or external lookup. TEST-046/docs/narration_design.md. */
+    private String narratedSpotReply(Spot spot, String question, NarrationMode mode) {
+        String fact;
+        SpotTopic topic = spotTopic(question);
+        boolean general = topic == SpotTopic.INTRO || topic == SpotTopic.OTHER;
+        switch (topic) {
+            case HOURS: fact = spot.getOpeningHours(); break;
+            case TICKET: fact = spot.getTicket(); break;
+            case TRANSPORT: fact = spot.getTransportation(); break;
+            case HISTORY: fact = spot.getHistory(); break;
+            default: fact = spot.getBrief();
+        }
+        if (fact == null || fact.trim().isEmpty()) fact = "这部分资料暂未收录，请查看现场说明或咨询景区工作人员。";
+        String reply = "【" + spot.getName() + "】本地资料摘录\n\n" + fact;
+        if (mode == NarrationMode.FAMILY && general) reply += "\n\n可以和孩子一起看看：这个景点最先吸引你的细节是什么？先说看到的，再说自己的猜想。";
+        return reply + "\n\n" + SAMPLE_BOUNDARY;
+    }
+
+    private enum SpotTopic { INTRO, HOURS, TICKET, TRANSPORT, HISTORY, OTHER }
+
+    /** REQ-046: one classifier for field selection and contextual follow-ups.
+     * Input: question; output: topic, OTHER when unsupported. No inferred facts; TEST-046. */
+    private SpotTopic spotTopic(String question) {
+        if (containsAny(question, "开放", "几点")) return SpotTopic.HOURS;
+        if (containsAny(question, "门票", "票价", "收费", "免费", "价格", "多少钱")) return SpotTopic.TICKET;
+        if (containsAny(question, "交通", "怎么去", "公交", "到达")) return SpotTopic.TRANSPORT;
+        if (containsAny(question, "故事", "历史")) return SpotTopic.HISTORY;
+        if (containsAny(question, "介绍", "讲解", "特点", "特色", "亮点", "看点")) return SpotTopic.INTRO;
+        return SpotTopic.OTHER;
+    }
+
+    /** REQ-046: inherit a place only for explicit reference or a bounded bare follow-up.
+     * Unknown place words must not be guessed as the current place. This is a rule list,
+     * not NER; extend phrases with regression tests in NarrationModeTest. */
+    private boolean isNarrationFollowup(String question) {
+        if (containsAny(question, "它", "这里", "这个景点", "当前景点")) return true;
+        if (spotTopic(question) == SpotTopic.OTHER) return false;
+        String bare = java.text.Normalizer.normalize(question, java.text.Normalizer.Form.NFKC)
+                .replaceAll("[\\p{P}\\p{Z}\\s]", "").replaceFirst("^(请问|请|我想知道|我想了解)", "");
+        return bare.matches("(介绍(一下)?|讲解(一下)?|有什么(特点|特色|亮点|看点)|历史|故事|几点(开门|开放|关门)?|什么时候开放|开放时间|开放|门票(多少(钱)?)?|票价(多少(钱)?)?|收费|免费|价格(多少)?|多少钱|怎么去|交通(怎么走)?|坐什么公交)(呢|吗|啊)?");
     }
 
     /**
