@@ -185,3 +185,9 @@ TEST-043 具体用例：[预算/候选/输入不变](../tests/frontend/director.
 命令：`mvn -o verify`、`node --test tests/frontend/*.test.js`、`python scripts/check_doc_links.py`、`python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar`。预期非法值400、无跨主体偏好、失败不提交、无自动发问、切模式无旧重试。失败先核对模式枚举/候选会话/请求快照，而非根据真实模型文风判断功能是否实现。实际浏览器和最终计数见 [交付记录](narration_design.md#L25)。
 
 TEST-046复查回归：[免费/特点与外景不串事实](../src/test/java/com/guide/service/NarrationModeTest.java#L133)、[迟到初始化与重置失败](../tests/frontend/narration.test.js#L50)。短追问规则和外景字典边界见 [设计](narration_design.md#L21)。
+
+## TEST-047 / TEST-048
+
+[纯状态/下一站/无效方案与快照](../tests/frontend/journey-core.test.js#L1)、[主页面联动/拒绝/重编/迟到/切站](../tests/frontend/journey-page.test.js#L1)、[候选安全与归属](../tests/frontend/chat-references.test.js#L1)；[请求生命周期](../tests/frontend/chat-request.test.js#L1)另验主聊天HTTP400不重放。实际JAR的模块资源、连续切站/模式及候选source契约见 [smoke](../scripts/smoke_teacher_project.py#L1)。
+
+命令：`node --test tests/frontend/*.test.js`、`mvn -o verify`、`python scripts/check_doc_links.py`、`python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar`。预期不自动发送、不覆盖草稿、重编后旧重试/候选不复活，候选不作逐句事实证明。失败先核对主页面方案来源标记、生命周期身份和本次响应对象。真实浏览器、计数和截图在 [交付设计](journey_references_design.md#L27)追加。

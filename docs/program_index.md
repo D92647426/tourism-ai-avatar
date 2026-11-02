@@ -112,3 +112,7 @@
 ## REQ-046 讲解方式模块
 
 [NarrationMode](../src/main/java/com/guide/model/NarrationMode.java#L1) 负责白名单与模型提示；[ConversationService](../src/main/java/com/guide/service/ConversationService.java#L78) 负责模式隔离与成功提交；[ChatService](../src/main/java/com/guide/service/ChatService.java#L79) 兼容旧调用、传模型提示并在 [本地组装](../src/main/java/com/guide/service/ChatService.java#L310) 复用实际字段；[main.js](../src/main/resources/static/js/main.js#L240) 负责选择、恢复、重试废弃和回答标签。见 [行为与修改边界](narration_design.md#L7)。
+
+## REQ-047/048 导览衔接与候选
+
+[journey-core.create](../src/main/resources/static/js/journey-core.js#L8)纯状态和原子校验；[journey.mount](../src/main/resources/static/js/journey.js#L7)处理真实站点选择/下一站/拒绝反馈；[chat-references.append](../src/main/resources/static/js/chat-references.js#L8)做白名单、去重、限量与纯文本披露。主页面仍由 [main.js](../src/main/resources/static/js/main.js#L1)管理请求/语音及方案失效守卫。主聊天单独启用HTTP400纠正模式，共享 [chat-request.create](../src/main/resources/static/js/chat-request.js#L25)默认契约保持兼容。

@@ -10,12 +10,14 @@
      * @param {Object} options request(payload, signal) returns a Promise of a
      * response with ok and json(); optional onStart(payload, isRetry),
      * onState(state), onSuccess(result), timeoutMs (default 30000) and timer hooks.
+     * requireCorrectionOn400 defaults false; the main guide opts in for invalid station recovery.
      * Callbacks run synchronously and must not throw. Payload fields are scalar.
      * @returns {Object} send/retry/cancel return acceptance booleans;
      * isPending returns a boolean and getState returns a detached state snapshot.
      * @throws {TypeError} If request is missing or is not a function.
      * @throws {RangeError} If timeoutMs is not finite and positive.
      * Change lifecycle policy here; DOM/voice adapters live in main.js.
+     * REQ-047: HTTP400 is invalid-request and requires correction, not identical replay.
      * @see ../../../../../docs/chat_reliability.md (REQ-031 and integration contract)
      */
     function create(options) {
@@ -44,7 +46,7 @@
             if (reason === 'timeout' || reason === 'cancelled') {
                 if (request.controller) request.controller.abort();
             }
-            retryPayload = reason ? request.payload : null;
+            retryPayload = reason && reason !== 'invalid-request' ? request.payload : null;
             publish(reason === 'cancelled' ? 'cancelled' : reason ? 'failed' : 'succeeded', reason);
             if (!reason && options.onSuccess) options.onSuccess(result);
         }
@@ -72,7 +74,7 @@
                 if (active !== request) return null;
                 if (!response || !response.ok) {
                     var error = new Error('Unsuccessful HTTP response');
-                    error.chatReason = response && response.status === 410 ? 'expired' : 'http';
+                    error.chatReason = response && response.status === 410 ? 'expired' : response && response.status === 400 && options.requireCorrectionOn400 === true ? 'invalid-request' : 'http';
                     throw error;
                 }
                 // The deadline remains active while json() is pending.

@@ -123,3 +123,7 @@ REQ-043（#29）情境编排、REQ-044（#30）观察辅助、REQ-045（#31）�
 ## REQ-046 游客讲解方式（#37）
 
 当前主题以景区数字人导览为主线，标准/亲子/精简方式沿当前会话延续，新对话回标准；观察为可选补充。行为、API与边界见 [设计](narration_design.md#L1)，实现为 [模式白名单](../src/main/java/com/guide/model/NarrationMode.java#L1)、[成功后提交](../src/main/java/com/guide/service/ConversationService.java#L78)、[回答组织](../src/main/java/com/guide/service/ChatService.java#L79)、[页面控件](../src/main/resources/static/js/main.js#L240)。
+
+## REQ-047 / REQ-048（#38 / #39）
+
+方案接力讲解与逐条回答的参考候选，行为、接口和边界见 [设计](journey_references_design.md#L1)。[journey-core](../src/main/resources/static/js/journey-core.js#L1)保存页内选择，[journey页面适配](../src/main/resources/static/js/journey.js#L1)显式准备草稿，[参考候选渲染器](../src/main/resources/static/js/chat-references.js#L1)只渲染同次响应的有效本地候选。无新后端接口/持久化/模型依赖。

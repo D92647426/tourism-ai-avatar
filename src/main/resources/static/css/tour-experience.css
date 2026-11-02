@@ -175,3 +175,25 @@
     .chat-narration { padding:6px 14px; }
 }
 @media(prefers-reduced-motion:reduce) { .exploration-page * { animation:none !important; transition:none !important; scroll-behavior:auto !important; } }
+
+/* REQ-047/048: one itinerary selection row; references stay in the scrolling message body. */
+.journey-controls { display:flex; align-items:center; flex-wrap:wrap; gap:12px 24px; padding:18px 0; border-top:1px solid #d1ddcf; }
+.journey-controls>div { flex:1 1 220px; }
+.journey-controls h3 { margin:0 0 8px; font-size:19px; }
+.journey-controls p { margin:4px 0; color:#36574a; font-size:14px; line-height:1.6; }
+.journey-controls #journeyFeedback { flex-basis:100%; font-size:13px; }
+.journey-controls button,.chat-context-row button { border:1px solid #8baba0; border-radius:6px; background:#fff; color:#16352f; padding:8px 12px; font:inherit; cursor:pointer; }
+.journey-controls button { min-height:44px; }
+.journey-controls button:disabled { color:#53665d; background:#edf1ee; cursor:default; }
+.journey-controls button:focus-visible,.chat-context-row button:focus-visible { outline:2px solid #11665b; outline-offset:2px; }
+.chat-context-row { display:flex; align-items:center; flex-shrink:0; background:#f0f7f4; border-bottom:1px solid #d1ddcf; }
+.chat-context-row .chat-context { border:0; flex:1; min-width:0; }
+.chat-context-row button { flex-shrink:0; margin-right:10px; padding:6px 8px; font-size:12px; }
+.chat-context-row button[hidden] { display:none; }
+.chat-msg.bot { display:block; }
+.chat-references { max-width:85%; padding:8px 4px 0; color:#36574a; font-size:12px; line-height:1.6; overflow-wrap:anywhere; }
+.chat-references summary { cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+.chat-references summary:focus-visible { outline:2px solid #11665b; outline-offset:2px; }
+.chat-references p { margin:8px 0; }
+.chat-references ul { margin:8px 0 0; padding-left:18px; }
+.chat-references li { margin:5px 0; }

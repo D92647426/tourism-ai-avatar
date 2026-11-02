@@ -20,9 +20,9 @@
                     var result=typeof win.GuideExploreSpot==='function'?win.GuideExploreSpot(stop.name):{accepted:false,reason:'观察手册还未就绪，请稍后重试。'};
                     note(result.accepted?'已打开 '+stop.name+' 的观察任务。':result.reason);
                 });actions.appendChild(observe);
-                var ask=element('button','带着问题问导游');ask.type='button';ask.addEventListener('click',function(event){
+                var ask=element('button','准备本站讲解');ask.type='button';ask.addEventListener('click',function(event){
                     event.stopPropagation(); // Opening chat must not trigger its document click-away handler.
-                    var result=typeof win.GuideChatDraft==='function'?win.GuideChatDraft('我计划观察【'+stop.name+'】。'+stop.prompt+' 请给我一个观察建议。',{spotId:stop.id}):{accepted:false,reason:'导游还未就绪，请稍后重试。'};
+                    var result=win.GuideTour?win.GuideTour.prepare(stop.id):{accepted:false,reason:'导游还未就绪，请稍后重试。'};
                     note(result.accepted?'问题已放入聊天草稿，请确认后发送。':result.reason);
                 });actions.appendChild(ask);row.appendChild(actions);list.appendChild(row);
             });
@@ -30,8 +30,9 @@
             $('directorNotice').textContent=next.notice;
             $('directorEmpty').hidden=next.stops.length>0;
             if(current)note('相比上一版，保留：'+(diff.kept.join('、')||'无')+'；移除：'+(diff.removed.join('、')||'无')+'。'+(options.weather==='rain'?'已按雨天情境筛选室内候选。':'已按时间和偏好重新编排。'));
-            else note('方案已生成。你可以重编排，或从任一站开始观察。');
+            else note('方案已生成。你可以重编排，或从任一站准备讲解。');
             current=next;
+            if(win.GuideTour)win.GuideTour.replacePlan(next);
         }
         function read(){return {minutes:Number($('directorTime').value),party:$('directorParty').value,interest:$('directorInterest').value,weather:'fair'};}
         $('directorForm').addEventListener('submit',function(e){e.preventDefault();base=read();render(base,'我的游览方案');});

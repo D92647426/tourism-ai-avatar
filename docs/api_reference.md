@@ -221,3 +221,7 @@ API-043：复用景点GET与聊天POST，输入输出、错误码和实现位置
 ## API-046 讲解方式
 
 复用 POST /api/chat，新增可选 narrationMode=standard/family/brief；省略沿用会话，非法值400且无状态修改，响应与 GET /api/chat/context、POST /api/chat/new 快照回显模式。完整输入输出示例、错误码、兼容与验证命令见 [契约](narration_design.md#L13)，控制器仍为 [ChatController](../src/main/java/com/guide/controller/ChatController.java#L24)，状态与白名单在 [ConversationService.chat](../src/main/java/com/guide/service/ConversationService.java#L78)。无新配置字段或管理API。
+
+## API-047 / API-048 复用导览与候选接口
+
+没有新增URL/配置。请求、响应示例和400/403/410/502见 [契约](journey_references_design.md#L23)。GET /api/spots提供可选真实ID；POST /api/chat显式携带spotId并沿用narrationMode；响应knowledgeReferences仅为本次提供给导游的候选。现有 [ChatController](../src/main/java/com/guide/controller/ChatController.java#L24)和 [KnowledgeReference](../src/main/java/com/guide/model/KnowledgeReference.java#L1)不变。
