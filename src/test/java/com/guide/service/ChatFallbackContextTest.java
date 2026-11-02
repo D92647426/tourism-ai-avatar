@@ -19,8 +19,7 @@ class ChatFallbackContextTest {
         KnowledgeService knowledge = mock(KnowledgeService.class);
         when(spots.getAllSpots()).thenReturn(Collections.singletonList(spot));
         when(knowledge.retrieveRelevantContext(anyString())).thenReturn("");
-        ChatService service = new ChatService(spots, knowledge, mock(AnalyticsService.class));
-        ReflectionTestUtils.setField(service, "apiKey", "");
+        ChatService service = new ChatService(spots, knowledge, mock(AnalyticsService.class), mock(AiCompletionClient.class));
 
         String story = service.chat("它有什么故事", null, Collections.emptyList(), spot).getReply();
         String hours = service.chat("它什么时候开放", null, Collections.emptyList(), spot).getReply();

@@ -33,27 +33,18 @@ public class ChatService {
         }
     }
 
-    @Value("${ai.api-key:}")
-    private String apiKey;
-
-    @Value("${ai.base-url:https://api.deepseek.com/v1}")
-    private String baseUrl;
-
-    @Value("${ai.model:deepseek-chat}")
-    private String model;
-
     private final SpotService spotService;
     private final KnowledgeService knowledgeService;
     private final AnalyticsService analyticsService;
-    private final RestTemplate restTemplate;
+    private final AiCompletionClient aiCompletionClient;
     private final ObjectMapper objectMapper;
 
     public ChatService(SpotService spotService, KnowledgeService knowledgeService,
-                       AnalyticsService analyticsService) {
+                       AnalyticsService analyticsService, AiCompletionClient aiCompletionClient) {
         this.spotService = spotService;
         this.knowledgeService = knowledgeService;
         this.analyticsService = analyticsService;
-        this.restTemplate = new RestTemplate();
+        this.aiCompletionClient = aiCompletionClient;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -69,11 +60,11 @@ public class ChatService {
         boolean fallback = false;
         String reply;
 
-        if (apiKey != null && !apiKey.trim().isEmpty()) {
+        if (aiCompletionClient.isEnabled()) {
             try {
                 reply = callAiApi(userMessage, interest, history, currentSpot);
             } catch (Exception e) {
-                log.warn("AI API调用失败，降级到本地匹配: {}", e.getMessage());
+                log.warn("AI API调用失败，降级到本地匹配: {}", e.getClass().getSimpleName());
                 fallback = true;
                 reply = localFallback(userMessage, interest, currentSpot);
             }
@@ -86,7 +77,7 @@ public class ChatService {
         try {
             analyticsService.logInteraction(userMessage, reply, interest);
         } catch (Exception e) {
-            log.warn("交互日志记录失败: {}", e.getMessage());
+            log.warn("交互日志记录失败: {}", e.getClass().getSimpleName());
         }
 
         ChatResponse response = new ChatResponse(reply, fallback);
@@ -111,42 +102,11 @@ public class ChatService {
         String spotContext = spotService.buildSpotContext();
         String knowledgeContext = knowledgeService.retrieveRelevantContext(userMessage);
 
-        ObjectNode requestBody = objectMapper.createObjectNode();
-        requestBody.put("model", model);
-        requestBody.put("temperature", 0.7);
-        requestBody.put("max_tokens", 800);
-
-        ArrayNode messages = objectMapper.createArrayNode();
-        ObjectNode system = buildSystemMessage(spotContext, knowledgeContext, interest);
-        if (currentSpot != null) {
-            system.put("content", system.path("content").asText() + "\n【当前景点】" + currentSpot.getName()
-                    + "；后续代词问题优先按此景点理解，切换景点后不用旧景点信息。");
-        }
-        messages.add(system);
-        for (Turn turn : history) {
-            ObjectNode previous = objectMapper.createObjectNode();
-            previous.put("role", turn.role);
-            previous.put("content", turn.content);
-            messages.add(previous);
-        }
-
-        ObjectNode userMsg = objectMapper.createObjectNode();
-        userMsg.put("role", "user");
-        userMsg.put("content", userMessage);
-        messages.add(userMsg);
-
-        requestBody.set("messages", messages);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer " + apiKey);
-
-        HttpEntity<String> entity = new HttpEntity<>(objectMapper.writeValueAsString(requestBody), headers);
-        ResponseEntity<String> response = restTemplate.exchange(
-                baseUrl + "/chat/completions", HttpMethod.POST, entity, String.class);
-
-        JsonNode root = objectMapper.readTree(response.getBody());
-        return root.path("choices").get(0).path("message").path("content").asText();
+        String system = buildSystemMessage(spotContext, knowledgeContext, interest).path("content").asText();
+        if (currentSpot != null) system += "\n【当前景点】" + currentSpot.getName() + "；代词按当前景点理解。";
+        return history.isEmpty() && currentSpot == null
+                ? aiCompletionClient.complete(system, userMessage, 0.7, 800)
+                : aiCompletionClient.completeWithHistory(system, userMessage, history, 0.7, 800);
     }
 
     private ObjectNode buildSystemMessage(String spotContext, String knowledgeContext, String interest) {

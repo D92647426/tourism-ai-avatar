@@ -1,5 +1,9 @@
 # 当前基线需求追踪
 
+## REQ-033 当前观察的讲解搭档（GitHub #19）
+
+根据当前任务/草稿提供建议与后续观察问题，展示真实生成方式和本次资料来源，编辑/切站后失效，不判分、不自动保存或播报。抽取旧聊天和搭档共同的供应商调用，限制连接与读取时间、严格检查空响应并明确降级。设计：[exploration_coach_design.md:L1](./exploration_coach_design.md#L1)；API：[api_reference.md:L3](./api_reference.md#L3)；页面请求：[coach-request.js:L1](../src/main/resources/static/js/coach-request.js#L1)。
+
 ## REQ-026 三人协作
 
 仓库保留独立 Git 历史、Issue/PR 模板、个人身份与评审流程。见 [CONTRIBUTING.md:L1](../CONTRIBUTING.md#L1)、[team_join_guide.md:L1](./team_join_guide.md#L1)。
@@ -56,3 +60,14 @@
 ## REQ-040 景点详情提问入口
 
 对应 #12，景点 ID 随主动提问发送、明确显示当前上下文、切换与重开无自动重复消息。见 [设计与验收](spot_chat_entry.md#L3)。
+## REQ-031 聊天发送、超时处理与重试（GitHub #6）
+
+单请求、30秒总超时、取消/关闭隔离迟到回复、显式重试与草稿保护，详见 [chat_reliability.md:L1](./chat_reliability.md#L1)。不修改后端协议，不依赖未合并的 #15。
+
+## REQ-032 观察式导览与可复用内容包（GitHub #17）
+
+用户授权继续发挥开源课设创意，由 Codex 选定“今天你当导游”首版。任务、资料对照、发现到聊天草稿的交接、本机用户隔离、包校验与预览、旅程导出见 [exploration_design.md:L1](./exploration_design.md#L1)、[exploration_guide.md:L1](./exploration_guide.md#L1)。不声称三人已投票定案、模型判分或实际到访认证。
+
+## REQ-036 语音播报与数字人状态同步（GitHub #7）
+
+真实播报事件驱动口型，任务ID隔离旧回调，声线等待/错误/关闭/后台统一收尾。新增待机/聆听/思考/等待声音/讲解/暂停/失败状态；Android协议2支持带ID回调，旧协议降级Web或文字。方案、分支顺序与未验证边界见 [speech_lifecycle.md:L1](./speech_lifecycle.md#L1)。实现见 [speech-lifecycle.js:L80](../src/main/resources/static/js/speech-lifecycle.js#L80)、[main.js:L336](../src/main/resources/static/js/main.js#L336)、[MainActivity.kt:L255](../android/app/src/main/java/com/guide/lingshan/MainActivity.kt#L255)。

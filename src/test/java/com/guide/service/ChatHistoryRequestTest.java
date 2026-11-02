@@ -27,11 +27,9 @@ class ChatHistoryRequestTest {
         AnalyticsService analytics = mock(AnalyticsService.class);
         when(spots.buildSpotContext()).thenReturn("景点目录");
         when(knowledge.retrieveRelevantContext(anyString())).thenReturn("参考资料");
-        ChatService service = new ChatService(spots, knowledge, analytics);
-        ReflectionTestUtils.setField(service, "apiKey", "test-key-only");
-        ReflectionTestUtils.setField(service, "baseUrl", "https://model.example/v1");
-        ReflectionTestUtils.setField(service, "model", "test-model");
-        RestTemplate client = (RestTemplate) ReflectionTestUtils.getField(service, "restTemplate");
+        RestTemplate client = new RestTemplate();
+        AiCompletionClient ai = new AiCompletionClient(client, "test-key-only", "https://model.example/v1", "test-model");
+        ChatService service = new ChatService(spots, knowledge, analytics, ai);
         MockRestServiceServer server = MockRestServiceServer.createServer(client);
         server.expect(requestTo("https://model.example/v1/chat/completions"))
                 .andExpect(request -> {

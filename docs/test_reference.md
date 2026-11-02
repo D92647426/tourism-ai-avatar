@@ -1,5 +1,17 @@
 # 当前检查与验证
 
+## TEST-033 讲解搭档与共用供应商边界
+
+对应REQ-033。Java执行 `mvn test` 或 `mvn verify`；本机联网依赖解析受限时，依赖已缓存可用 `mvn -o verify`。规则/类型/来源/失败降级：[ExplorationCoachServiceTest.java:L1](../src/test/java/com/guide/service/ExplorationCoachServiceTest.java#L1)；HTTP/畸形JSON：[ExplorationCoachControllerTest.java:L1](../src/test/java/com/guide/controller/ExplorationCoachControllerTest.java#L1)；假供应商与时限：[AiCompletionClientTest.java:L1](../src/test/java/com/guide/service/AiCompletionClientTest.java#L1)；旧chat回归：[ChatServiceTest.java:L1](../src/test/java/com/guide/service/ChatServiceTest.java#L1)、[ChatControllerTest.java:L1](../src/test/java/com/guide/controller/ChatControllerTest.java#L1)。测试函数名直接说明各验收场景，预期无真实网络调用且全通过。
+
+前端执行 `node --test tests/frontend/*.test.js`。快照、模式/来源一致性、超时/取消/迟到JSON、网络恢复见 [coach-request.test.js:L1](../tests/frontend/coach-request.test.js#L1)；页面编辑/模式/站点/包切换失效、草稿保留、安全渲染见 [exploration-page.test.js:L1](../tests/frontend/exploration-page.test.js#L1)。预期新旧用例全部通过，真实模型与Android不在该证据内。
+
+HTTP构建产物检查同 [smoke_teacher_project.py:L1](../scripts/smoke_teacher_project.py#L1)，新增 offline_coach 与 coach_validation 项。失败按API400提示/前端用例名检查当前包格式或请求状态，不用真实Key排错。
+
+## TEST-032 观察式导览
+
+对应 REQ-032。执行 `node --test tests/frontend/*.test.js`。规则与异常包见 [exploration-core.test.js:L1](../tests/frontend/exploration-core.test.js#L1)，存储隔离、导入预览、恢复、未保存草稿与安全渲染见 [exploration-page.test.js:L1](../tests/frontend/exploration-page.test.js#L1)，聊天交接保护见 [chat-main.test.js:L1](../tests/frontend/chat-main.test.js#L1)。预期所有用例通过，原聊天测试仍通过；具体数量以执行结果为准。
+
 ## TEST-027 Java 基线导入验收
 
 | 检查 | 命令与预期 |
@@ -97,3 +109,16 @@ node --test tests/frontend/*.test.js
 
 
 TEST-040 的具体 Node 用例：[detail selects real spotId without sending; followups, reopening and reset preserve clear context](../tests/frontend/spot-chat.test.js#L6)、[reload restores server context and text can switch it without sending a stale spotId](../tests/frontend/spot-chat.test.js#L46)、[pending question cannot race a new spot selection or send twice](../tests/frontend/spot-chat.test.js#L63)。命令 `node --test tests/frontend/*.test.js`，预期 32/32；异常时检查详情待发送选择、服务端快照恢复和忙碌标记。Java [snapshotRestoresOnlyCurrentOwnersUnexpiredSpot](../src/test/java/com/guide/service/ConversationServiceTest.java#L111) 用 `mvn -o -Dtest=ConversationServiceTest test` 验证当前/其他身份/过期快照；失败查 owner 与 Clock，完整 Java 预期 48/48。
+对应 REQ-029。检查本地仓库名、GitHub origin、README 与入组手册一致；网页标题为“旅游 AI 数字人”；执行 Maven verify、文档链接检查和现有 JAR 启动检查。沿用 [smoke_teacher_project.py:L1](../scripts/smoke_teacher_project.py#L1)，无需为纯名称替换新增镜像测试。
+
+## TEST-031 聊天请求与页面行为
+
+对应 REQ-031；执行 `node --test tests/frontend/*.test.js`，预期聊天相关用例通过；创意分支另有新增交接用例，总数见 TEST-032。控制模块的 single-flight、HTTP/网络/JSON错误、超时、取消与迟到回调测试见 [chat-request.test.js:L1](../tests/frontend/chat-request.test.js#L1)；页面入口、状态恢复、重试草稿和语音延迟保护见 [chat-main.test.js:L1](../tests/frontend/chat-main.test.js#L1)。可复现演示矩阵见 [chat_reliability.md:L1](./chat_reliability.md#L1)。失败时按用例标题检查请求状态、计时器清理及对应入口，不使用真实模型排错。Node仅作测试工具，CI使用Node22。
+
+切换含不同测试依赖的分支后，若报告 target/test-classes 中不存在于当前源码的旧测试，先执行 `mvn clean verify` 清除缓存，再运行本页检查；不要据此修改当前分支依赖。2026-10-25 已据此完成本分支构建。
+
+## TEST-036 语音与口型生命周期
+
+对应REQ-036/API-036。`node --test tests/frontend/*.test.js` 当前96项通过：新增 [speech-lifecycle.test.js:L1](../tests/frontend/speech-lifecycle.test.js#L1) 23项测试真实开始/结束、声线延迟、失败超时、暂停/恢复、旧ID、旧APK降级、清理与销毁；[speech-main.test.js:L1](../tests/frontend/speech-main.test.js#L1) 11项运行真实页面脚本，检查UI/文字/口型/取消/后台及探索草稿。假时钟和mock只作用于语音/DOM边界，不声称真实发声。失败先查当前status、语音ID与是否仍有timer，再对照 [speech_lifecycle.md:L1](./speech_lifecycle.md#L1)。
+
+2026-10-27 JDK19 `mvn -o clean verify` 67项Java继承测试通过；空Key隔离HTTP smoke和文档检查通过。Maven不编译Kotlin Android，Android缺工具链，未编译/未真机。截图采用 [浏览器mock:L1](../tests/fixtures/speech-browser-init.js#L1)，桌面/移动验收步骤见 [speech_lifecycle.md:L1](./speech_lifecycle.md#L1)。

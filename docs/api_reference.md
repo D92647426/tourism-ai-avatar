@@ -43,6 +43,28 @@ API-004 响应示例：`{"name":"灵灵","welcomeMessage":"...","voiceType":"fem
 所有认证响应使用独立 DTO（[UserView.java:L13](../src/main/java/com/guide/dto/UserView.java#L13)、[AuthResult.java:L13](../src/main/java/com/guide/dto/AuthResult.java#L13)），响应中不会出现 `password` 或 `passwordHash`。
 
 ## 管理接口（API-030-07）
+## API-033 讲解搭档（REQ-033 / GitHub #19）
+
+`POST /api/exploration/coach`，`Content-Type: application/json`。实现：[ExplorationCoachController.java:L1](../src/main/java/com/guide/controller/ExplorationCoachController.java#L1)、[ExplorationCoachService.java:L1](../src/main/java/com/guide/service/ExplorationCoachService.java#L1)。
+
+| 字段 | 请求约束 |
+|---|---|
+| packId / packVersion | 必填字符串，1–64 位既有内容包 ID 规则 |
+| task | 必填对象，含 id、spotName、title、prompt、reference、source、cues；沿用内容包类型与长度上限，不使用其他字段 |
+| observation | 必填字符串，去首尾空白后4–1200字；不是服务端已核实事实 |
+| mode | demo 或 onsite，个人选择，不验证到访 |
+
+完整字段限制及响应契约见 [exploration_coach_design.md:L13](./exploration_coach_design.md#L13)。请求示例由当前包生成：`{packId: pack.id, packVersion: pack.version, task: pack.tasks[0], observation: "我注意到两只手的姿态不同。", mode: "demo"}`，字段值须按 JSON 编码；示例包见 [lingshan-demo.json:L1](../src/main/resources/static/exploration/lingshan-demo.json#L1)。
+
+200 响应示例：`{"reply":"可以把看到的细节与推测分开。","followUp":"哪一个细节支持你的解释？","mode":"local-coach","fallback":true,"reference":"本次任务资料原文","source":{"title":"资料标题","url":"https://example.org/source","status":"inherited-unverified"},"notice":"资料由内容包提供，未经独立核验，不判分。"}`。mode 为 local-coach/model-coach，fallback 如实标注本次是否使用本地规则；followUp由任务规则生成，模型仅补充reply。source/reference只取本次有效请求，模型不可改写引用。
+
+非法字段、非对象根或畸形JSON返回400：`{"code":"INVALID_CONTEXT","message":"中文原因"}`，不回显完整观察。错误Content-Type可能由Spring返回415；未预期服务器故障为500。该接口不写analytics/用户数据、不抓取来源链接，不能称为独立资料核验。取消浏览器等待不保证后端调用立即停止。
+
+验证：`mvn test`；隔离运行 `python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar` 验证无Key本地提示、来源回填和400错误。当前基线公开接口；后续合并 #15 时沿用框架CSRF，页面已兼容AuthGuard.apiFetch。
+
+## 继承基线入口
+
+基线 API 保持老师源码实现：
 
 | 方法与地址 | 用途 | 位置 |
 |---|---|---|
@@ -121,3 +143,21 @@ X-XSRF-TOKEN: <token>
 
 
 API-040b：`GET /api/chat/context` 无请求参数，Cookie 识别当前会话；200 响应示例 `{"conversationId":"服务端ID","spotId":11}`，空/过期/其他身份时两字段为 `null`。服务函数 [ConversationService.current](../src/main/java/com/guide/service/ConversationService.java#L60)，控制器 [ChatController.current](../src/main/java/com/guide/controller/ChatController.java#L37)。不返回聊天历史、不接受外部会话 ID，无业务错误码；测试 `mvn -o -Dtest=ConversationServiceTest test`，HTTP 验证由冒烟脚本覆盖。
+当前原版没有管理员账号或管理接口认证；`/admin.html` 可直接打开。管理页请求：[admin.js:L33](../src/main/resources/static/js/admin.js#L33)，管理控制器：[AdminController.java:L17](../src/main/java/com/guide/controller/AdminController.java#L17)。2026-10-19 本地验证，未带认证的页面和 dashboard 请求均为 HTTP 200。
+
+## REQ-031 客户端请求生命周期
+
+`POST /api/chat` 请求与响应字段不变。页面对一次逻辑请求（含JSON解析）设置30秒总时限；取消/超时仅停止当前浏览器等待，不保证后端计算终止。用户可手动重试，不自动重复生成问答。详情和验收见 [chat_reliability.md:L1](./chat_reliability.md#L1)。
+
+## API-036 Android语音桥协议2（REQ-036）
+
+此为WebView JavaScript桥，无新增HTTP路径/权限策略。入口 [MainActivity.kt:L255](../android/app/src/main/java/com/guide/lingshan/MainActivity.kt#L255)，页面接线 [main.js:L347](../src/main/resources/static/js/main.js#L347)。
+
+| 调用 | 输入/返回 | 语义 |
+|---|---|---|
+| AndroidSpeech.getTtsProtocolVersion() | 无输入；整数2 | 声明可按ID回调 |
+| AndroidSpeech.isTtsReady() | 无输入；布尔值 | 系统中文语言可用，不保证实际已发声 |
+| AndroidSpeech.speakWithId(text,id) | 两个字符串；无返回 | id由网页生成唯一串，主线程提交 |
+| AndroidSpeech.stopSpeaking() | 无输入/返回 | 隔离当前任务、停止引擎、回调stop |
+
+回调：onTtsStart(id)、onTtsEnd(id)、onTtsError(error,id)、onTtsStop(id)，字符串用JSONObject.quote编码；not-ready/speak-failed/playback-error/error-数字为引擎失败，显示文字仍可读。示例 `speakWithId('欢迎','gs-pageNonce-1')` → `onTtsStart('gs-pageNonce-1')` → `onTtsEnd('gs-pageNonce-1')`；只有当前ID生效，重复/旧/无ID回调忽略。保留旧speak(text)给旧网页，新网页拒绝依赖旧协议回调，改用Web或文字提示。测试命令 `node --test tests/frontend/speech*.test.js`；Android仍需构建/真机。见 [完整验收:L1](./speech_lifecycle.md#L1)。
