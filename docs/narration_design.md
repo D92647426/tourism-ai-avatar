@@ -32,14 +32,26 @@ TEST-046：服务端覆盖默认/沿用/显式重设、刷新快照、切站、�
 
 ## 实现与验证记录
 
-2026-11-02：Java227/227、Node162/162、文档链接与隔离JAR HTTP冒烟通过，HTTP包含narration_modes/session_restore/invalid_rollback/reset。模型仅使用HTTP mock或模拟故障，不代表已验收真实第三方模型的文风。
+2026-11-02：Java228/228、Node164/164、文档链接与隔离JAR HTTP冒烟通过，HTTP包含narration_modes/session_restore/invalid_rollback/reset。模型仅使用HTTP mock或模拟故障，不代表已验收真实第三方模型的文风。
 
 Edge实际操作验证亲子→精简、不覆盖草稿、刷新保留family、重置standard。1365×900桌面消息区域高约288px、发送按钮底部741px；390×844页面scrollWidth=390，输入底部781px、发送底部769px。保留口型/播报已有行为，未验Android真机或景区事实。
 
-实现：[白名单](../src/main/java/com/guide/model/NarrationMode.java#L1)、[会话候选](../src/main/java/com/guide/service/ConversationService.java#L78)、[模型与本地组织](../src/main/java/com/guide/service/ChatService.java#L78)、[页面同步](../src/main/resources/static/js/main.js#L235)。测试函数与命令见 [TEST-046](test_reference.md#L1)。
+实现：[白名单](../src/main/java/com/guide/model/NarrationMode.java#L1)、[会话候选](../src/main/java/com/guide/service/ConversationService.java#L78)、[模型与本地组织](../src/main/java/com/guide/service/ChatService.java#L79)、[页面同步](../src/main/resources/static/js/main.js#L240)。测试函数与命令见 [TEST-046](test_reference.md#L1)。
 
 ![桌面亲子讲解](screenshots/issue-37-desktop.png)
 
 ![手机精简讲解](screenshots/issue-37-mobile.png)
 
 复查修正：初始化恢复以代际作废，迟到的景点/会话请求不能覆盖新对话；新对话未确认时保留草稿并阻止发送，重试确认后恢复。外景先判断资料范围，免费/特点等短追问有回归；500px以下短屏隐藏快捷问题和模式说明，保留输入及选择。
+
+844×390横屏复验：输入底部331px、发送底部319px均处视口内，快捷问题在短屏隐藏，聊天内容仍可滚动。交付 [PR #40](https://github.com/D92647426/tourism-ai-avatar/pull/40)，关联#37，未合并不计作关闭。
+
+### Standards 复查
+
+首次无硬性规范问题；1项P3可能重复分类建议经SpotTopic统一及保守短追问职责区分后改善。增量复查无新增硬性规范问题或需继续报告的气味。审查为只读，不冒充组员人工评审。
+
+### Spec 复查
+
+首次3项P2：外景票务被当前景点截获、免费/特点短追问遗漏、迟到初始化覆盖新对话。修正后独立复查三项均resolved，未发现修正引入的直接回归；独立Node新增用例4/4通过。Java由主执行者完整验228/228。真实模型风格、Android真机和开放域地名识别仍非验收承诺。
+
+![短屏输入](screenshots/issue-37-landscape.png)

@@ -43,4 +43,4 @@ Interfaces: select.value与快照同步，sendMessage固定本次mode；切模�
 - [x] 写前端偏好恢复、主动发送、重试失效、忙态和新对话测试并确认失败。
 - [x] 实现select/说明/标签与首页文案，保留草稿及原有观察能力。
 - [x] 跑Node全套、Maven verify、文档链接和隔离HTTP smoke；桌面/手机实际操作截图。
-- [ ] 相对origin/main固定基点双轴代码复查，修正发现后针对性复测；提交PR并更新已完成/刚提交/后续议题。
+- [x] 相对origin/main固定基点双轴代码复查，修正发现后针对性复测；提交PR并更新已完成/刚提交/后续议题。
