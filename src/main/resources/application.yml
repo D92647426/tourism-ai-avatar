@@ -1,5 +1,13 @@
 server:
   port: 8080
+  servlet:
+    session:
+      # 游客与管理员共用服务端会话；默认 30 分钟无操作后过期，过期后管理接口返回 401。
+      timeout: 30m
+      cookie:
+        # 会话 Cookie 不暴露给脚本，降低 XSS 窃取风险。
+        http-only: true
+        same-site: lax
 
 spring:
   application:
@@ -10,8 +18,9 @@ ai:
   base-url: https://api.deepseek.com/v1
   model: deepseek-chat
 
-# 数据文件存储路径
+# 数据文件存储路径（data.users-file 可用测试临时文件或本地私有路径覆盖）
 data:
   knowledge-file: data/knowledge.json
   interactions-file: data/interactions.json
   config-file: data/config.json
+  users-file: data/users.json

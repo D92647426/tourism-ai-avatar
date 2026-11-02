@@ -1,8 +1,10 @@
 /* ===== 景区AI数字人导览系统 v2 ===== */
 :root {
-    --primary: #2d8f4e;
-    --primary-dark: #1a6b37;
-    --primary-light: #e8f5e9;
+    --primary: #c8963e;
+    --on-primary: #000;
+    --primary-text: #503c19;
+    --primary-dark: #503c19;
+    --primary-light: #fbf7f0;
     --gold: #c9a84c;
     --gold-light: #f5f0e0;
     --bg: #f5f3ee;
@@ -178,7 +180,7 @@ body {
 }
 
 .search-input:focus {
-    border-color: var(--primary);
+    border-color: var(--primary-text, var(--primary-dark));
     box-shadow: 0 0 0 4px rgba(45,143,78,0.1);
 }
 
@@ -300,7 +302,7 @@ body {
     align-items: center;
     justify-content: space-between;
     font-size: 12px;
-    color: var(--primary);
+    color: var(--primary-text, var(--primary-dark));
     font-weight: 600;
 }
 
@@ -384,7 +386,7 @@ body {
 .detail-category {
     display: inline-block;
     font-size: 13px;
-    color: var(--primary);
+    color: var(--primary-text, var(--primary-dark));
     background: var(--primary-light);
     padding: 4px 12px;
     border-radius: 12px;
@@ -518,7 +520,12 @@ body {
 .chat-header-info { display: flex; align-items: center; gap: 12px; }
 .chat-header-avatar { font-size: 32px; }
 .chat-header-name { font-size: 16px; font-weight: 700; }
+.chat-new-btn { margin-left: auto; padding: 6px 10px; border: 1px solid currentColor; border-radius: 16px; color: inherit; background: transparent; cursor: pointer; white-space: nowrap; }
+.chat-new-btn:disabled { opacity: .45; cursor: wait; }
 .chat-header-status { font-size: 12px; opacity: 0.8; }
+.chat-context { padding: 10px 18px; background: #f0f7f4; color: #16352f; border-bottom: 1px solid #dbe8df; overflow-wrap: anywhere; flex-shrink: 0; font-size: 13px; }
+.detail-ask { display: block; width: 100%; min-height: 44px; margin: 16px 0; padding: 12px 18px; border: 0; border-radius: 12px; background: var(--primary); color: white; font: inherit; font-weight: 700; cursor: pointer; }
+.detail-ask:disabled { opacity: .55; cursor: wait; }
 
 .chat-panel-close {
     width: 32px; height: 32px;
@@ -664,8 +671,8 @@ body {
 }
 
 .quick-btn:hover {
-    border-color: var(--primary);
-    color: var(--primary);
+    border-color: var(--primary-text, var(--primary-dark));
+    color: var(--primary-text, var(--primary-dark));
     background: var(--primary-light);
 }
 
@@ -680,6 +687,7 @@ body {
 
 .chat-input {
     flex: 1;
+    min-width: 0;
     padding: 10px 16px;
     border: 1px solid #e0dcd5;
     border-radius: 24px;
@@ -689,9 +697,11 @@ body {
     color: var(--text);
 }
 
-.chat-input:focus { border-color: var(--primary); }
+.chat-input:focus { border-color: var(--primary-text, var(--primary-dark)); }
 
 .chat-send-btn {
+    flex-shrink: 0;
+    white-space: nowrap;
     padding: 10px 20px;
     background: var(--primary);
     color: white;
@@ -739,7 +749,7 @@ body {
     flex-shrink: 0;
 }
 
-.voice-btn:hover { border-color: var(--primary); background: var(--primary-light); }
+.voice-btn:hover { border-color: var(--primary-text, var(--primary-dark)); background: var(--primary-light); }
 
 .voice-btn.listening {
     background: #ff4444;
@@ -888,3 +898,50 @@ body {
     border: 1px solid #e74c3c;
 }
 #profileLogout:hover { background: #e74c3c; color: #fff; }
+
+/* REQ-031: keep cancellation/retry reachable without replacing the speech stop button. */
+.chat-request-tools {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 14px;
+    border-top: 1px solid #e8ece8;
+    font-size: 12px;
+    color: #445748;
+}
+.chat-request-tools span { flex: 1 1 140px; }
+.chat-request-tools button {
+    min-height: 36px;
+    padding: 6px 10px;
+    border: 1px solid #7a9380;
+    border-radius: 6px;
+    background: #fff;
+    color: #285438;
+    cursor: pointer;
+}
+.chat-request-tools button[hidden] { display: none; }
+.chat-request-tools button:focus-visible { outline: 2px solid #285438; outline-offset: 2px; }
+.chat-input-area button:disabled, .chat-quick-actions button:disabled { opacity: .55; cursor: wait; }
+
+/* REQ-036: compact, truthful status beside the avatar; no service-online claim. */
+.avatar-state { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: 95%; max-width: 360px; padding: 7px 10px; border-radius: 12px; background: rgba(255,255,255,.94); color: #365445; font-size: 12px; line-height: 1.45; text-align: center; box-shadow: 0 3px 14px rgba(30,60,40,.08); pointer-events: none; }
+.avatar-state[data-state="speaking"] { color: #166545; border: 1px solid #93c9aa; }
+.avatar-state[data-state="error"] { color: #81502a; }
+.chat-header-status { max-width: 260px; line-height: 1.4; }
+.stop-btn:disabled { opacity: .4; cursor: default; }
+@media (max-width: 768px) { .avatar-state { font-size: 10px; padding: 4px 5px; max-height: 64px; overflow-y: auto; pointer-events: auto; } .chat-header-status { max-width: 220px; } }
+/* REQ-038: display theme; flat dark surfaces preserve contrast for light colors. */
+.header,.chat-panel-header { background: var(--primary-dark); color: #fff; }
+.live2d-label,.chat-fab { background: var(--primary); color: var(--on-primary, #fff); }
+.chat-send-btn,.chat-msg.user .msg-bubble { color: var(--on-primary, #fff); }
+.chat-send-btn:hover { color: #fff; }
+:focus-visible { outline: 2px solid var(--primary-dark); outline-offset: 3px; }
+#chatWelcome { white-space: pre-wrap; }
+
+
+.live2d-label { max-width: 90%; overflow-wrap: anywhere; text-align: center; box-shadow: 0 4px 16px #0002; }
+.chat-header-info { min-width: 0; }
+.chat-header-name { overflow-wrap: anywhere; }
+.chat-input { min-width: 0; }
+.chat-send-btn { flex-shrink: 0; white-space: nowrap; }

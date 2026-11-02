@@ -4,13 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>旅游 AI 数字人</title>
-<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/style.css?v=speech-1">
+<link rel="stylesheet" href="/css/exploration.css?v=coach-1">
 </head>
-<body>
-<!-- 登录检查 -->
-<script>
-if (!localStorage.getItem('userId')) { window.location.href = '/login.html'; }
-</script>
+<body class="exploration-page">
 
 
 <header class="header">
@@ -24,6 +21,39 @@ if (!localStorage.getItem('userId')) { window.location.href = '/login.html'; }
 </header>
 
 <main class="main-container">
+  <section class="exploration" id="exploration" aria-labelledby="explorationHeading">
+    <div class="explore-intro">
+      <div><p class="explore-kicker">把一次游览，变成自己的发现</p><h1 id="explorationHeading">今天，换你当导游。</h1><p>领一张观察任务，用自己的话讲给数字人听。你的发现，会留在这本旅程手册里。</p></div>
+      <div class="explore-mode"><label for="exploreMode">记录方式</label><select id="exploreMode"><option value="demo">课堂演示</option><option value="onsite">现场观察</option></select><small>手动选站，不验证到访位置</small></div>
+    </div>
+    <p id="exploreStatus" class="explore-status" role="status" aria-live="polite">正在打开观察手册…</p>
+    <div id="exploreWorkspace" hidden>
+      <div class="explore-pack-heading"><h2 id="explorePackTitle"></h2><span id="exploreProgress"></span></div>
+      <div class="explore-workbench">
+        <nav id="exploreStations" class="explore-stations" aria-label="观察站点"></nav>
+        <article class="explore-task" aria-labelledby="exploreTaskTitle">
+          <p class="explore-spot" id="exploreSpot"></p><h3 id="exploreTaskTitle"></h3><p id="explorePrompt"></p>
+          <details><summary>给我一点观察提示</summary><p id="exploreHint"></p></details>
+          <form id="exploreForm">
+            <label for="exploreObservation">现在，由你来讲解</label>
+            <textarea id="exploreObservation" minlength="4" maxlength="1200" rows="4" placeholder="例如：我注意到……，它让我想到……" required></textarea>
+            <div class="explore-editor-footer"><small>4–1200 字；修改后保存会更新本站记录</small><button class="explore-primary" type="submit">保存我的发现</button></div>
+          </form>
+          <div id="exploreFeedback" class="explore-feedback" hidden><h4>用资料对照你的讲解</h4><p id="exploreComparison"></p><p class="explore-disclaimer">关键词只表示提及，不判断讲解是否正确。</p></div>
+          <section class="explore-coach" aria-labelledby="exploreCoachHeading">
+            <h4 id="exploreCoachHeading">让导游做你的讲解搭档</h4><p>请她根据这段观察追问一个细节。反馈基于当前草稿，不会自动保存或播报。</p>
+            <div class="explore-coach-actions"><button id="exploreCoachAsk" type="button" class="explore-primary">请导游追问一个细节</button><button id="exploreCoachCancel" type="button" class="explore-secondary" hidden>取消等待</button></div>
+            <p id="exploreCoachStatus" role="status" aria-live="polite"></p>
+            <div id="exploreCoachResult" hidden><span id="exploreCoachMode" class="explore-coach-mode"></span><p id="exploreCoachReply"></p><h5>再观察一次</h5><p id="exploreCoachQuestion" class="explore-coach-question"></p><details><summary>本次参考的资料</summary><p id="exploreCoachReference"></p></details><a id="exploreCoachSource" target="_blank" rel="noopener noreferrer"></a><p id="exploreCoachNotice" class="explore-disclaimer"></p></div>
+          </section>
+          <div class="explore-reference"><details><summary>查看资料线索</summary><p id="exploreReference"></p></details><a id="exploreSource" target="_blank" rel="noopener noreferrer"></a><p id="exploreSourceStatus"></p></div>
+          <button id="exploreAsk" type="button" class="explore-secondary">带着这份发现问导游</button><small class="explore-ask-note">先放入可编辑草稿，由你确认后发送</small>
+        </article>
+      </div>
+      <section class="explore-journal" aria-labelledby="exploreJournalHeading"><div class="explore-section-heading"><h2 id="exploreJournalHeading">我的发现手册</h2><button id="exploreExportJournal" class="explore-secondary" type="button" disabled>下载旅程手册</button></div><p id="exploreEmpty">还没有记录。选一站，写下你看到或想到的细节。</p><ol id="exploreEntries"></ol><p class="explore-disclaimer">记录仅保存在这台设备的当前账号下。个人观察与资料分开保存，不会写入公共知识库。</p></section>
+      <details class="explore-pack-tools"><summary>让其他景区也能用：内容包工具</summary><p>导入一份内容包，就能换一组观察任务。先预览，再决定是否使用。</p><p id="exploreLicense"></p><div class="explore-tool-actions"><button type="button" id="exploreExportPack" class="explore-secondary">下载当前内容包</button><a href="/exploration/campus-demo.json" download="campus-demo.json">下载校园观察示例包</a><label class="explore-file-label" for="exploreImportFile">选择 JSON 内容包</label><input id="exploreImportFile" type="file" accept=".json,application/json"></div><div id="exploreImportPreview" hidden><p id="exploreImportDescription"></p><button type="button" class="explore-primary" id="exploreUsePack">使用这份内容包</button><button type="button" class="explore-secondary" id="exploreCancelImport">取消</button><p>原包的已保存旅程会保留；重新导入相同 ID 和版本的包可恢复。包内容会作为当前包保存到本机。</p></div></details>
+    </div>
+  </section>
   <section class="search-section">
     <div class="search-bar">
       <input type="text" id="searchInput" class="search-input" placeholder="搜索景点名称、类型...">
@@ -77,7 +107,7 @@ if (!localStorage.getItem('userId')) { window.location.href = '/login.html'; }
 <div class="live2d-stage" id="live2dStage">
   <canvas id="live2dMainCanvas"></canvas>
   <div class="live2d-label">AI导游灵灵</div>
-  <div class="live2d-hint">点击我对话 💬</div>
+  <div class="avatar-state" id="avatarState" data-state="idle" role="status" aria-live="polite">待机 · 点击开始对话</div>
 </div>
 
 <!-- 聊天气泡 -->
@@ -89,12 +119,14 @@ if (!localStorage.getItem('userId')) { window.location.href = '/login.html'; }
     <div class="chat-panel-header">
       <div class="chat-header-info">
         <span class="chat-header-avatar">🧑‍💼</span>
-        <div><div class="chat-header-name" id="chatHeaderName">AI导游灵灵</div><div class="chat-header-status">在线</div></div>
+        <div><div class="chat-header-name" id="chatHeaderName">AI导游灵灵</div><div class="chat-header-status" id="avatarChatState" role="status" aria-live="polite">待机 · 点击开始对话</div></div>
       </div>
+      <button class="chat-new-btn" id="chatNewBtn" type="button" title="开始新对话">新对话</button>
       <button class="chat-panel-close" id="chatPanelClose">✕</button>
     </div>
+    <div class="chat-context" id="chatContext" role="status" aria-live="polite">正在同步会话状态…</div>
     <div class="chat-messages" id="chatMessages">
-      <div class="chat-msg bot"><div class="msg-bubble">阿弥陀佛！我是您的AI导游灵灵 👋<br>我可以为您介绍灵山胜境各景点、推荐游览路线、解答交通门票等问题。愿您在此感悟灵山，吉祥平安！</div></div>
+      <div class="chat-msg bot"><div class="msg-bubble" id="chatWelcome">阿弥陀佛！我是您的AI导游灵灵，欢迎来到灵山胜境，愿您在此感悟灵山，吉祥平安！</div></div>
     </div>
     <div class="chat-quick-actions" id="quickActions">
       <button class="quick-btn" data-msg="灵山胜境有哪些必看景点？">推荐景点</button>
@@ -104,9 +136,14 @@ if (!localStorage.getItem('userId')) { window.location.href = '/login.html'; }
     </div>
     <div class="chat-input-area">
       <button class="voice-btn" id="voiceBtn">🎤</button>
-      <button class="stop-btn" id="stopSpeakBtn" title="停止说话">⏹</button>
-      <input type="text" class="chat-input" id="chatInput" placeholder="输入您的问题...">
+      <button class="stop-btn" id="stopSpeakBtn" title="停止说话" aria-label="停止语音播报" disabled>⏹</button>
+      <textarea rows="2" class="chat-input" id="chatInput" aria-label="给 AI 导游的问题" placeholder="输入您的问题；Shift+Enter 换行"></textarea>
       <button class="chat-send-btn" id="chatSendBtn">发送</button>
+    </div>
+    <div class="chat-request-tools">
+      <span id="chatRequestStatus" role="status" aria-live="polite"></span>
+      <button type="button" id="chatCancelBtn" hidden>取消等待</button>
+      <button type="button" id="chatRetryBtn" hidden>重试上一个问题</button>
     </div>
     <div class="voice-status" id="voiceStatus"></div>
   </div>
@@ -121,6 +158,13 @@ if (!localStorage.getItem('userId')) { window.location.href = '/login.html'; }
 <!-- pixi-live2d-display -->
 <script src="/lib/pixi-live2d-display.min.js"></script>
 <!-- 主逻辑 -->
-<script src="/js/main.js"></script>
+<script src="/js/security.js"></script>
+<script src="/js/chat-request.js"></script>
+<script src="/js/speech-lifecycle.js?v=speech-1"></script>
+<script src="/js/exploration-core.js?v=explore-1"></script>
+<script src="/js/coach-request.js?v=coach-1"></script>
+<script src="/js/exploration.js?v=coach-1"></script>
+<script src="/js/display-config.js?v=display-1"></script>
+<script src="/js/main.js?v=integrated-1"></script>
 </body>
 </html>

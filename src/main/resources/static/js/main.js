@@ -15,6 +15,7 @@
     var chatFab = S('chatFab');
     var chatPanelOverlay = S('chatPanelOverlay');
     var chatPanelClose = S('chatPanelClose');
+    var chatNewBtn = S('chatNewBtn');
     var chatMessages = S('chatMessages');
     var chatInput = S('chatInput');
     var chatSendBtn = S('chatSendBtn');
@@ -23,9 +24,20 @@
     var stopSpeakBtn = S('stopSpeakBtn');
     var quickActions = S('quickActions');
     var chatHeaderName = S('chatHeaderName');
+    var requestStatus = S('chatRequestStatus');
+    var cancelRequestBtn = S('chatCancelBtn');
+    var retryRequestBtn = S('chatRetryBtn');
 
-    var allSpots = [], isChatOpen = false;
-    // 从登录信息读取
+    var allSpots = [], isChatOpen = false, pendingChats = 0;
+    var conversationId = null;
+    var selectedSpot = null, resettingConversation = false;
+    var pendingSpot = null, contextReady = false;
+    var chatContext = S('chatContext');
+    var hasStartedChat = false;
+    var api = window.AuthGuard.apiFetch;
+    // 从登录信息读取（localStorage 只作显示缓存，真实身份以 /api/auth/me 为准）
+    var speechGeneration = 0;
+    var speech = null, speechSendTimer = null, focusTimer = null, expressionTimer = null;
     var currentUserId = localStorage.getItem('userId') || '';
     var currentInterest = localStorage.getItem('interest') || '';
 
@@ -33,6 +45,14 @@
     function loadSpots() {
         fetch('/api/spots').then(function(r) { return r.json(); }).then(function(d) {
             allSpots = d; renderSpots(d);
+            return api('/api/chat/context').then(function(r) {
+                if (!r.ok) throw new Error('context ' + r.status);
+                return r.json();
+            }).then(function(snapshot) {
+                conversationId = snapshot.conversationId || null;
+                selectedSpot = allSpots.find(function(spot) { return spot.id === snapshot.spotId; }) || null;
+                contextReady = true; renderChatContext();
+            }).catch(function() { chatContext.textContent = '会话状态未同步，请点击“新对话”后提问。'; });
         }).catch(function() {
             spotsGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:60px;color:#999;">景点数据加载中...</p>';
         });
@@ -90,6 +110,22 @@
             '<div class="detail-section"><h3>🎫 门票</h3><p>' + s.ticket + '</p></div>' +
             '<div class="detail-section"><h3>🚌 交通指南</h3><p>' + s.transportation + '</p></div>' +
             '<div class="detail-section"><h3>✨ 亮点推荐</h3><div class="detail-highlights">' + (s.highlights || []).map(function(h) { return '<span class="detail-highlight-tag">' + h + '</span>'; }).join('') + '</div></div>';
+        // REQ-040: explicit selection only; the next user submission carries the validated API spotId.
+        var ask = document.createElement('button');
+        ask.type = 'button'; ask.className = 'detail-ask';
+        ask.textContent = '问问 AI 导游';
+        ask.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (pendingChats || resettingConversation || !contextReady) {
+                ask.textContent = '请等待当前请求结束，再选择景点';
+                return;
+            }
+            chatRequest.reset();
+            selectedSpot = s;
+            pendingSpot = s;
+            renderChatContext(); closeDetail(); openChat();
+        });
+        modalBody.appendChild(ask);
         modalOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
     }
@@ -126,13 +162,7 @@
 
         PIXI.live2d.Live2DModel.from('/models/haru/haru.model.json').then(function(model) {
             app.stage.addChild(model);
-            // 缩放：基准 0.16，按画布等比调整，但不低于 0.10
-            var ratio = Math.min(cw / 380, ch / 500);
-            var s = Math.max(0.16 * ratio, 0.10);
-            model.scale.set(s * 12 / 16, s);
-            model.anchor.set(0.5, 0.12);
-            model.x = cw / 2;
-            model.y = ch * (isMobile ? 0.48 : 0.44);
+            fitLive2D(app, model);
             live2dReady = true;
             window._live2dModel = model;
             window._live2dApp = app;
@@ -141,6 +171,13 @@
             var cm = im && im.coreModel;
             var pm = cm || im; // 真正能调 setParamFloat 的对象
             window._paramTarget = pm;
+            // Apply after idle motions/expressions, immediately before rendering.
+            // The model may finish loading during an already-started utterance.
+            if (im && typeof im.on === 'function') im.on('beforeModelUpdate', function() {
+                if (pm && typeof pm.setParamFloat === 'function') {
+                    pm.setParamFloat(window._mouthParam || 'PARAM_MOUTH_OPEN_Y', window._mouthSpeaking ? window._mouthCurrent || 0 : 0, 1);
+                }
+            });
             // 列出所有属性
             var keys = Object.keys(pm || {});
             console.log('Live2D就绪, 参数对象:', keys.slice(0,10).join(', '));
@@ -154,12 +191,32 @@
             if (!window._mouthParam) window._mouthParam = 'PARAM_MOUTH_OPEN_Y';
             console.log('口型参数名:', window._mouthParam, '| 参数对象有setParamFloat?', typeof pm.setParamFloat);
             // 2 秒后微笑
-            setTimeout(function() { try { model.expression('f01'); } catch(e) {} }, 2000);
+            expressionTimer = setTimeout(function() { expressionTimer = null; try { model.expression('f01'); } catch(e) {} }, 2000);
+            if (speech && speech.getState().status === 'speaking') startMouthAnimation();
         }).catch(function(e) {
             console.error('Live2D load fail:', e);
             drawFallback();
         });
     }
+
+    /** REQ-032: fit the existing model to its actual stage, including a compact phone dock.
+     * Inputs: current PIXI app/model; output: no value; does not reload assets.
+     * Browser/PIXI errors follow the existing model initialization error path.
+     * Change scale/position here; see docs/exploration_guide.md, page verification.
+     */
+    function fitLive2D(app, model) {
+        var rect = live2dStage.getBoundingClientRect();
+        var width = Math.max(1, Math.floor(rect.width)), height = Math.max(1, Math.floor(rect.height));
+        app.renderer.resize(width, height);
+        var scale = Math.max(0.16 * Math.min(width / 380, height / 500), 0.025);
+        model.scale.set(scale * 12 / 16, scale);
+        model.anchor.set(0.5, 0.12);
+        model.x = width / 2;
+        model.y = height * (width < 200 ? 0.48 : 0.44);
+    }
+    if (typeof window.addEventListener === 'function') window.addEventListener('resize', function() {
+        if (live2dReady && window._live2dApp && window._live2dModel) fitLive2D(window._live2dApp, window._live2dModel);
+    });
 
     function drawFallback(cw, ch) {
         var c = live2dCanvas, ctx = c.getContext('2d');
@@ -172,6 +229,10 @@
     }
 
     // ===== 聊天面板 =====
+    // REQ-040: render local selection/server snapshot as text; no requests. See docs/spot_chat_entry.md#L3.
+    function renderChatContext() {
+        chatContext.textContent = selectedSpot ? '当前景点：' + selectedSpot.name + '（下次提问时使用）' : '当前：通用导览';
+    }
     live2dStage.addEventListener('click', function(e) { e.stopPropagation(); openChat(); });
     chatFab.addEventListener('click', function(e) { e.stopPropagation(); toggleChat(); });
     chatPanelClose.addEventListener('click', function(e) { e.stopPropagation(); closeChat(); });
@@ -186,9 +247,15 @@
         isChatOpen = true;
         chatPanelOverlay.classList.add('active');
         chatFab.style.display = 'none';
-        setTimeout(function() { chatInput.focus(); }, 300);
+        if (focusTimer !== null) clearTimeout(focusTimer);
+        focusTimer = setTimeout(function() { focusTimer = null; if (isChatOpen) chatInput.focus(); }, 300);
     }
     function closeChat() {
+        speechGeneration++;
+        if (speechSendTimer !== null) { clearTimeout(speechSendTimer); speechSendTimer = null; }
+        if (focusTimer !== null) { clearTimeout(focusTimer); focusTimer = null; }
+        stopListen();
+        chatRequest.cancel();
         isChatOpen = false;
         chatPanelOverlay.classList.remove('active');
         chatFab.style.display = 'flex';
@@ -196,33 +263,112 @@
     }
 
     // ===== 发送消息 =====
-    function sendMessage() {
-        // 立即停止当前所有说话和口型
-        stopTts();
-        var text = chatInput.value.trim(); if (!text) return;
-        addMsg('user', text); chatInput.value = ''; showTyping();
-        var body = { message: text, userId: currentUserId };
-        if (currentInterest) body.interest = currentInterest;
-
-        fetch('/api/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        }).then(function(r) { return r.json(); }).then(function(d) {
-            removeTyping();
+    chatNewBtn.addEventListener('click', function() {
+        if (pendingChats || chatNewBtn.disabled) return;
+        resettingConversation = true;
+        chatNewBtn.disabled = true;
+        api('/api/chat/new', {method:'POST'}).then(function(r) {
+            if (!r.ok) throw new Error('new conversation ' + r.status);
+            return r.json();
+        }).then(function(data) {
+            chatRequest.reset();
+            conversationId = data.conversationId;
+            selectedSpot = null; pendingSpot = null; contextReady = true; renderChatContext();
+            stopTts();
+            chatMessages.innerHTML = '';
+            addMsg('bot', '新对话已开始。您可以继续提问。');
+        }).catch(function() { addMsg('bot', '暂时无法开始新对话，请重试。'); })
+          .then(function() { resettingConversation = false; chatNewBtn.disabled = false; });
+    });
+    // REQ-031: all entry points share one request lifecycle.
+    var chatRequest = window.GuideChatRequest.create({
+        timeoutMs: 30000,
+        request: function(body, signal) {
+            var transport = window.AuthGuard ? window.AuthGuard.apiFetch : window.fetch.bind(window);
+            return transport('/api/chat', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body), signal: signal
+            });
+        },
+        onStart: function(body, isRetry) {
+            hasStartedChat = true;
+            speechGeneration++;
+            stopTts();
+            stopListen();
+            if (!isRetry) { addMsg('user', body.message); chatInput.value = ''; }
+        },
+        onState: function(state) {
+            var busy = state.status === 'pending';
+            pendingChats = busy ? 1 : 0; chatNewBtn.disabled = busy || resettingConversation;
+            chatSendBtn.disabled = busy;
+            voiceBtn.disabled = busy;
+            quickActions.querySelectorAll('button').forEach(function(button) { button.disabled = busy; });
+            cancelRequestBtn.hidden = !busy;
+            retryRequestBtn.hidden = !state.canRetry;
+            retryRequestBtn.disabled = busy;
+            chatMessages.setAttribute('aria-busy', busy ? 'true' : 'false');
+            if (busy) showTyping(); else removeTyping();
+            var messages = {
+                expired: '对话已过期，请点“新对话”继续。',
+                timeout: '等待超过 30 秒，可重试上一个问题。',
+                cancelled: '已取消等待，可重试上一个问题。',
+                http: '服务暂时无法回答，请稍后重试。',
+                network: '网络请求失败，请检查连接后重试。',
+                'invalid-response': '收到的回答格式有误，请重试。'
+            };
+            if (state.reason === 'expired') addMsg('bot', messages.expired);
+            requestStatus.textContent = busy ? '正在思考…' : messages[state.reason] || '';
+            if (speech) {
+                speech.setActivity(busy ? 'thinking' : 'idle');
+                if (state.status === 'failed') renderAvatarState({ status: 'error', message: messages[state.reason] });
+            }
+        },
+        onSuccess: function(d) {
+            conversationId = d.conversationId || conversationId; pendingSpot = null;
+            selectedSpot = allSpots.find(function(spot) { return spot.id === d.spotId; }) || null; renderChatContext();
             addMsg('bot', d.reply);
-            if (d.recommendedRoutes && d.recommendedRoutes.length) {
+            if (Array.isArray(d.recommendedRoutes) && d.recommendedRoutes.length) {
                 var div = document.createElement('div'); div.className = 'chat-msg bot';
                 var h = '<div class="msg-bubble"><div class="route-card"><div class="route-title">🗺️ 推荐路线</div>';
-                d.recommendedRoutes.forEach(function(r) { h += '<div class="route-path">📍 ' + r + '</div>'; });
+                d.recommendedRoutes.forEach(function(r) { h += '<div class="route-path">📍 ' + esc(String(r)) + '</div>'; });
                 h += '</div></div>'; div.innerHTML = h; chatMessages.appendChild(div);
             }
-            // 播放语音
             speak(d.reply);
-        }).catch(function() { removeTyping(); addMsg('bot', '抱歉，我暂时无法回答。'); });
+        }
+    });
+
+    cancelRequestBtn.addEventListener('click', function() { chatRequest.cancel(); });
+    retryRequestBtn.addEventListener('click', function() { if (!resettingConversation && contextReady) chatRequest.retry(); });
+
+    /** REQ-032: prepare an explicit, editable exploration question without sending.
+     * Input: nonempty question string (max 5000 chars); output: acceptance/reason.
+     * Busy requests and existing drafts are preserved; no exceptions are expected.
+     * Change handoff policy here; see docs/exploration_design.md, acceptance 5.
+     */
+    window.GuideChatDraft = function(text) {
+        if (typeof text !== 'string' || !text.trim() || text.length > 5000) return { accepted: false, reason: '问题内容无效或过长，请精简后重试。' };
+        if (chatRequest.isPending() || resettingConversation) return { accepted: false, reason: '导游还在回答上一个问题，请等回答结束或先取消等待。' };
+        if (chatInput.value.trim()) return { accepted: false, reason: '聊天框里还有草稿，请先发送或清空，再带入这份发现。' };
+        speechGeneration++;
+        stopTts();
+        stopListen();
+        chatInput.value = text;
+        openChat();
+        chatInput.focus();
+        return { accepted: true };
+    };
+
+    function sendMessage() {
+        if (chatRequest.isPending() || resettingConversation || !contextReady) return;
+        var text = chatInput.value.trim(); if (!text) return;
+        var body = { message: text, conversationId: conversationId };
+        if (pendingSpot) body.spotId = pendingSpot.id;
+        if (currentInterest) body.interest = currentInterest;
+        chatRequest.send(body);
     }
 
     function showTyping() {
+        removeTyping();
         var d = document.createElement('div'); d.className = 'chat-msg bot typing'; d.id = 'typingIndicator';
         d.innerHTML = '<div class="msg-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>';
         chatMessages.appendChild(d); chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -235,69 +381,51 @@
     }
     function esc(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
-    // ===== TTS 语音 + 自然口型动画 =====
-    var mouthTargetTimer = null, mouthLerpRaf = null, mouthStopTimer = null;
-    var _nativeTtsReady = false;  // Android 原生 TTS 状态
+    // ===== REQ-036: real speech lifecycle; docs/speech_lifecycle.md =====
+    var mouthTargetTimer = null, mouthLerpRaf = null;
+    var stateLabels = {
+        idle: '待机 · 点击开始对话', listening: '正在聆听…', thinking: '正在思考…',
+        queued: '正在准备声音…', speaking: '正在讲解', paused: '播报已暂停', error: '暂时无法完成'
+    };
 
-    // Android 原生 TTS 回调
-    window.onTtsReady = function(ready) { _nativeTtsReady = ready; console.log('Native TTS ready: ' + ready); };
-    window.onTtsStart = function() { console.log('Native TTS speaking'); };
-    window.onTtsEnd = function() { };
-    window.onTtsError = function(err) { console.log('Native TTS error: ' + err); };
-
-    function hasNativeTts() {
-        // 直接查询 Android 侧状态，不依赖异步回调（回调可能在页面加载前就触发过）
-        try {
-            return typeof window.AndroidSpeech !== 'undefined'
-                && window.AndroidSpeech
-                && window.AndroidSpeech.isTtsReady()
-                && window.AndroidSpeech.isTtsReady() === true;
-        } catch(e) { return false; }
+    /** REQ-036: show actual activity in both avatar and chat; text survives errors.
+     * Input is a lifecycle snapshot; textContent prevents engine messages becoming markup.
+     * Change wording here; speech owns timers and stale-callback rejection.
+     */
+    function renderAvatarState(state) {
+        var text = state.message || stateLabels[state.status] || stateLabels.idle;
+        [S('avatarState'), S('avatarChatState')].forEach(function(node) {
+            if (node) { node.textContent = text; node.dataset.state = state.status; }
+        });
+        if (stopSpeakBtn) stopSpeakBtn.disabled = ['queued', 'speaking', 'paused'].indexOf(state.status) === -1;
     }
 
+    speech = window.GuideSpeech.create({
+        synthesis: window.speechSynthesis,
+        Utterance: window.SpeechSynthesisUtterance,
+        nativeBridge: window.AndroidSpeech,
+        onChange: renderAvatarState,
+        onMouth: function(active) { if (active) startMouthAnimation(); else stopMouthAnimation(); }
+    });
+    renderAvatarState(speech.getState());
+    window.onTtsReady = function() {}; // readiness is queried for each utterance
+    window.onTtsStart = function(id) { speech.nativeEvent('start', id); };
+    window.onTtsEnd = function(id) { speech.nativeEvent('end', id); };
+    window.onTtsError = function(error, id) { speech.nativeEvent('error', id, error); };
+    window.onTtsStop = function(id) { speech.nativeEvent('stop', id); };
+
+    /** REQ-036: submit cleaned answer text; only a real start event opens the mouth.
+     * Returns no value; unavailable voices remain an explicit, readable error state.
+     */
     function speak(text) {
-        // 1. 先启动口型动画（完全不依赖声音）
         var clean = text
             .replace(/【.*?】/g, '').replace(/https?:\/\/\S+/g, '')
             .replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1')
             .replace(/__(.+?)__/g, '$1').replace(/_(.+?)_/g, '$1')
             .replace(/#{1,6}\s?/g, '').replace(/`(.+?)`/g, '$1')
             .replace(/^[-*+]\s+/gm, '').replace(/^\d+[.、]\s*/gm, '').trim();
-        if (!clean) return;
-
-        stopTts();
-        startMouthAnimation();
-        if (mouthStopTimer) clearTimeout(mouthStopTimer);
-        var estDuration = Math.max(Math.ceil(clean.length / 3.5 * 1000), 2000) + 2000;
-        mouthStopTimer = setTimeout(function() { stopMouthAnimation(); }, estDuration);
-
-        // 2. 优先使用 Android 原生 TTS
-        if (hasNativeTts()) {
-            try { window.AndroidSpeech.speak(clean); } catch(e) { console.log('Native TTS call failed'); }
-            return;
-        }
-
-        // 3. Web Speech API 兜底
-        if (!('speechSynthesis' in window)) return;
-        try {
-            var voices = speechSynthesis.getVoices();
-            if (voices.length === 0) return;
-            var hasChineseVoice = false;
-            for (var i = 0; i < voices.length; i++) {
-                if (voices[i].lang.indexOf('zh') !== -1) { hasChineseVoice = true; break; }
-            }
-            if (!hasChineseVoice) return;
-
-            var u = new SpeechSynthesisUtterance(clean);
-            u.lang = 'zh-CN'; u.rate = 1.05; u.pitch = 1.1; u.volume = 1.0;
-            for (var j = 0; j < voices.length; j++) {
-                if (voices[j].lang.indexOf('zh') !== -1) { u.voice = voices[j]; break; }
-            }
-            u.onerror = function(e) { console.log('Web TTS error: ' + (e.error || 'unknown')); };
-            speechSynthesis.speak(u);
-        } catch(e) {
-            console.log('Web TTS failed, mouth-only mode');
-        }
+        speech.setActivity('idle');
+        speech.speak(clean);
     }
 
     function startMouthAnimation() {
@@ -317,7 +445,7 @@
             if (!window._mouthSpeaking) return;
             var r = Math.random();
             if (r < 0.15) {
-                // 15% 概率：近乎闭合（辅音/t/d/b/p/等）
+                // 随机近乎闭合；仅表现视觉节奏，不对应任何音素
                 window._mouthTarget = 0.01 + Math.random() * 0.06;
             } else if (r < 0.38) {
                 // 23%：微张
@@ -326,10 +454,10 @@
                 // 44%：正常说话张开
                 window._mouthTarget = 0.3 + Math.random() * 0.35;
             } else {
-                // 18%：张大（元音/a/o/e/等）
+                // 随机张大；并非元音识别
                 window._mouthTarget = 0.55 + Math.random() * 0.4;
             }
-            // 可变间隔 60~180ms，模拟不同音素的持续时长
+            // 可变间隔60~180ms，非音素驱动的口型视觉节奏
             mouthTargetTimer = setTimeout(updateTarget, 60 + Math.random() * 120);
         }
 
@@ -358,12 +486,15 @@
         resetMouth();
     }
 
+    /** REQ-036: idempotent explicit stop, including voice-loading/paused tasks. */
     function stopTts() {
+        if (speech) {
+            speech.setActivity('idle');
+            // Request/recognition errors are displayed by this adapter, so an
+            // unchanged controller state must still clear the displayed error.
+            renderAvatarState(speech.getState());
+        }
         stopMouthAnimation();
-        if (mouthStopTimer) { clearTimeout(mouthStopTimer); mouthStopTimer = null; }
-        // 取消所有 TTS 引擎
-        if ('speechSynthesis' in window) { try { speechSynthesis.cancel(); } catch(e) {} }
-        if (hasNativeTts()) { try { window.AndroidSpeech.stopSpeaking(); } catch(e) {} }
     }
 
     function resetMouth() {
@@ -373,41 +504,50 @@
         }
     }
 
-    // 加载声线配置
-    fetch('/api/admin/digital-human-config').then(function(r) { return r.json(); }).then(function(c) {
-        if (c && c.name) {
-            var lbl = document.querySelector('.live2d-label');
-            if (lbl) lbl.textContent = 'AI导游' + c.name;
-            if (chatHeaderName) chatHeaderName.textContent = 'AI导游' + c.name;
-        }
-    }).catch(function() {});
+    // REQ-038: labels/theme may load late; welcome cannot rewrite started chat.
+    var displayConfig = window.GuideDisplayConfig.load({ document: document,
+        fetch: window.fetch.bind(window), canUpdateWelcome: function() { return !hasStartedChat; } });
+    window.addEventListener('pagehide', function() { displayConfig.stop(); });
 
     // ===== 语音输入（优先原生 Android，兜底 Web Speech API） =====
-    var recognition = null, listening = false;
+    var recognition = null, listening = false, nativeSpeechRequested = false, webSpeechRequested = false;
+
+    // A delayed recognition result must not send an edited draft or reopen a closed request.
+    function scheduleSpeechSend(text, delay) {
+        var generation = ++speechGeneration;
+        if (speechSendTimer !== null) clearTimeout(speechSendTimer);
+        speechSendTimer = setTimeout(function() {
+            speechSendTimer = null;
+            if (generation === speechGeneration && !chatRequest.isPending() && chatInput.value === text) sendMessage();
+        }, delay);
+    }
 
     // Android 原生语音回调（由 APK 的 AndroidSpeech 桥调用）
     window.onSpeechStart = function() {
+        if (!nativeSpeechRequested || chatRequest.isPending()) return;
         listening = true;
+        speech.setActivity('listening');
         voiceBtn.classList.add('listening');
         voiceBtn.textContent = '🔴';
         voiceStatus.textContent = '正在聆听...';
         voiceStatus.classList.add('listening');
     };
     window.onSpeechPartial = function(text) {
+        if (!listening || chatRequest.isPending()) return;
         chatInput.value = text;
     };
     window.onSpeechResult = function(text) {
+        if (!listening || chatRequest.isPending()) return;
         chatInput.value = text;
         stopListen();
-        if (text.trim()) setTimeout(function() { sendMessage(); }, 200);
+        if (text.trim()) scheduleSpeechSend(text, 200);
     };
     window.onSpeechError = function(err) {
+        if (!nativeSpeechRequested && !listening) return;
         console.log('原生语音错误: ' + err);
-        if (err === 'permission-denied') voiceStatus.textContent = '请在设置中允许麦克风权限';
-        else if (err === 'no-speech') voiceStatus.textContent = '未检测到语音，请重试';
-        else if (err === 'network') voiceStatus.textContent = '语音识别服务不可用';
-        else voiceStatus.textContent = '语音识别出错';
-        stopListen();
+        var message = err === 'permission-denied' ? '请在设置中允许麦克风权限' :
+            err === 'no-speech' ? '未检测到语音，请重试' : err === 'network' ? '语音识别服务不可用' : '语音识别出错';
+        recognitionError(message);
     };
 
     function hasNativeSpeech() {
@@ -427,8 +567,17 @@
         recognition.interimResults = true;
         recognition.continuous = false;  // 识别到一句话后自动停止，避免 onend 无限重启
         recognition.maxAlternatives = 1;
+        recognition.onstart = function() {
+            if (!webSpeechRequested || chatRequest.isPending()) return;
+            listening = true;
+            speech.setActivity('listening');
+            voiceBtn.classList.add('listening');
+            voiceBtn.textContent = '🔴';
+            voiceStatus.textContent = '正在聆听…';
+        };
 
         recognition.onresult = function(e) {
+            if (!listening || chatRequest.isPending()) return;
             var t = '';
             for (var i = e.resultIndex; i < e.results.length; i++) {
                 t += e.results[i][0].transcript;
@@ -437,77 +586,93 @@
             // 如果是最终结果，自动发送
             if (e.results[e.results.length - 1].isFinal && t.trim()) {
                 stopListen();
-                setTimeout(function() { sendMessage(); }, 200);
+                scheduleSpeechSend(t, 200);
             }
         };
 
         recognition.onerror = function(e) {
+            if (!webSpeechRequested && !listening) return;
             console.log('语音错误: ' + e.error);
-            if (e.error === 'not-allowed') {
-                voiceStatus.textContent = '请在浏览器设置中允许麦克风权限';
-            } else if (e.error === 'network' || e.error === 'service-not-allowed') {
-                voiceStatus.textContent = '语音识别网络不通（可换 Edge 浏览器试试）';
-            } else if (e.error === 'no-speech') {
-                voiceStatus.textContent = '未检测到语音，请重试';
-            } else if (e.error === 'aborted') {
-                // 正常中止，不显示错误
-            } else {
-                voiceStatus.textContent = '语音识别出错: ' + e.error;
-            }
-            stopListen();
+            if (e.error === 'aborted') { stopListen(); return; }
+            var message = e.error === 'not-allowed' ? '请在浏览器设置中允许麦克风权限' :
+                e.error === 'network' || e.error === 'service-not-allowed' ? '语音识别网络不通，请稍后重试' :
+                e.error === 'no-speech' ? '未检测到语音，请重试' : '语音识别出错';
+            recognitionError(message);
         };
 
         recognition.onend = function() {
-            if (listening) {
-                // continuous=false 时到达停顿会自动 onend，重新开始
-                try { recognition.start(); } catch(ex) { stopListen(); }
-            }
+            if (webSpeechRequested || listening) stopListen();
         };
 
         console.log('语音：初始化完成');
     }
 
     voiceBtn.addEventListener('click', function() {
+        if (chatRequest.isPending()) return;
         if (hasNativeSpeech()) {
             // Android 原生语音
-            if (listening) {
-                window.AndroidSpeech.stopListening();
+            if (listening || nativeSpeechRequested) {
                 stopListen();
-                if (chatInput.value.trim()) setTimeout(sendMessage, 300);
+                if (chatInput.value.trim()) scheduleSpeechSend(chatInput.value, 300);
             } else {
-                window.AndroidSpeech.startListening();
+                speechGeneration++;
+                stopTts();
+                nativeSpeechRequested = true;
+                voiceStatus.textContent = '正在申请语音输入…';
+                try { window.AndroidSpeech.startListening(); }
+                catch(e) { recognitionError('语音输入启动失败，请使用文字提问'); }
             }
             return;
         }
         // Web Speech API 兜底
-        if (!recognition) { voiceStatus.textContent = '当前浏览器不支持语音输入'; return; }
-        if (listening) { stopListen(); if (chatInput.value.trim()) setTimeout(sendMessage, 300); }
+        if (!recognition) { recognitionError('当前浏览器不支持语音输入，请使用文字提问'); return; }
+        if (listening || webSpeechRequested) { stopListen(); if (chatInput.value.trim()) scheduleSpeechSend(chatInput.value, 300); }
         else { startListen(); }
     });
 
     function startListen() {
         // Web Speech API 专用
-        listening = true;
-        voiceBtn.classList.add('listening');
-        voiceBtn.textContent = '🔴';
-        voiceStatus.textContent = '正在聆听...';
-        voiceStatus.classList.add('listening');
+        speechGeneration++;
+        stopTts();
+        webSpeechRequested = true;
+        voiceStatus.textContent = '正在申请语音输入…';
         try { recognition.start(); console.log('语音：开始聆听'); }
-        catch(e) { console.log('语音：启动异常', e); voiceStatus.textContent = '语音启动失败'; stopListen(); }
+        catch(e) { recognitionError('语音启动失败，请使用文字提问'); }
     }
 
     function stopListen() {
+        var wasListening = listening || nativeSpeechRequested || webSpeechRequested;
         listening = false;
+        nativeSpeechRequested = false;
+        webSpeechRequested = false;
         voiceBtn.classList.remove('listening');
         voiceBtn.textContent = '🎤';
-        setTimeout(function() {
-            if (!listening) { voiceStatus.textContent = ''; voiceStatus.classList.remove('listening'); }
-        }, 1500);
+        voiceStatus.textContent = '';
+        voiceStatus.classList.remove('listening');
+        if (speech && speech.getState().status === 'listening') speech.setActivity('idle');
         // Android 原生
-        if (hasNativeSpeech()) try { window.AndroidSpeech.stopListening(); } catch(e) {}
+        if (wasListening && hasNativeSpeech()) try { window.AndroidSpeech.stopListening(); } catch(e) {}
         // Web Speech API
-        try { if (recognition) recognition.stop(); } catch(e) {}
+        try { if (wasListening && recognition) recognition.stop(); } catch(e) {}
     }
+
+    /** REQ-036: retain actionable recognition errors without implying listening. */
+    function recognitionError(message) {
+        stopListen();
+        speech.setActivity('idle');
+        voiceStatus.textContent = message;
+        renderAvatarState({ status: 'error', message: message });
+    }
+
+    /** REQ-036: cancel background work, including delayed voice sends and focus.
+     * Keep the controller reusable for back/forward-cache restores.
+     */
+    function silencePage() {
+        closeChat();
+        if (expressionTimer !== null) { clearTimeout(expressionTimer); expressionTimer = null; }
+    }
+    window.addEventListener('pagehide', silencePage);
+    document.addEventListener('visibilitychange', function() { if (document.hidden) silencePage(); });
 
     // ===== 停止说话按钮 =====
     if (stopSpeakBtn) {
@@ -557,42 +722,96 @@
         b.classList.add('selected');
     });
 
+    function showProfileMessage(text, isError) {
+        profileMsg.textContent = text;
+        profileMsg.className = 'form-msg' + (isError ? ' error' : ' success');
+    }
+
+    // 保存兴趣：必须等服务端确认成功后才更新本地缓存与提示
+    function saveInterest(interest) {
+        showProfileMessage('正在保存…', false);
+        api('/api/auth/interest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ interest: interest })
+        }).then(function(res) {
+            if (res.status === 401) {
+                var error = new Error('登录状态已失效');
+                error.status = 401;
+                throw error;
+            }
+            if (!res.ok) { throw new Error('保存失败: HTTP ' + res.status); }
+            return res.json();
+        }).then(function(data) {
+            if (!data || data.success !== true) { throw new Error('保存失败'); }
+            currentInterest = interest;
+            try { localStorage.setItem('interest', interest); } catch (e) { }
+            showProfileMessage('兴趣爱好已更新！', false);
+        }).catch(function(error) {
+            if (error && error.status === 401) {
+                // 会话过期：清掉过期身份缓存，引导重新登录
+                window.AuthGuard.clearIdentity();
+                window.location.href = '/login.html';
+                return;
+            }
+            // 网络/服务端失败：保留上一次已保存的服务端状态，不写入本地缓存
+            showProfileMessage('保存失败，请检查网络后重试', true);
+        });
+    }
+
     // 保存
     profileSave.addEventListener('click', function() {
         var selected = profileInterests.querySelector('.interest-btn.selected');
-        profileMsg.className = 'form-msg';
-        if (selected) {
-            currentInterest = selected.dataset.interest;
-            localStorage.setItem('interest', currentInterest);
-            fetch('/api/auth/interest', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: currentUserId, interest: currentInterest })
-            }).catch(function(){});
-            profileMsg.textContent = '兴趣爱好已更新！';
-            profileMsg.classList.add('success');
-        } else {
-            profileMsg.textContent = '请选择一个兴趣偏好';
-            profileMsg.classList.add('error');
+        if (!selected) {
+            showProfileMessage('请选择一个兴趣偏好', true);
+            return;
         }
+        saveInterest(selected.dataset.interest);
     });
 
-    // 退出登录
+    // 退出登录：只有服务端确认退出后才清理缓存并跳转
     profileLogout.addEventListener('click', function() {
-        localStorage.removeItem('userId');
-        localStorage.removeItem('username');
-        localStorage.removeItem('interest');
-        window.location.href = '/login.html';
+        profileLogout.disabled = true;
+        window.AuthGuard.logout().then(function() {
+            window.location.href = '/login.html';
+        }).catch(function() {
+            profileLogout.disabled = false;
+            showProfileMessage('退出失败，请检查网络后重试', true);
+        });
     });
 
     // ===== 快捷按钮 =====
     chatSendBtn.addEventListener('click', sendMessage);
     chatInput.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
-    quickActions.addEventListener('click', function(e) { var b = e.target.closest('.quick-btn'); if (!b) return; chatInput.value = b.dataset.msg; sendMessage(); });
+    quickActions.addEventListener('click', function(e) { if (chatRequest.isPending()) return; var b = e.target.closest('.quick-btn'); if (!b) return; chatInput.value = b.dataset.msg; sendMessage(); });
 
-    // ===== 启动 =====
-    loadSpots();
-    initLive2D();
-    initSR();
-    if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = function() { speechSynthesis.getVoices(); }; }
+    // ===== 启动：先向服务端确认会话身份，localStorage 仅作显示缓存 =====
+    window.AuthGuard.me().then(function(user) {
+        if (!user) {
+            window.location.href = '/login.html';
+            return;
+        }
+        currentUserId = user.userId || '';
+        // 以服务端返回为准：新账号没有兴趣时清掉上一个账号留下的缓存
+        currentInterest = user.interest || '';
+        try {
+            localStorage.setItem('userId', currentUserId);
+            localStorage.setItem('username', user.username || '');
+            if (currentInterest) {
+                localStorage.setItem('interest', currentInterest);
+            } else {
+                localStorage.removeItem('interest');
+            }
+        } catch (e) { }
+        savedUsername = user.username || '';
+        if (headerUsername) headerUsername.textContent = savedUsername;
+        loadSpots();
+        initLive2D();
+        initSR();
+        if (window.GuideExplorationPage) window.GuideExplorationPage.mount(window, user.userId);
+    }).catch(function() {
+        loadSpots();
+        initLive2D();
+        initSR();
+    });
 })();

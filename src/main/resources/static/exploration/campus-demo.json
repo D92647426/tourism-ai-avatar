@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "id": "campus-observation",
+  "version": "1.0",
+  "title": "校园，也是一座小景区",
+  "author": "旅游 AI 数字人课设小组 · AI 辅助设计",
+  "licenseNotice": "原创通用观察练习，可在本课程小组间复用和改编并注明来源；不包含具体学校史实、照片或第三方素材，不验证到访。",
+  "tasks": [
+    {
+      "id": "campus-tree",
+      "spotName": "一棵校园树",
+      "title": "给一棵树写张名片",
+      "prompt": "找一棵树或想象课堂图片中的树，描述叶片、树皮或树影的一个特点。拿不准树种时就把疑问写下来。",
+      "hint": "避免把猜测的品种写成已经确认的事实。请在自己的讲解中说明观察依据。",
+      "reference": "这是原创观察练习，没有预设正确树种或标准答案。树种识别需要可靠图鉴或专业人员核对，关键词只用于提醒观察方向。",
+      "cues": [
+        {
+          "label": "具体细节",
+          "terms": [
+            "叶",
+            "树皮",
+            "影",
+            "纹"
+          ]
+        },
+        {
+          "label": "保留疑问",
+          "terms": [
+            "不确定",
+            "可能",
+            "想知道",
+            "疑问"
+          ]
+        }
+      ],
+      "source": {
+        "title": "小组原创校园观察任务",
+        "url": "https://github.com/D92647426/tourism-ai-avatar/blob/codex/creative-exploration/src/main/resources/static/exploration/campus-demo.json",
+        "status": "original-demo"
+      }
+    },
+    {
+      "id": "campus-building",
+      "spotName": "一栋校园建筑",
+      "title": "让建筑讲一句话",
+      "prompt": "从门窗、材料或空间选一个细节，描述它带来的感受。若要讲建筑历史，你会先查什么资料？",
+      "hint": "感受可以各不相同。把真实看到的外形与你推测的用途分开，不编造年份或人物。",
+      "reference": "这是原创观察练习，不提供任何具体建筑的年代、作者或历史。校史、纪念牌和建筑档案可作为后续核对方向。",
+      "cues": [
+        {
+          "label": "建筑细节",
+          "terms": [
+            "窗",
+            "门",
+            "材料",
+            "空间"
+          ]
+        },
+        {
+          "label": "查证方向",
+          "terms": [
+            "资料",
+            "档案",
+            "校史",
+            "核对",
+            "查"
+          ]
+        }
+      ],
+      "source": {
+        "title": "小组原创校园观察任务",
+        "url": "https://github.com/D92647426/tourism-ai-avatar/blob/codex/creative-exploration/src/main/resources/static/exploration/campus-demo.json",
+        "status": "original-demo"
+      }
+    },
+    {
+      "id": "campus-path",
+      "spotName": "一段校园小路",
+      "title": "为下一位同学留个观察问题",
+      "prompt": "沿一段你熟悉的小路回想一个容易被忽略的地方，写一个别人也能亲自验证的问题。不要写个人行踪或宿舍信息。",
+      "hint": "例如比较两处光影或听到的声音。这里不采集定位，也不能用于实时导航。",
+      "reference": "这是原创观察练习，只鼓励可验证的问题。道路是否开放、是否安全需要现场判断，系统不推断实时路况。",
+      "cues": [
+        {
+          "label": "可观察的问题",
+          "terms": [
+            "为什么",
+            "是否",
+            "怎样",
+            "哪里",
+            "吗",
+            "？",
+            "?"
+          ]
+        },
+        {
+          "label": "具体现象",
+          "terms": [
+            "光",
+            "声",
+            "树",
+            "路",
+            "影"
+          ]
+        }
+      ],
+      "source": {
+        "title": "小组原创校园观察任务",
+        "url": "https://github.com/D92647426/tourism-ai-avatar/blob/codex/creative-exploration/src/main/resources/static/exploration/campus-demo.json",
+        "status": "original-demo"
+      }
+    }
+  ]
+}

@@ -4,11 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理后台 - 灵山胜境AI数字人导览系统</title>
-    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="/css/admin.css?v=metrics-1">
     <!-- ECharts CDN -->
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 </head>
 <body>
+    <!-- ===== 登录/权限校验层：页面提示不替代服务端权限，所有 /api/admin/** 仍由服务端校验 ===== -->
+    <div class="admin-gate" id="adminGate">
+        <div class="admin-gate-card" id="adminGateLogin">
+            <div class="admin-gate-logo">🛕</div>
+            <h2>管理后台登录</h2>
+            <p class="admin-gate-hint">仅管理员账号可访问；游客账号登录后将显示无权限。</p>
+            <form id="adminLoginForm">
+                <input type="text" class="form-input" id="adminUsername" placeholder="管理员用户名"
+                       autocomplete="username" required>
+                <input type="password" class="form-input" id="adminPassword" placeholder="管理员密码"
+                       autocomplete="current-password" required>
+                <p class="admin-gate-error" id="adminGateError"></p>
+                <button type="submit" class="btn btn-primary admin-gate-btn">登 录</button>
+            </form>
+            <a href="/login.html" class="admin-gate-back">← 返回游客登录</a>
+        </div>
+        <div class="admin-gate-card" id="adminGateDenied" style="display:none;">
+            <div class="admin-gate-logo">⛔</div>
+            <h2>无权限访问</h2>
+            <p class="admin-gate-hint">当前账号不是管理员。后台接口由服务端按角色校验，游客无法读取管理数据。</p>
+            <a href="/index.html" class="btn btn-secondary admin-gate-btn">返回游客端</a>
+            <button type="button" class="admin-gate-back" id="adminSwitchAccount">切换账号登录</button>
+            <p class="admin-gate-error" id="adminGateSwitchError"></p>
+        </div>
+    </div>
+
     <div class="admin-layout">
         <!-- 侧边栏 -->
         <aside class="admin-sidebar">
@@ -27,14 +53,17 @@
                     <span class="nav-icon">🎭</span> 数字人形象
                 </a>
                 <a class="nav-item" data-tab="reports">
-                    <span class="nav-icon">📋</span> 感受度报告
+                    <span class="nav-icon">📋</span> 问句情绪报告
                 </a>
                 <a class="nav-item" data-tab="users">
                     <span class="nav-icon">👥</span> 用户列表
                 </a>
             </nav>
             <div class="sidebar-footer">
+                <div class="admin-identity" id="adminIdentity"></div>
                 <a href="/" class="back-link">← 返回游客端</a>
+                <button type="button" class="admin-logout" id="adminLogout">退出登录</button>
+                <p class="admin-logout-error" id="adminLogoutError"></p>
             </div>
         </aside>
 
@@ -43,39 +72,43 @@
             <!-- ===== Tab 1: 数据大屏 ===== -->
             <section class="tab-content active" id="tab-dashboard">
                 <h1 class="page-title">📊 数据大屏概览</h1>
+                <p id="dashboardPeriod" class="metrics-note">正在读取统计范围…</p>
+                <p id="dashboardStatus" class="metrics-status" role="status" aria-live="polite"></p>
                 <div class="stat-cards" id="statCards">
                     <div class="stat-card">
                         <div class="stat-value" id="statToday">--</div>
-                        <div class="stat-label">今日服务人次</div>
+                        <div class="stat-label">今日问答次数</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value" id="statWeek">--</div>
-                        <div class="stat-label">本周服务人次</div>
+                        <div class="stat-label">近7天问答次数</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value" id="statSatisfaction">--</div>
-                        <div class="stat-label">游客满意度</div>
+                        <div class="stat-value" id="statPositiveRate">--</div>
+                        <div class="stat-label">正向问句占比（规则估计）</div>
+                        <div class="stat-sample" id="statSentimentSample">样本尚未加载</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value" id="statKnowledge">--</div>
                         <div class="stat-label">知识库条目数</div>
                     </div>
                 </div>
+                <p class="metrics-note">问句情绪来自关键词规则，不能视为满意度。未采集独立访客、真实评价或响应耗时。</p>
                 <div class="charts-grid">
                     <div class="chart-card">
-                        <h3>🔥 热门问答 Top 5</h3>
+                        <h3>🔥 近7天热门问答 Top 5</h3>
                         <div class="chart-container" id="chartHotQuestions" style="height:320px;"></div>
                     </div>
                     <div class="chart-card">
-                        <h3>📈 满意度趋势（近7天）</h3>
+                        <h3>📈 近7天问句情绪（规则估计）</h3>
                         <div class="chart-container" id="chartSentiment" style="height:320px;"></div>
                     </div>
                     <div class="chart-card">
-                        <h3>🏞️ 景点关注度排名</h3>
+                        <h3>🏞️ 近7天景点提及次数</h3>
                         <div class="chart-container" id="chartSpots" style="height:320px;"></div>
                     </div>
                     <div class="chart-card">
-                        <h3>🕐 时段分布</h3>
+                        <h3>🕐 近7天问答时段（上海时间）</h3>
                         <div class="chart-container" id="chartHourly" style="height:320px;"></div>
                     </div>
                 </div>
@@ -122,11 +155,11 @@
                     <div class="config-form">
                         <div class="form-group">
                             <label>导游名称</label>
-                            <input type="text" class="form-input" id="cfgName" placeholder="如：灵灵">
+                            <input type="text" class="form-input" id="cfgName" maxlength="40" placeholder="如：灵灵">
                         </div>
                         <div class="form-group">
                             <label>欢迎语</label>
-                            <textarea class="form-textarea" id="cfgWelcome" rows="3"
+                            <textarea class="form-textarea" id="cfgWelcome" rows="3" maxlength="500"
                                 placeholder="如：阿弥陀佛！我是您的AI导游灵灵..."></textarea>
                         </div>
                         <div class="form-group">
@@ -138,40 +171,46 @@
                         </div>
                         <div class="form-group">
                             <label>主题色</label>
-                            <input type="color" class="form-color" id="cfgColor" value="#2d8f4e">
+                            <input type="color" class="form-color" id="cfgColor" value="#c8963e">
                         </div>
                         <div class="form-group">
-                            <label>音量 (0.1 ~ 1.0)</label>
-                            <input type="range" class="form-range" id="cfgVolume" min="0.1" max="1.0" step="0.1" value="1.0">
+                            <label>音量 (0 ~ 1.0)</label>
+                            <input type="range" class="form-range" id="cfgVolume" min="0" max="1.0" step="any" value="1.0">
                             <span class="range-value" id="cfgVolumeLabel">1.0</span>
                         </div>
                         <div class="form-group">
                             <label>语速 (0.5 ~ 2.0)</label>
-                            <input type="range" class="form-range" id="cfgSpeed" min="0.5" max="2.0" step="0.1" value="1.0">
+                            <input type="range" class="form-range" id="cfgSpeed" min="0.5" max="2.0" step="any" value="1.0">
                             <span class="range-value" id="cfgSpeedLabel">1.0</span>
                         </div>
-                        <button class="btn btn-primary btn-block" id="btnSaveConfig">💾 保存配置</button>
+                        <p id="cfgStatus" role="status" aria-live="polite">打开后加载展示设置。</p>
+                        <button class="btn btn-secondary" id="btnReloadConfig" type="button">重新加载</button>
+                        <button class="btn btn-primary btn-block" id="btnSaveConfig" disabled>💾 保存配置</button>
                     </div>
                     <div class="config-preview">
-                        <h3>数字人预览</h3>
-                        <div class="preview-avatar">
-                            <canvas id="previewCanvas" width="200" height="200"></canvas>
+                        <h3>展示设置预览</h3>
+                        <div id="cfgPreview" class="display-preview">
+                            <div class="display-preview-header"><span aria-hidden="true">🌿</span><strong id="cfgPreviewName">AI导游灵灵</strong></div>
+                            <p id="cfgPreviewWelcome">欢迎语将在加载设置后显示。</p>
                         </div>
-                        <p class="preview-hint">配置将实时反映到游客端数字人</p>
+                        <p class="preview-hint">这里显示表单预览；保存成功后，游客刷新页面生效。</p>
                     </div>
                 </div>
             </section>
 
             <!-- ===== Tab 4: 感受度报告 ===== -->
             <section class="tab-content" id="tab-reports">
-                <h1 class="page-title">📋 游客感受度报告</h1>
+                <h1 class="page-title">📋 问句情绪报告（规则估计）</h1>
+                <p id="reportPeriod" class="metrics-note">近7天（含今天），Asia/Shanghai。</p>
+                <p id="reportSample" class="metrics-note">问句情绪不是游客满意度；未知标签不纳入有效情绪样本。</p>
+                <p id="reportStatus" class="metrics-status" role="status" aria-live="polite"></p>
                 <div class="reports-grid">
                     <div class="report-card">
-                        <h3>😊 情感趋势</h3>
+                        <h3>😊 近7天问句情绪分布（规则估计）</h3>
                         <div class="chart-container" id="chartReportSentiment" style="height:350px;"></div>
                     </div>
                     <div class="report-card">
-                        <h3>💬 游客关注点分析</h3>
+                        <h3>💬 近7天景点提及次数</h3>
                         <div class="chart-container" id="chartReportTopics" style="height:350px;"></div>
                     </div>
                     <div class="report-card">
@@ -242,6 +281,9 @@
         </div>
     </div>
 
-    <script src="/js/admin.js"></script>
+    <script src="/js/security.js"></script>
+    <script src="/js/display-config.js?v=display-1"></script>
+    <script src="/js/admin-stats.js?v=metrics-1"></script>
+    <script src="/js/admin.js?v=integrated-1"></script>
 </body>
 </html>
