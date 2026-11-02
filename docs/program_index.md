@@ -76,3 +76,18 @@
 | [ConfigService.java:L128](../src/main/java/com/guide/service/ConfigService.java#L128) | 配置快照、校验部分更新、持久化与容错读取 |
 | [ConfigServiceTest.java:L1](../src/test/java/com/guide/service/ConfigServiceTest.java#L1) | 21项配置持久化与校验回归 |
 | [display-config.test.js:L1](../tests/frontend/display-config.test.js#L1) | 14项真实页面脚本验收 |
+| 打包默认知识库 | [knowledge.json:L1](../src/main/resources/knowledge.json#L1) |
+| 知识数据结构检查 | [check_data_integrity.py:L516](../scripts/check_data_integrity.py#L516) |
+| 知识数据检查测试 | [test_data_integrity.py:L111](../scripts/test_data_integrity.py#L111) |
+| 对话服务测试 | [ChatServiceTest.java:L21](../src/test/java/com/guide/service/ChatServiceTest.java#L21) |
+| 知识服务测试 | [KnowledgeServiceTest.java:L39](../src/test/java/com/guide/service/KnowledgeServiceTest.java#L39) |
+| 景点服务测试 | [SpotServiceTest.java:L17](../src/test/java/com/guide/service/SpotServiceTest.java#L17) |
+
+## 自然提问检索（REQ-037）
+
+| 功能 | 位置 |
+|---|---|
+| 名称/别名、确定性排序和上下文预算 | [KnowledgeRetriever.java:L54](../src/main/java/com/guide/service/KnowledgeRetriever.java#L54) |
+| 一次检索快照/兼容字符串入口 | [KnowledgeService.java:L297](../src/main/java/com/guide/service/KnowledgeService.java#L297)、[KnowledgeRetrieval.java:L1](../src/main/java/com/guide/service/KnowledgeRetrieval.java#L1) |
+| 候选引用DTO/响应 | [KnowledgeReference.java:L1](../src/main/java/com/guide/model/KnowledgeReference.java#L1)、[ChatResponse.java:L30](../src/main/java/com/guide/model/ChatResponse.java#L30) |
+| 人工维护的16景点别名 | [retrieval-entities.json:L1](../src/main/resources/retrieval-entities.json#L1) |

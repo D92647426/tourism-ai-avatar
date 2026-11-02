@@ -91,7 +91,8 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
         assert work.is_relative_to(Path(tempfile.gettempdir()).resolve())
         data = work / "data"
         data.mkdir()
-        for name in ("knowledge.json", "config.json"):
+        # REQ-035: leave knowledge absent to exercise the JAR's bundled bootstrap.
+        for name in ("config.json",):
             if (root / "data" / name).is_file():
                 shutil.copy2(root / "data" / name, data / name)
         log_path = work / "server.log"

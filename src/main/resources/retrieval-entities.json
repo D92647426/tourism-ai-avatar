@@ -1,0 +1,21 @@
+{
+  "excludedNames": ["乐山大佛", "天坛大佛", "云冈大佛", "龙门大佛"],
+  "entities": [
+    {"name": "灵山大照壁", "aliases": ["大照壁", "照壁"]},
+    {"name": "五明桥", "aliases": []},
+    {"name": "佛足坛", "aliases": []},
+    {"name": "五智门", "aliases": []},
+    {"name": "菩提大道", "aliases": []},
+    {"name": "九龙灌浴", "aliases": ["九龙喷泉"]},
+    {"name": "降魔浮雕", "aliases": ["降魔"]},
+    {"name": "阿育王柱", "aliases": []},
+    {"name": "百子戏弥勒", "aliases": ["百子弥勒"]},
+    {"name": "祥符禅寺", "aliases": ["祥符寺"]},
+    {"name": "灵山大佛", "aliases": ["大佛"]},
+    {"name": "佛教文化博览馆", "aliases": ["佛教博览馆"]},
+    {"name": "灵山梵宫", "aliases": ["梵宫", "东方卢浮宫"]},
+    {"name": "五印坛城", "aliases": ["坛城", "小布达拉宫"]},
+    {"name": "曼飞龙塔", "aliases": ["白塔"]},
+    {"name": "无尽意斋", "aliases": ["赵朴初纪念馆"]}
+  ]
+}

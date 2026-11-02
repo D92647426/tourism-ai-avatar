@@ -87,3 +87,23 @@
 | 行为与真实 HTTP | [display-config.test.js:L24](../tests/frontend/display-config.test.js#L24)、[smoke_teacher_project.py:L1](../scripts/smoke_teacher_project.py#L1) |
 
 结果：65 Java、41 前端测试通过；JAR HTTP 覆盖管理员保存→匿名读取→非法拒绝→重启读取。语音参数播放消费属 #14；本次没有更换 Live2D 模型。
+## REQ-035 知识数据完整性（GitHub #9）
+
+知识初始化改用打包 JSON 默认库并做最小结构校验；知识 1/2/3 错配正文改为“待补充”，4–16 标注未核验课程示例；修正景点上下文标签与“、”分隔符并关闭资源流；对话服务增加资料边界提示并删除硬编码餐饮价格。只修复可信输入基础，不编造史实、不改检索算法与模型接口。方案与逐条审查见 [knowledge_integrity.md:L1](./knowledge_integrity.md#L1)。
+
+| 内容 | 位置 |
+|---|---|
+| 知识数据（外部库） | [data/knowledge.json:L1](../data/knowledge.json#L1) |
+| 知识数据（打包默认库） | [knowledge.json:L1](../src/main/resources/knowledge.json#L1) |
+| 加载、降级与结构校验 | [KnowledgeService.java:L64](../src/main/java/com/guide/service/KnowledgeService.java#L64) |
+| 景点上下文与示例边界 | [SpotService.java:L90](../src/main/java/com/guide/service/SpotService.java#L90) |
+| 对话资料边界 | [ChatService.java:L31](../src/main/java/com/guide/service/ChatService.java#L31) |
+| 数据检查工具 | [check_data_integrity.py:L516](../scripts/check_data_integrity.py#L516) |
+| 测试 | [KnowledgeServiceTest.java:L39](../src/test/java/com/guide/service/KnowledgeServiceTest.java#L39)、[SpotServiceTest.java:L17](../src/test/java/com/guide/service/SpotServiceTest.java#L17)、[ChatServiceTest.java:L21](../src/test/java/com/guide/service/ChatServiceTest.java#L21)、[test_data_integrity.py:L111](../scripts/test_data_integrity.py#L111) |
+| CI 接入 | [checks.yml:L1](../.github/workflows/checks.yml#L1) |
+
+验证命令见 [test_reference.md:L24](./test_reference.md#L24) 的 TEST-035。结构检查通过不等同景区事实核验。
+
+## REQ-037 自然提问检索（GitHub #10）
+
+人工实体/别名/关键词，确定性排序、多实体分配与1200字符知识上下文上限；返回本地候选引用，简称可用于离线景点回复，无命中明确说明。沿用既有字段和管理搜索，不引入向量库/付费模型/会话。方案与依赖见 [natural_retrieval.md:L1](./natural_retrieval.md#L1)。代码：[KnowledgeRetriever.java:L54](../src/main/java/com/guide/service/KnowledgeRetriever.java#L54)、[KnowledgeService.java:L297](../src/main/java/com/guide/service/KnowledgeService.java#L297)、[ChatService.java:L65](../src/main/java/com/guide/service/ChatService.java#L65)。
