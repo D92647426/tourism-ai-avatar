@@ -5,7 +5,7 @@ const { deferred, clock, flush, response } = require('./chat-fixture.cjs');
 
 function fixture() {
     const time = clock(), jobs = [], states = [], successes = [], starts = [];
-    const controller = create({ timeoutMs: 30, setTimeout: time.setTimeout, clearTimeout: time.clearTimeout,
+    const controller = create({ timeoutMs: 30, requireCorrectionOn400:true, setTimeout: time.setTimeout, clearTimeout: time.clearTimeout,
         request(payload, signal) { const job = deferred(); jobs.push({ ...job, payload, signal }); return job.promise; },
         onStart: (...args) => starts.push(args), onState: s => states.push(s), onSuccess: r => successes.push(r) });
     return { controller, time, jobs, states, successes, starts };
@@ -68,4 +68,11 @@ test('cancel before transport dispatch does not send and new question clears old
 test('empty questions are ignored without side effects', () => {
     const f = fixture(); assert.equal(f.controller.send({ message: ' ' }), false);
     assert.equal(f.states.length, 0); assert.equal(f.starts.length, 0); assert.equal(f.time.size, 0);
+});
+
+test('invalid station/question HTTP400 requires correction rather than an identical retry',async()=>{
+    const f=fixture();f.controller.send({message:'介绍',spotId:999});await flush();
+    f.jobs[0].resolve({ok:false,status:400});await flush();
+    assert.equal(f.controller.getState().reason,'invalid-request');assert.equal(f.controller.getState().canRetry,false);
+    assert.equal(f.controller.retry(),false);assert.equal(f.controller.send({message:'改问',spotId:1}),true);
 });

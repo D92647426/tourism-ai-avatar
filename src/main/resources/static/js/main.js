@@ -32,6 +32,7 @@
     var conversationId = null;
     var selectedSpot = null, resettingConversation = false;
     var pendingSpot = null, contextReady = false, contextGeneration = 0;
+    var tourChatActive = false, tourNeedsSelection = false;
     var chatContext = S('chatContext');
     var narrationSelect = S('chatNarrationMode'), narrationHint = S('chatNarrationHint');
     var narrationMode = 'standard';
@@ -125,7 +126,10 @@
                 ask.textContent = '请等待当前请求结束，再选择景点';
                 return;
             }
+            if (chatInput.value.trim()) { ask.textContent='聊天框里有草稿，请先发送或清空再选择景点'; return; }
             chatRequest.reset();
+            tourChatActive=false; tourNeedsSelection=false;
+            if(window.GuideTour)window.GuideTour.clearSelection();
             selectedSpot = s;
             pendingSpot = s;
             renderChatContext(); closeDetail(); openChat();
@@ -236,7 +240,10 @@
     // ===== 聊天面板 =====
     // REQ-040: render local selection/server snapshot as text; no requests. See docs/spot_chat_entry.md#L3.
     function renderChatContext() {
+        if(tourNeedsSelection){chatContext.textContent='方案已更新，请重新选讲解站；原草稿已保留，也可开始新对话。';return;}
         chatContext.textContent = selectedSpot ? '当前景点：' + selectedSpot.name + '（下次提问时使用）' : '当前：通用导览';
+        var tour=window.GuideTour&&window.GuideTour.snapshot();
+        if(tour&&tour.current&&selectedSpot&&tour.current.id===selectedSpot.id)chatContext.textContent+='；'+(tour.next?'下一站：'+tour.next.name:'方案最后一站');
     }
     /** REQ-046: map only allowlisted modes to controls; no storage/network.
      * Unknown/missing values use standard. Change labels with docs/narration_design.md. */
@@ -297,6 +304,8 @@
             chatRequest.reset();
             conversationId = data.conversationId;
             narrationMode = normalizeNarration(data.narrationMode);
+            tourChatActive=false;tourNeedsSelection=false;
+            if(window.GuideTour)window.GuideTour.clearSelection();
             selectedSpot = null; pendingSpot = null; contextReady = true; renderChatContext();
             stopTts();
             chatMessages.innerHTML = '';
@@ -309,6 +318,7 @@
     });
     // REQ-031: all entry points share one request lifecycle.
     var chatRequest = window.GuideChatRequest.create({
+        requireCorrectionOn400: true,
         timeoutMs: 30000,
         request: function(body, signal) {
             var transport = window.AuthGuard ? window.AuthGuard.apiFetch : window.fetch.bind(window);
@@ -342,7 +352,8 @@
                 cancelled: '已取消等待，可重试上一个问题。',
                 http: '服务暂时无法回答，请稍后重试。',
                 network: '网络请求失败，请检查连接后重试。',
-                'invalid-response': '收到的回答格式有误，请重试。'
+                'invalid-response': '收到的回答格式有误，请重试。',
+                'invalid-request': '问题或景点信息无效，请修改问题，或刷新页面后重新选择讲解站。'
             };
             if (state.reason === 'expired') addMsg('bot', messages.expired);
             requestStatus.textContent = busy ? '正在思考…' : messages[state.reason] || '';
@@ -355,7 +366,13 @@
             conversationId = d.conversationId || conversationId; pendingSpot = null;
             narrationMode = normalizeNarration(d.narrationMode || narrationMode); renderNarration();
             selectedSpot = allSpots.find(function(spot) { return spot.id === d.spotId; }) || null; renderChatContext();
-            addMsg('bot', d.reply, NARRATION_LABELS[narrationMode] + (d.fallback ? ' · 本地资料' : ''));
+            if(window.GuideTour){
+                window.GuideTour.syncSpot(d.spotId);
+                if(!window.GuideTour.snapshot().current)tourChatActive=false;
+            }
+            var answer=addMsg('bot', d.reply, NARRATION_LABELS[narrationMode] + (d.fallback ? ' · 本地资料' : ''));
+            if(window.GuideChatReferences)window.GuideChatReferences.append(document,answer,d);
+            chatMessages.scrollTop=chatMessages.scrollHeight;
             if (Array.isArray(d.recommendedRoutes) && d.recommendedRoutes.length) {
                 var div = document.createElement('div'); div.className = 'chat-msg bot';
                 var h = '<div class="msg-bubble"><div class="route-card"><div class="route-title">🗺️ 推荐路线</div>';
@@ -372,6 +389,7 @@
     /** REQ-032: prepare an explicit, editable exploration question without sending.
      * Input: nonempty question string (max 5000 chars), optional context.spotId from loaded spots;
      * output: acceptance/reason. Explicit context selects the pending place without sending.
+     * REQ-047: context.tour marks itinerary-origin drafts for plan invalidation; it is not sent to the server.
      * Busy requests and existing drafts are preserved; no exceptions are expected.
      * Change handoff policy here; see docs/exploration_design.md, acceptance 5.
      */
@@ -385,6 +403,8 @@
             if(!spot)return {accepted:false,reason:'景点信息尚未加载，请稍后重试。'};
             chatRequest.reset();selectedSpot=spot;pendingSpot=spot;renderChatContext();
         } else { pendingSpot=null; }
+        tourChatActive=!!(context&&context.tour&&context.spotId);tourNeedsSelection=false;
+        if(!tourChatActive&&window.GuideTour)window.GuideTour.clearSelection();
         speechGeneration++;
         stopTts();
         stopListen();
@@ -396,6 +416,7 @@
 
     function sendMessage() {
         if (chatRequest.isPending() || resettingConversation || !contextReady) return;
+        if(tourNeedsSelection){requestStatus.textContent='方案已更新。原草稿已保留，请清空后重新选站，或点“新对话”继续。';return;}
         var text = chatInput.value.trim(); if (!text) return;
         var body = { message: text, conversationId: conversationId, narrationMode:narrationMode };
         if (pendingSpot) body.spotId = pendingSpot.id;
@@ -414,6 +435,7 @@
         var d = document.createElement('div'); d.className = 'chat-msg ' + type;
         d.innerHTML = '<div class="msg-bubble">' + (caption ? '<div class="narration-caption">' + esc(caption) + '</div>' : '') + esc(text) + '</div>';
         chatMessages.appendChild(d); chatMessages.scrollTop = chatMessages.scrollHeight;
+        return d;
     }
     function esc(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
@@ -829,6 +851,17 @@
     chatSendBtn.addEventListener('click', sendMessage);
     chatInput.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
     quickActions.addEventListener('click', function(e) { if (chatRequest.isPending()) return; var b = e.target.closest('.quick-btn'); if (!b) return; chatInput.value = b.dataset.msg; sendMessage(); });
+
+    /** REQ-047: invalidate only itinerary-origin chat when its plan changes.
+     * Preserve draft, cancel late callbacks/retries, block stale context until explicit selection/reset.
+     * Server work already received cannot be undone. docs/journey_references_design.md. */
+    function invalidateTour(){
+        if(!tourChatActive)return;
+        tourNeedsSelection=true;pendingSpot=null;
+        chatRequest.reset();speechGeneration++;stopTts();stopListen();renderChatContext();
+        requestStatus.textContent='游览方案已改变，请重新选择讲解站。草稿已保留。';
+    }
+    if(window.GuideJourneyPage&&window.GuideJourney)window.GuideTour=window.GuideJourneyPage.mount(window,{invalidate:invalidateTour,changed:renderChatContext});
 
     // ===== 启动：先向服务端确认会话身份，localStorage 仅作显示缓存 =====
     window.AuthGuard.me().then(function(user) {

@@ -99,3 +99,5 @@ Spring Boot 参数可通过命令行覆盖，例如 java -jar target/ai-guide-1.
 
 
 REQ-042：volume 数值0–1（默认1）、speechRate数值0.5–2（默认1）、voiceType非空字符串最多200字符（历史默认female，兼容male/female，新增auto或设备voiceURI）。省略字段保留当前值。使用位置、修改风险与验证见 [语音设置](voice_settings.md#L11)。
+
+REQ-047内部调用参数：GuideChatRequest.create 的 requireCorrectionOn400（boolean，默认false）仅主导览聊天传true，将400映射为需修改问题/重新选站且不可原样重放；观察搭档沿用默认旧契约。不是管理后台或环境变量配置。位置 [chat-request.js](../src/main/resources/static/js/chat-request.js#L1)，验证 [HTTP400回归](../tests/frontend/chat-request.test.js#L73)。

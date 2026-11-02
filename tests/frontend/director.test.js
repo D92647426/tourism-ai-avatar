@@ -28,6 +28,7 @@ test('page recuts locally and handoffs require explicit actions and preserve rej
     el('directorTime').value='60';el('directorParty').value='solo';el('directorInterest').value='culture';
     let asked=0,observed=0;
     env.GuideChatDraft=()=>{asked++;return {accepted:false,reason:'聊天中有未发送草稿'};};
+    env.GuideTour={replacePlan(){},prepare(){return env.GuideChatDraft();}};
     env.GuideExploreSpot=()=>{observed++;return {accepted:false,reason:'当前内容包没有这个任务'};};
     page.mount(env,spots);assert.equal(asked,0);assert.equal(observed,0);
     el('directorHalf').dispatch('click');assert.match(el('directorSummary').textContent,/30 分钟/);assert.match(el('directorStatus').textContent,/移除/);

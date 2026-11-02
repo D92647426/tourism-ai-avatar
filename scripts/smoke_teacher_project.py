@@ -175,6 +175,20 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                     {"message":"介绍", "narrationMode":"unknown"}, {csrf_header:token}, opener)
                 assert bad_mode == 400
                 assert json.loads(fetch(base + "/api/chat/context", opener=opener))["narrationMode"] == "brief"
+                # REQ-047/048: packaged assets and real sequential station/candidate contracts.
+                assert b"chatJourneyNext" in home
+                for asset in ("journey-core.js", "journey.js", "chat-references.js"):
+                    assert fetch(base + "/js/" + asset), asset
+                for name in ("灵山大佛", "灵山梵宫"):
+                    stop = next(spot for spot in spots if spot["name"] == name)
+                    relay = json.loads(fetch(base + "/api/chat",
+                        {"message":"请介绍" + name, "spotId":stop["id"],
+                         "conversationId":chat["conversationId"]}, {csrf_header:token}, opener))
+                    assert relay["spotId"] == stop["id"] and relay["narrationMode"] == "brief"
+                    candidates = relay["knowledgeReferences"]
+                    assert candidates and len(candidates) <= 3
+                    assert all(ref["source"] == "local-knowledge:" + str(ref["id"])
+                               and isinstance(ref["title"], str) for ref in candidates)
                 other = make_opener()
                 other_csrf = json.loads(fetch(base + "/api/auth/csrf", opener=other))
                 assert json.loads(fetch(base + "/api/chat/context", opener=other))["conversationId"] is None
@@ -227,6 +241,7 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                 return {"status": "passed", "spot_count": len(spots),
                         "checks": ["homepage", "spots", "csrf_token", "public_config",
                                    "narration_modes", "narration_session_restore", "narration_invalid_rollback", "narration_reset",
+                                   "journey_assets", "journey_station_handoff", "knowledge_candidate_contract",
                                    "admin_anonymous_401", "csrf_missing_rejected",
                                    "offline_chat", "live2d_definition",
                                    "live2d_model_file", "live2d_helper", "admin_display_partial_save",
