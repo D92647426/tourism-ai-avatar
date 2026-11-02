@@ -24,13 +24,13 @@
 
 ## 本轮新开发
 
-#14 语音参数生效已实现，待提交独立PR：设备中文声线、音量0、语速、旧值兼容与Android参数回退。
+#14 语音参数生效已实现，刚提交 [PR #28](https://github.com/D92647426/tourism-ai-avatar/pull/28)：设备中文声线、音量0、语速、旧值兼容与Android参数回退。
 
 ## 后续开发与团队工作
 
 | 议题 | 后续内容 |
 |---|---|
-| [#14](https://github.com/D92647426/tourism-ai-avatar/issues/14) | 本轮已开发，独立PR待评审；合并后完成第一轮功能清单 |
+| [#14](https://github.com/D92647426/tourism-ai-avatar/issues/14) | 本轮已开发，PR #28 待评审；合并后完成第一轮功能清单 |
 | [#1](https://github.com/D92647426/tourism-ai-avatar/issues/1) | 三人确认主创意、分工和 90 秒演示脚本；已有创意功能原型，仍需小组决定 |
 | [#2](https://github.com/D92647426/tourism-ai-avatar/issues/2) | 各成员实际跑通环境、提交与互审首个 PR |
 | [#3](https://github.com/D92647426/tourism-ai-avatar/issues/3) | 汇总上游复用与小组新增证据，核对素材和代码授权 |
