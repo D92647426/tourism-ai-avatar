@@ -30,10 +30,12 @@
 
 | 议题 | 内容 | 状态 |
 |---|---|---|
-| [#29](https://github.com/D92647426/tourism-ai-avatar/issues/29) | 游览导演、情境重排、逐站理由 | 已实现，待提交评审 |
-| [#30](https://github.com/D92647426/tourism-ai-avatar/issues/30) | 观察写作辅助、草稿保留、旅程衔接 | 已实现，待提交评审 |
-| [#31](https://github.com/D92647426/tourism-ai-avatar/issues/31) | 游客界面美化、手机聊天修正 | 已实现，待提交评审 |
+| [#29](https://github.com/D92647426/tourism-ai-avatar/issues/29) | 游览导演、情境重排、逐站理由 | 刚提交 [PR #32](https://github.com/D92647426/tourism-ai-avatar/pull/32)，待评审 |
+| [#30](https://github.com/D92647426/tourism-ai-avatar/issues/30) | 观察写作辅助、草稿保留、旅程衔接 | 刚提交 [PR #32](https://github.com/D92647426/tourism-ai-avatar/pull/32)，待评审 |
+| [#31](https://github.com/D92647426/tourism-ai-avatar/issues/31) | 游客界面美化、手机聊天修正 | 刚提交 [PR #32](https://github.com/D92647426/tourism-ai-avatar/pull/32)，待评审 |
 
+
+第一轮总计划 [#4](https://github.com/D92647426/tourism-ai-avatar/issues/4) 已全部勾选并关闭。
 
 ## 后续开发与团队工作
 
@@ -43,7 +45,6 @@
 | [#1](https://github.com/D92647426/tourism-ai-avatar/issues/1) | 三人确认主创意、分工和 90 秒演示脚本；已有创意功能原型，仍需小组决定 |
 | [#2](https://github.com/D92647426/tourism-ai-avatar/issues/2) | 各成员实际跑通环境、提交与互审首个 PR |
 | [#3](https://github.com/D92647426/tourism-ai-avatar/issues/3) | 汇总上游复用与小组新增证据，核对素材和代码授权 |
-| [#4](https://github.com/D92647426/tourism-ai-avatar/issues/4) | 第一轮10项均已合并并勾选，计划已完成 |
 
 ## 本轮验证和整合事项
 
