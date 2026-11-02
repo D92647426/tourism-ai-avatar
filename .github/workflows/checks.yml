@@ -29,3 +29,7 @@ jobs:
           python-version: '3.12'
       - run: python scripts/check_doc_links.py
       - run: python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node --test tests/frontend/*.test.js

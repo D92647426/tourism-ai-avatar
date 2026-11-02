@@ -39,18 +39,47 @@ java -jar target/ai-guide-1.0.0.jar
 
 未设置 `DEEPSEEK_API_KEY` 时使用本地降级回答。需要真实模型时，在启动终端配置自己的环境变量；不要将 Key 写入源码。Spring Boot 不会自动读取普通 `.env` 文件。
 
+## 管理员入口与本地管理员账号
+
+管理后台 `/admin.html` 需要 ADMIN 身份，登录入口在 `/login.html` 的“管理员登录”链接。默认**不创建**管理员；只有同时设置以下环境变量时，启动阶段才会初始化本地管理员：
+
+```bash
+export APP_ADMIN_USERNAME=your-admin-name
+export APP_ADMIN_PASSWORD=your-admin-password
+mvn spring-boot:run
+```
+
+规则：
+
+- 管理员密码至少 8 位；游客密码仍为至少 4 位，已有游客账号不受影响。
+- 用户名已被游客占用时启动会明确失败，不会把游客静默提升为管理员。
+- 已存在的管理员不会被重复启动覆盖密码。
+- 不要提交或打印真实管理员凭据；`data/users.json`、迁移备份与本机日志都不进入 Git。
+- 登录后服务端会话默认 30 分钟过期；管理员和游客退出都会使服务端会话失效。
+
+实现见 [SecurityConfig.java:L36](src/main/java/com/guide/config/SecurityConfig.java#L36)、[UserService.java:L59](src/main/java/com/guide/service/UserService.java#L59)。
+
 ## 验证
 
 ```bash
 mvn verify
 python scripts/check_doc_links.py
 python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar
+node --test tests/frontend/*.test.js
 ```
 
-Python 只用于可选检查脚本与 CI，网页项目运行不依赖 Python、Node.js 或 Docker。当前源码没有业务单元测试；自动检查验证 Maven 构建、文档链接和本地启动后的页面/接口/模型资源。
+Python 只用于可选检查脚本与 CI，Node.js 只用于前端行为测试，网页项目运行不依赖 Python、Node.js 或 Docker。当前源码有 41 个 Java 自动化测试（权限边界、CSRF、会话固定、密码迁移/一致性、密码策略、Cookie 属性、真实 HTTP 认证链路）和 27 个前端行为测试（`node:test` + `vm` 直接执行 `static/js` 脚本，覆盖退出/CSRF/兴趣保存/管理员会话切换），分别由 `mvn verify` 与 `node --test` 执行；自动检查同时验证文档链接和本地启动后的页面/接口/模型资源，详见 [测试说明](docs/test_reference.md)。
 
 ## 当前边界
 
-知识检索是字符串匹配，推荐路线由预设规则生成，语音主要使用浏览器或 Android 系统能力。Haru 是示例角色，最终角色素材与课设创意尚未定案。Android APK 本次未验证构建。
+知识检索是字符串匹配，推荐路线由预设规则生成，语音主要使用浏览器或 Android 系统能力。Haru 是示例角色，最终角色素材与课设创意尚未定案。Android APK 本次未验证构建；网页已改为服务端会话与 CSRF，但 Android WebView 内 Cookie/CSRF 行为尚未验证，Android 原生代码未改动。
 
 压缩包中的编译产物、个人 IDE 配置、真实接口 Key、历史账号和交互记录未提交。具体处理见 [导入记录](docs/import_manifest.json)。
+
+### 多轮导览对话
+
+游客现在可以在当前景点连续追问，并用“新对话”清除上下文。会话保存在当前浏览器对应的服务端 Session，闲置 20 分钟过期，最多保留六轮问答。接口、限制与验证见 [会话隔离与景点上下文](docs/conversation_context.md#L3)。
+
+景点详情现在可点击“问问 AI 导游”选择景点，再主动提问；关闭后保留选择，“新对话”回到通用导览。见 [入口与验证](docs/spot_chat_entry.md#L3)。
+
+当前开发状态见 [议题进度清单](docs/issue_progress.md#L1)。

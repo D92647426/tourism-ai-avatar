@@ -23,6 +23,16 @@ public class ChatService {
 
     private static final Logger log = LoggerFactory.getLogger(ChatService.class);
 
+    /** One validated role/content pair; only ConversationService may create the bounded history. */
+    public static class Turn {
+        final String role;
+        final String content;
+        public Turn(String role, String content) {
+            if (!("user".equals(role) || "assistant".equals(role))) throw new IllegalArgumentException("role");
+            this.role = role; this.content = content;
+        }
+    }
+
     @Value("${ai.api-key:}")
     private String apiKey;
 
@@ -51,20 +61,25 @@ public class ChatService {
      * 处理对话并返回完整响应
      */
     public ChatResponse chat(String userMessage, String interest) {
+        return chat(userMessage, interest, Collections.emptyList(), null);
+    }
+
+    /** REQ-039: previous successful turns and validated current place enter the request. */
+    public ChatResponse chat(String userMessage, String interest, List<Turn> history, Spot currentSpot) {
         boolean fallback = false;
         String reply;
 
         if (apiKey != null && !apiKey.trim().isEmpty()) {
             try {
-                reply = callAiApi(userMessage, interest);
+                reply = callAiApi(userMessage, interest, history, currentSpot);
             } catch (Exception e) {
                 log.warn("AI API调用失败，降级到本地匹配: {}", e.getMessage());
                 fallback = true;
-                reply = localFallback(userMessage, interest);
+                reply = localFallback(userMessage, interest, currentSpot);
             }
         } else {
             fallback = true;
-            reply = localFallback(userMessage, interest);
+            reply = localFallback(userMessage, interest, currentSpot);
         }
 
         // 记录交互日志
@@ -92,7 +107,7 @@ public class ChatService {
 
     // ===== AI API 调用 =====
 
-    private String callAiApi(String userMessage, String interest) throws Exception {
+    private String callAiApi(String userMessage, String interest, List<Turn> history, Spot currentSpot) throws Exception {
         String spotContext = spotService.buildSpotContext();
         String knowledgeContext = knowledgeService.retrieveRelevantContext(userMessage);
 
@@ -102,7 +117,18 @@ public class ChatService {
         requestBody.put("max_tokens", 800);
 
         ArrayNode messages = objectMapper.createArrayNode();
-        messages.add(buildSystemMessage(spotContext, knowledgeContext, interest));
+        ObjectNode system = buildSystemMessage(spotContext, knowledgeContext, interest);
+        if (currentSpot != null) {
+            system.put("content", system.path("content").asText() + "\n【当前景点】" + currentSpot.getName()
+                    + "；后续代词问题优先按此景点理解，切换景点后不用旧景点信息。");
+        }
+        messages.add(system);
+        for (Turn turn : history) {
+            ObjectNode previous = objectMapper.createObjectNode();
+            previous.put("role", turn.role);
+            previous.put("content", turn.content);
+            messages.add(previous);
+        }
 
         ObjectNode userMsg = objectMapper.createObjectNode();
         userMsg.put("role", "user");
@@ -176,7 +202,7 @@ public class ChatService {
 
     // ===== 本地降级回复 =====
 
-    private String localFallback(String userMessage, String interest) {
+    private String localFallback(String userMessage, String interest, Spot currentSpot) {
         String msg = userMessage.toLowerCase();
 
         // 知识库检索
@@ -186,8 +212,12 @@ public class ChatService {
         List<Spot> spots = spotService.getAllSpots();
         for (Spot spot : spots) {
             if (msg.contains(spot.getName())) {
-                return buildSpotReply(spot, interest);
+                return spotReplyForQuestion(spot, msg, interest);
             }
+        }
+
+        if (currentSpot != null && containsAny(msg, "它", "这个景点", "这里", "故事", "开放", "几点")) {
+            return spotReplyForQuestion(currentSpot, msg, interest);
         }
 
         // 扩展的本地关键词匹配
@@ -249,6 +279,21 @@ public class ChatService {
                "您可以问我任何景点的详细信息、交通路线、\n" +
                "门票价格、历史故事等。也欢迎问我'推荐哪些景点'~\n" +
                "愿您在此感悟灵山，吉祥平安！";
+    }
+
+    /** REQ-039: answer the referenced place's requested fact before using its general card. */
+    private String spotReplyForQuestion(Spot spot, String question, String interest) {
+        if (containsAny(question, "故事", "历史")) {
+            return "【" + spot.getName() + "】的故事：\n\n"
+                    + (spot.getHistory() == null || spot.getHistory().trim().isEmpty()
+                    ? "目前还没有收录这个景点的历史故事。" : spot.getHistory());
+        }
+        if (containsAny(question, "开放", "几点")) {
+            return "【" + spot.getName() + "】的开放时间："
+                    + (spot.getOpeningHours() == null || spot.getOpeningHours().trim().isEmpty()
+                    ? "目前还没有收录开放时间。" : spot.getOpeningHours());
+        }
+        return buildSpotReply(spot, interest);
     }
 
     private String buildSpotReply(Spot spot, String interest) {

@@ -10,6 +10,8 @@ public class ChatResponse {
     private boolean fallback;
     private List<String> recommendedRoutes;  // 推荐路线
     private String interest;                 // 回显兴趣标签
+    private String conversationId;
+    private Integer spotId;
 
     public ChatResponse(String reply, boolean fallback) {
         this.reply = reply;
@@ -24,4 +26,8 @@ public class ChatResponse {
     public void setRecommendedRoutes(List<String> recommendedRoutes) { this.recommendedRoutes = recommendedRoutes; }
     public String getInterest() { return interest; }
     public void setInterest(String interest) { this.interest = interest; }
+    public String getConversationId() { return conversationId; }
+    public void setConversationId(String conversationId) { this.conversationId = conversationId; }
+    public Integer getSpotId() { return spotId; }
+    public void setSpotId(Integer spotId) { this.spotId = spotId; }
 }

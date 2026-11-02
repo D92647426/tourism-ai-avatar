@@ -1,5 +1,6 @@
 package com.guide.controller;
 
+import com.guide.dto.UserView;
 import com.guide.model.*;
 import com.guide.service.*;
 import org.springframework.http.ResponseEntity;
@@ -9,9 +10,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
- * 管理后台 API 控制器
+ * 管理后台 API 控制器。
+ *
+ * <p>安全说明（REQ-030 / GitHub #5）：{@code /api/admin/**} 由 Spring Security
+ * 统一保护，只有 ADMIN 角色可访问；匿名返回 401、普通游客返回 403。
+ * 页面是否显示管理入口与真实权限无关。
+ *
+ * <p>文档：[API 说明](../../../../../docs/api_reference.md)。
  */
 @RestController
 @RequestMapping("/api/admin")
@@ -137,7 +145,10 @@ public class AdminController {
     // ========== 用户管理 ==========
 
     @GetMapping("/users")
-    public ResponseEntity<List<User>> getUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<List<UserView>> getUsers() {
+        List<UserView> users = userService.getAllUsers().stream()
+                .map(UserView::from)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(users);
     }
 }

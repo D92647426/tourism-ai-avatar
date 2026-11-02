@@ -10,6 +10,8 @@ application-local.properties
 
 # Runtime user accounts and chat logs
 data/users.json
+data/users.json.bak*
+data/users.json.tmp*
 data/interactions.json
 *.log
 logs/

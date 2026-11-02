@@ -9,6 +9,32 @@
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 </head>
 <body>
+    <!-- ===== 登录/权限校验层：页面提示不替代服务端权限，所有 /api/admin/** 仍由服务端校验 ===== -->
+    <div class="admin-gate" id="adminGate">
+        <div class="admin-gate-card" id="adminGateLogin">
+            <div class="admin-gate-logo">🛕</div>
+            <h2>管理后台登录</h2>
+            <p class="admin-gate-hint">仅管理员账号可访问；游客账号登录后将显示无权限。</p>
+            <form id="adminLoginForm">
+                <input type="text" class="form-input" id="adminUsername" placeholder="管理员用户名"
+                       autocomplete="username" required>
+                <input type="password" class="form-input" id="adminPassword" placeholder="管理员密码"
+                       autocomplete="current-password" required>
+                <p class="admin-gate-error" id="adminGateError"></p>
+                <button type="submit" class="btn btn-primary admin-gate-btn">登 录</button>
+            </form>
+            <a href="/login.html" class="admin-gate-back">← 返回游客登录</a>
+        </div>
+        <div class="admin-gate-card" id="adminGateDenied" style="display:none;">
+            <div class="admin-gate-logo">⛔</div>
+            <h2>无权限访问</h2>
+            <p class="admin-gate-hint">当前账号不是管理员。后台接口由服务端按角色校验，游客无法读取管理数据。</p>
+            <a href="/index.html" class="btn btn-secondary admin-gate-btn">返回游客端</a>
+            <button type="button" class="admin-gate-back" id="adminSwitchAccount">切换账号登录</button>
+            <p class="admin-gate-error" id="adminGateSwitchError"></p>
+        </div>
+    </div>
+
     <div class="admin-layout">
         <!-- 侧边栏 -->
         <aside class="admin-sidebar">
@@ -34,7 +60,10 @@
                 </a>
             </nav>
             <div class="sidebar-footer">
+                <div class="admin-identity" id="adminIdentity"></div>
                 <a href="/" class="back-link">← 返回游客端</a>
+                <button type="button" class="admin-logout" id="adminLogout">退出登录</button>
+                <p class="admin-logout-error" id="adminLogoutError"></p>
             </div>
         </aside>
 
@@ -242,6 +271,7 @@
         </div>
     </div>
 
+    <script src="/js/security.js"></script>
     <script src="/js/admin.js"></script>
 </body>
 </html>

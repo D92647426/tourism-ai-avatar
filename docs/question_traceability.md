@@ -10,11 +10,13 @@
 
 ## Q-0028 管理员账号是什么？
 
-老师原版没有独立的管理员账号、默认管理员密码或管理角色校验。管理页直接访问 `/admin.html`；普通游客注册登录由另一组接口处理，不是管理员认证。
+初始基线（2026-10-19，老师原版）：没有独立的管理员账号、默认管理员密码或管理角色校验。管理页直接访问 `/admin.html`；普通游客注册登录由另一组接口处理，不是管理员认证。以下记录保留为历史基线，现状已由 REQ-030 修复。
 
-依据：[admin.html:L12](../src/main/resources/static/admin.html#L12)、[管理页请求 admin.js:L33](../src/main/resources/static/js/admin.js#L33)、[管理接口 AdminController.java:L17](../src/main/java/com/guide/controller/AdminController.java#L17)、[普通登录 AuthController.java:L62](../src/main/java/com/guide/controller/AuthController.java#L62)。
+基线依据：[admin.html:L13](../src/main/resources/static/admin.html#L13)、[管理页请求 admin.js](../src/main/resources/static/js/admin.js)（初始基线的行号已随 REQ-030 改动失效，此处不写旧行号）、[管理接口 AdminController.java:L26](../src/main/java/com/guide/controller/AdminController.java#L26)、[普通登录 AuthController.java:L103](../src/main/java/com/guide/controller/AuthController.java#L103)。
 
-验证（2026-10-19）：本地未携带 Cookie 或认证头，GET `/admin.html` 和 GET `/api/admin/dashboard` 均返回 HTTP 200。当前预览地址为 http://127.0.0.1:8081/admin.html。仅记录现状，本次未新增账号或改动认证逻辑。
+基线验证（2026-10-19）：本地未携带 Cookie 或认证头，GET `/admin.html` 和 GET `/api/admin/dashboard` 均返回 HTTP 200。
+
+现状（2026-10-23，[REQ-030](./requirements_traceability.md)）：管理员通过环境变量初始化；`/api/admin/**` 由 [SecurityConfig.java:L137-L138](../src/main/java/com/guide/config/SecurityConfig.java#L137-L138) 在服务端强制 ADMIN；管理页用 [admin.js:L150](../src/main/resources/static/js/admin.js#L150) 校验服务端身份；用户列表改用 [UserView.java:L13](../src/main/java/com/guide/dto/UserView.java#L13)，响应不含密码字段。认证接口见 [API-030](./api_reference.md)，验证见 [TEST-030](./test_reference.md)。
 
 ## Q-0029 哪些地方值得改进？
 

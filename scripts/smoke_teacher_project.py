@@ -1,7 +1,8 @@
-"""REQ-027: build-artifact HTTP verification; see docs/test_reference.md."""
+"""REQ-027 / REQ-030: build-artifact HTTP verification; see docs/test_reference.md."""
 from __future__ import annotations
 
 import argparse
+import http.cookiejar
 import json
 import os
 from pathlib import Path
@@ -15,15 +16,45 @@ import urllib.parse
 import urllib.request
 
 
-def fetch(url: str, payload: dict | None = None) -> bytes:
-    """Read a local HTTP endpoint, optionally sending JSON."""
-    request = urllib.request.Request(
+def make_opener() -> urllib.request.OpenerDirector:
+    """Build a cookie-aware opener so JSESSIONID / XSRF-TOKEN survive across calls."""
+    return urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+
+
+def _request(url: str, payload: dict | None, headers: dict | None) -> urllib.request.Request:
+    merged = {"Content-Type": "application/json"} if payload is not None else {}
+    if headers:
+        merged.update(headers)
+    return urllib.request.Request(
         url,
         data=json.dumps(payload).encode("utf-8") if payload is not None else None,
-        headers={"Content-Type": "application/json"} if payload is not None else {},
+        headers=merged,
     )
-    with urllib.request.urlopen(request, timeout=5) as response:
+
+
+def _open(request: urllib.request.Request,
+          opener: urllib.request.OpenerDirector | None):
+    """Open a request with the cookie-aware opener when provided, else the module default."""
+    if opener is not None:
+        return opener.open(request, timeout=5)
+    return urllib.request.urlopen(request, timeout=5)
+
+
+def fetch(url: str, payload: dict | None = None, headers: dict | None = None,
+          opener: urllib.request.OpenerDirector | None = None) -> bytes:
+    """Read a local HTTP endpoint, optionally sending JSON and browser-like headers."""
+    with _open(_request(url, payload, headers), opener) as response:
         return response.read()
+
+
+def status_of(url: str, payload: dict | None = None, headers: dict | None = None,
+              opener: urllib.request.OpenerDirector | None = None) -> tuple[int, bytes]:
+    """Return (status code, body) and turn expected 4xx responses into data, not exceptions."""
+    try:
+        with _open(_request(url, payload, headers), opener) as response:
+            return response.status, response.read()
+    except urllib.error.HTTPError as error:
+        return error.code, error.read()
 
 
 def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
@@ -39,6 +70,7 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
             raise ValueError(f"Port {port} is already occupied; choose --port.")
     root = Path(__file__).resolve().parents[1]
     base = f"http://127.0.0.1:{port}"
+    opener = make_opener()
     with tempfile.TemporaryDirectory(prefix="teacher-guide-smoke-") as folder:
         work = Path(folder).resolve()
         assert work.is_relative_to(Path(tempfile.gettempdir()).resolve())
@@ -72,16 +104,74 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                 assert b"live2d" in home.lower(), "Homepage does not reference Live2D."
                 spots = json.loads(fetch(base + "/api/spots"))
                 assert isinstance(spots, list) and spots, "No scenic spots returned."
-                chat = json.loads(fetch(base + "/api/chat", {"message": "hello"}))
+
+                csrf = json.loads(fetch(base + "/api/auth/csrf", opener=opener))
+                token = csrf.get("token") or ""
+                assert token, "CSRF endpoint did not return a token."
+                csrf_header = csrf.get("headerName") or "X-XSRF-TOKEN"
+
+                public_config = json.loads(fetch(base + "/api/digital-human-config"))
+                config_text = json.dumps(public_config, ensure_ascii=False).lower()
+                assert public_config.get("name"), "Public digital-human config is empty."
+                assert "password" not in config_text and "credential" not in config_text, (
+                    "Public config must not expose credentials.")
+
+                admin_status, admin_body = status_of(base + "/api/admin/dashboard", opener=opener)
+                assert admin_status == 401, f"Anonymous admin request must be 401, got {admin_status}"
+                assert json.loads(admin_body).get("success") is False
+
+                unsigned_status, _ = status_of(
+                    base + "/api/chat", {"message": "no-csrf"}, opener=opener)
+                assert unsigned_status == 403, (
+                    f"State-changing request without CSRF must be 403, got {unsigned_status}")
+
+                chat = json.loads(fetch(base + "/api/chat", {"message": "hello"},
+                                        {csrf_header: token}, opener))
                 assert isinstance(chat.get("reply"), str) and chat["reply"].strip()
                 assert chat.get("fallback") is True, "Smoke test must use offline fallback."
+
+                # REQ-039: real cookie/CSRF requests, distinct visitors and spot switches.
+                assert chat.get("conversationId"), "Server must establish a conversation id."
+                snapshot = json.loads(fetch(base + "/api/chat/context", opener=opener))
+                assert snapshot["conversationId"] == chat["conversationId"]
+                first, second = spots[0], spots[1]
+                opening = json.loads(fetch(base + "/api/chat",
+                    {"message":"它什么时候开放", "spotId":first["id"],
+                     "conversationId":chat["conversationId"]}, {csrf_header:token}, opener))
+                assert opening["spotId"] == first["id"] and first["name"] in opening["reply"]
+                assert first["openingHours"] in opening["reply"], "Opening-hour follow-up must answer the fact."
+                switched = json.loads(fetch(base + "/api/chat",
+                    {"message":"它有什么故事", "spotId":second["id"],
+                     "conversationId":chat["conversationId"]}, {csrf_header:token}, opener))
+                assert switched["spotId"] == second["id"] and second["name"] in switched["reply"]
+                assert second["history"][:20] in switched["reply"], "Story follow-up must use the new place's history."
+                other = make_opener()
+                other_csrf = json.loads(fetch(base + "/api/auth/csrf", opener=other))
+                assert json.loads(fetch(base + "/api/chat/context", opener=other))["conversationId"] is None
+                stolen_status, _ = status_of(base + "/api/chat",
+                    {"message":"偷看", "conversationId":chat["conversationId"]},
+                    {other_csrf["headerName"]:other_csrf["token"]}, other)
+                assert stolen_status == 403, "Conversation id from another cookie must be rejected."
+                fresh = json.loads(fetch(base + "/api/chat/new", {}, {csrf_header:token}, opener))
+                assert fresh["conversationId"] != chat["conversationId"] and fresh["spotId"] is None
+                old_status, _ = status_of(base + "/api/chat",
+                    {"message":"旧的", "conversationId":chat["conversationId"]},
+                    {csrf_header:token}, opener)
+                assert old_status == 403, "Old conversation id must be unusable after reset."
+                bad_spot, _ = status_of(base + "/api/chat",
+                    {"message":"错误景点", "spotId":999999}, {csrf_header:token}, opener)
+                assert bad_spot == 400, "Invalid spotId must be rejected."
                 model_url = base + "/models/haru/haru.model.json"
                 model = json.loads(fetch(model_url))
                 assert model.get("model"), "Live2D model definition is missing."
                 assert fetch(urllib.parse.urljoin(model_url, model["model"]))
                 assert fetch(base + "/js/live2d-helper.js")
                 return {"status": "passed", "spot_count": len(spots),
-                        "checks": ["homepage", "spots", "offline_chat", "live2d_definition",
+                        "checks": ["homepage", "spots", "csrf_token", "public_config",
+                                   "admin_anonymous_401", "csrf_missing_rejected",
+                                   "offline_chat", "session_bound_conversation", "spot_switch",
+                               "other_cookie_rejected", "new_conversation", "invalid_spot_rejected",
+                               "live2d_definition",
                                    "live2d_model_file", "live2d_helper"]}
             except Exception:
                 log.flush()

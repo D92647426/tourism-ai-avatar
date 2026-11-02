@@ -3,6 +3,166 @@
 (function() {
     'use strict';
 
+    var S = function(id) { return document.getElementById(id); };
+
+    // ===== 登录 / 权限校验（页面提示不替代服务端权限） =====
+    var adminGate = S('adminGate');
+    var adminGateLogin = S('adminGateLogin');
+    var adminGateDenied = S('adminGateDenied');
+    var adminGateError = S('adminGateError');
+    var adminIdentity = S('adminIdentity');
+    var adminStarted = false;
+
+    // 会话失效/被拒绝时结束页面上的管理员状态，避免继续展示或误用此前的数据
+    function endAdminSession() {
+        adminStarted = false;
+        if (adminIdentity) adminIdentity.textContent = '';
+        // 清掉上一次会话加载的敏感列表，避免退出/被拒绝后仍可从 DOM 读到旧数据
+        var knowledgeBody = S('knowledgeTbody');
+        if (knowledgeBody) knowledgeBody.innerHTML = '';
+        var usersBody = document.querySelector('#usersTable tbody');
+        if (usersBody) usersBody.innerHTML = '';
+    }
+
+    function showLoginGate(message) {
+        endAdminSession();
+        adminGate.style.display = 'flex';
+        adminGateLogin.style.display = 'block';
+        adminGateDenied.style.display = 'none';
+        adminGateError.textContent = message || '';
+    }
+
+    function showForbiddenGate() {
+        endAdminSession();
+        adminGate.style.display = 'flex';
+        adminGateLogin.style.display = 'none';
+        adminGateDenied.style.display = 'block';
+    }
+
+    function hideGate() {
+        adminGate.style.display = 'none';
+    }
+
+    // 统一请求封装：携带 Cookie 会话与 CSRF token；401/403 只显示提示，不做循环重定向。
+    function apiFetch(url, options) {
+        return window.AuthGuard.apiFetch(url, options).then(function(res) {
+            if (res.status === 401) {
+                showLoginGate('登录状态已失效，请重新登录');
+                throw new Error('unauthorized');
+            }
+            if (res.status === 403) {
+                showForbiddenGate();
+                throw new Error('forbidden');
+            }
+            return res;
+        });
+    }
+
+    function activeTabName() {
+        var active = document.querySelector('.nav-item.active');
+        return active ? active.dataset.tab : 'dashboard';
+    }
+
+    function loadTab(tab) {
+        if (tab === 'knowledge') loadKnowledge();
+        else if (tab === 'digital-human') loadDigitalHumanConfig();
+        else if (tab === 'reports') loadReports();
+        else if (tab === 'users') loadUsers();
+        else loadDashboard();
+    }
+
+    // 登录（含过期后重新登录）成功后重载当前激活 tab，不能只隐藏遮罩留下旧数据
+    function startAdmin(username) {
+        hideGate();
+        adminStarted = true;
+        if (adminIdentity && username) {
+            adminIdentity.textContent = '👤 ' + username + '（管理员）';
+        }
+        loadTab(activeTabName());
+    }
+
+    // 管理员登录
+    S('adminLoginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var username = S('adminUsername').value.trim();
+        var password = S('adminPassword').value;
+        window.AuthGuard.apiFetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username, password: password })
+        }).then(function(res) {
+            return res.json().then(function(d) {
+                d.__status = res.status;
+                return d;
+            });
+        }).then(function(d) {
+            if (!d.success) {
+                adminGateError.textContent = d.__status === 401
+                    ? '用户名或密码错误'
+                    : (d.message || '登录失败');
+                return;
+            }
+            if (d.role !== 'ADMIN') {
+                showForbiddenGate();
+                return;
+            }
+            S('adminPassword').value = '';
+            adminGateError.textContent = '';
+            var switchError = S('adminGateSwitchError');
+            if (switchError) switchError.textContent = '';
+            startAdmin(d.username);
+        }).catch(function() {
+            adminGateError.textContent = '登录失败，请稍后重试';
+        });
+    });
+
+    // 退出登录：仅当服务端确认退出后才跳转，失败时显示可见提示并允许重试
+    S('adminLogout').addEventListener('click', function() {
+        var button = S('adminLogout');
+        var error = S('adminLogoutError');
+        if (error) error.textContent = '';
+        button.disabled = true;
+        window.AuthGuard.logout().then(function() {
+            window.location.href = '/login.html';
+        }).catch(function() {
+            button.disabled = false;
+            if (error) error.textContent = '退出失败，请检查网络后重试';
+        });
+    });
+
+    // 无权限面板的“切换账号登录”：先结束服务端会话，再显示本页管理员登录表单
+    var adminSwitchAccount = S('adminSwitchAccount');
+    if (adminSwitchAccount) {
+        adminSwitchAccount.addEventListener('click', function() {
+            var switchError = S('adminGateSwitchError');
+            if (switchError) switchError.textContent = '';
+            adminSwitchAccount.disabled = true;
+            window.AuthGuard.logout().then(function() {
+                adminSwitchAccount.disabled = false;
+                showLoginGate('已退出当前账号，请使用管理员账号登录');
+            }).catch(function() {
+                adminSwitchAccount.disabled = false;
+                if (switchError) switchError.textContent = '退出失败，请检查网络后重试';
+            });
+        });
+    }
+
+    function checkIdentity() {
+        window.AuthGuard.me().then(function(user) {
+            if (!user) {
+                showLoginGate('');
+                return;
+            }
+            if (user.role !== 'ADMIN') {
+                showForbiddenGate();
+                return;
+            }
+            startAdmin(user.username);
+        }).catch(function() {
+            showLoginGate('无法确认登录状态，请重新登录');
+        });
+    }
+
     // ===== Tab 导航 =====
     var navItems = document.querySelectorAll('.nav-item');
     var tabContents = document.querySelectorAll('.tab-content');
@@ -31,7 +191,7 @@
     var hourlyChart = null;
 
     function loadDashboard() {
-        fetch('/api/admin/dashboard')
+        apiFetch('/api/admin/dashboard')
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 updateStatCards(data);
@@ -176,7 +336,7 @@
 
     // 30秒自动刷新仪表盘
     setInterval(function() {
-        if (document.getElementById('tab-dashboard').classList.contains('active')) {
+        if (adminStarted && document.getElementById('tab-dashboard').classList.contains('active')) {
             loadDashboard();
         }
     }, 30000);
@@ -193,7 +353,7 @@
         if (keyword) url += 'keyword=' + encodeURIComponent(keyword) + '&';
         if (category) url += 'category=' + encodeURIComponent(category);
 
-        fetch(url)
+        apiFetch(url)
             .then(function(res) { return res.json(); })
             .then(function(data) { renderKnowledgeTable(data); })
             .catch(function() {
@@ -226,7 +386,7 @@
 
     // 暴露到全局供 onclick 使用
     window._editKnowledge = function(id) {
-        fetch('/api/admin/knowledge/' + id)
+        apiFetch('/api/admin/knowledge/' + id)
             .then(function(res) { return res.json(); })
             .then(function(item) {
                 document.getElementById('kwModalTitle').textContent = '编辑知识条目';
@@ -241,7 +401,7 @@
 
     window._deleteKnowledge = function(id) {
         if (!confirm('确定要删除此知识条目吗？此操作不可撤销。')) return;
-        fetch('/api/admin/knowledge/' + id, { method: 'DELETE' })
+        apiFetch('/api/admin/knowledge/' + id, { method: 'DELETE' })
             .then(function(res) {
                 if (res.ok) { loadKnowledge(); }
                 else { alert('删除失败'); }
@@ -296,7 +456,7 @@
             method = 'PUT';
         }
 
-        fetch(url, {
+        apiFetch(url, {
             method: method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(item)
@@ -312,7 +472,7 @@
     // ===== 数字人形象管理 =====
 
     function loadDigitalHumanConfig() {
-        fetch('/api/admin/digital-human-config')
+        apiFetch('/api/admin/digital-human-config')
             .then(function(res) { return res.json(); })
             .then(function(config) {
                 document.getElementById('cfgName').value = config.name || '灵灵';
@@ -346,7 +506,7 @@
             speechRate: parseFloat(document.getElementById('cfgSpeed').value)
         };
 
-        fetch('/api/admin/digital-human-config', {
+        apiFetch('/api/admin/digital-human-config', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(config)
@@ -367,7 +527,7 @@
     }
 
     function loadSentimentReport() {
-        fetch('/api/admin/reports/sentiment')
+        apiFetch('/api/admin/reports/sentiment')
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 renderReportSentiment(data.trend || []);
@@ -375,7 +535,7 @@
     }
 
     function loadTopicsReport() {
-        fetch('/api/admin/reports/topics')
+        apiFetch('/api/admin/reports/topics')
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 renderReportTopics(data.topics || []);
@@ -383,7 +543,7 @@
     }
 
     function loadSuggestions() {
-        fetch('/api/admin/reports/suggestions')
+        apiFetch('/api/admin/reports/suggestions')
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 var list = document.getElementById('suggestionsList');
@@ -458,7 +618,7 @@
 
     // ===== 用户列表 =====
     function loadUsers() {
-        fetch('/api/admin/users')
+        apiFetch('/api/admin/users')
             .then(function(res) { return res.json(); })
             .then(function(users) {
                 var tbody = document.querySelector('#usersTable tbody');
@@ -481,9 +641,9 @@
             });
     }
 
-    // ===== 初始化 =====
+    // ===== 初始化：先向服务端确认管理员身份，再加载数据 =====
     function init() {
-        loadDashboard(); // 默认加载数据大屏
+        checkIdentity();
     }
 
     init();

@@ -30,6 +30,9 @@
     <p class="switch-text">
       还没有账号？<a href="#" id="showRegister">立即注册</a>
     </p>
+    <p class="switch-text admin-entry">
+      <a href="/admin.html">管理员登录</a>
+    </p>
   </div>
 
   <!-- 注册表单 -->
@@ -63,11 +66,13 @@
       <button class="interest-btn" data-interest="亲子出游">👶 亲子出游</button>
       <button class="interest-btn" data-interest="摄影打卡">📷 摄影打卡</button>
     </div>
+    <p class="form-error" id="interestError"></p>
     <button class="btn-secondary" id="skipInterest">跳过，随便逛逛</button>
     <button class="btn-primary" id="enterApp" style="display:none;">进入导览</button>
   </div>
 </div>
 
+<script src="/js/security.js"></script>
 <script src="/js/login.js"></script>
 </body>
 </html>

@@ -15,6 +15,7 @@
     var chatFab = S('chatFab');
     var chatPanelOverlay = S('chatPanelOverlay');
     var chatPanelClose = S('chatPanelClose');
+    var chatNewBtn = S('chatNewBtn');
     var chatMessages = S('chatMessages');
     var chatInput = S('chatInput');
     var chatSendBtn = S('chatSendBtn');
@@ -24,8 +25,13 @@
     var quickActions = S('quickActions');
     var chatHeaderName = S('chatHeaderName');
 
-    var allSpots = [], isChatOpen = false;
-    // 从登录信息读取
+    var allSpots = [], isChatOpen = false, pendingChats = 0;
+    var conversationId = null;
+    var selectedSpot = null, resettingConversation = false;
+    var pendingSpot = null, contextReady = false;
+    var chatContext = S('chatContext');
+    var api = window.AuthGuard.apiFetch;
+    // 从登录信息读取（localStorage 只作显示缓存，真实身份以 /api/auth/me 为准）
     var currentUserId = localStorage.getItem('userId') || '';
     var currentInterest = localStorage.getItem('interest') || '';
 
@@ -33,6 +39,14 @@
     function loadSpots() {
         fetch('/api/spots').then(function(r) { return r.json(); }).then(function(d) {
             allSpots = d; renderSpots(d);
+            return api('/api/chat/context').then(function(r) {
+                if (!r.ok) throw new Error('context ' + r.status);
+                return r.json();
+            }).then(function(snapshot) {
+                conversationId = snapshot.conversationId || null;
+                selectedSpot = allSpots.find(function(spot) { return spot.id === snapshot.spotId; }) || null;
+                contextReady = true; renderChatContext();
+            }).catch(function() { chatContext.textContent = '会话状态未同步，请点击“新对话”后提问。'; });
         }).catch(function() {
             spotsGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:60px;color:#999;">景点数据加载中...</p>';
         });
@@ -90,6 +104,21 @@
             '<div class="detail-section"><h3>🎫 门票</h3><p>' + s.ticket + '</p></div>' +
             '<div class="detail-section"><h3>🚌 交通指南</h3><p>' + s.transportation + '</p></div>' +
             '<div class="detail-section"><h3>✨ 亮点推荐</h3><div class="detail-highlights">' + (s.highlights || []).map(function(h) { return '<span class="detail-highlight-tag">' + h + '</span>'; }).join('') + '</div></div>';
+        // REQ-040: explicit selection only; the next user submission carries the validated API spotId.
+        var ask = document.createElement('button');
+        ask.type = 'button'; ask.className = 'detail-ask';
+        ask.textContent = '问问 AI 导游';
+        ask.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (pendingChats || resettingConversation || !contextReady) {
+                ask.textContent = '请等待当前请求结束，再选择景点';
+                return;
+            }
+            selectedSpot = s;
+            pendingSpot = s;
+            renderChatContext(); closeDetail(); openChat();
+        });
+        modalBody.appendChild(ask);
         modalOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
     }
@@ -172,6 +201,10 @@
     }
 
     // ===== 聊天面板 =====
+    // REQ-040: render local selection/server snapshot as text; no requests. See docs/spot_chat_entry.md#L3.
+    function renderChatContext() {
+        chatContext.textContent = selectedSpot ? '当前景点：' + selectedSpot.name + '（下次提问时使用）' : '当前：通用导览';
+    }
     live2dStage.addEventListener('click', function(e) { e.stopPropagation(); openChat(); });
     chatFab.addEventListener('click', function(e) { e.stopPropagation(); toggleChat(); });
     chatPanelClose.addEventListener('click', function(e) { e.stopPropagation(); closeChat(); });
@@ -196,19 +229,46 @@
     }
 
     // ===== 发送消息 =====
+    chatNewBtn.addEventListener('click', function() {
+        if (pendingChats || chatNewBtn.disabled) return;
+        resettingConversation = true;
+        chatNewBtn.disabled = true;
+        api('/api/chat/new', {method:'POST'}).then(function(r) {
+            if (!r.ok) throw new Error('new conversation ' + r.status);
+            return r.json();
+        }).then(function(data) {
+            conversationId = data.conversationId;
+            selectedSpot = null; pendingSpot = null; contextReady = true; renderChatContext();
+            stopTts();
+            chatMessages.innerHTML = '';
+            addMsg('bot', '新对话已开始。您可以继续提问。');
+        }).catch(function() { addMsg('bot', '暂时无法开始新对话，请重试。'); })
+          .then(function() { resettingConversation = false; chatNewBtn.disabled = false; });
+    });
     function sendMessage() {
+        if (pendingChats || resettingConversation || !contextReady) return;
         // 立即停止当前所有说话和口型
         stopTts();
         var text = chatInput.value.trim(); if (!text) return;
+        pendingChats++; chatNewBtn.disabled = true;
         addMsg('user', text); chatInput.value = ''; showTyping();
-        var body = { message: text, userId: currentUserId };
+        var body = { message: text, conversationId: conversationId };
+        if (pendingSpot) body.spotId = pendingSpot.id;
         if (currentInterest) body.interest = currentInterest;
 
-        fetch('/api/chat', {
+        api('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
-        }).then(function(r) { return r.json(); }).then(function(d) {
+        }).then(function(r) {
+            if (r.status === 410) { throw new Error('对话已过期，请点“新对话”继续。'); }
+            if (!r.ok) { throw new Error('chat ' + r.status); }
+            return r.json();
+        }).then(function(d) {
+            conversationId = d.conversationId || conversationId;
+            pendingSpot = null;
+            selectedSpot = allSpots.find(function(spot) { return spot.id === d.spotId; }) || null;
+            renderChatContext();
             removeTyping();
             addMsg('bot', d.reply);
             if (d.recommendedRoutes && d.recommendedRoutes.length) {
@@ -219,7 +279,8 @@
             }
             // 播放语音
             speak(d.reply);
-        }).catch(function() { removeTyping(); addMsg('bot', '抱歉，我暂时无法回答。'); });
+        }).catch(function(error) { removeTyping(); addMsg('bot', error && /对话已过期/.test(error.message) ? error.message : '抱歉，我暂时无法回答。'); })
+          .then(function() { pendingChats--; chatNewBtn.disabled = pendingChats > 0; });
     }
 
     function showTyping() {
@@ -373,8 +434,8 @@
         }
     }
 
-    // 加载声线配置
-    fetch('/api/admin/digital-human-config').then(function(r) { return r.json(); }).then(function(c) {
+    // 加载声线配置（公开只读端点，无需登录；管理端配置接口仍需 ADMIN）
+    fetch('/api/digital-human-config').then(function(r) { return r.json(); }).then(function(c) {
         if (c && c.name) {
             var lbl = document.querySelector('.live2d-label');
             if (lbl) lbl.textContent = 'AI导游' + c.name;
@@ -557,32 +618,62 @@
         b.classList.add('selected');
     });
 
+    function showProfileMessage(text, isError) {
+        profileMsg.textContent = text;
+        profileMsg.className = 'form-msg' + (isError ? ' error' : ' success');
+    }
+
+    // 保存兴趣：必须等服务端确认成功后才更新本地缓存与提示
+    function saveInterest(interest) {
+        showProfileMessage('正在保存…', false);
+        api('/api/auth/interest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ interest: interest })
+        }).then(function(res) {
+            if (res.status === 401) {
+                var error = new Error('登录状态已失效');
+                error.status = 401;
+                throw error;
+            }
+            if (!res.ok) { throw new Error('保存失败: HTTP ' + res.status); }
+            return res.json();
+        }).then(function(data) {
+            if (!data || data.success !== true) { throw new Error('保存失败'); }
+            currentInterest = interest;
+            try { localStorage.setItem('interest', interest); } catch (e) { }
+            showProfileMessage('兴趣爱好已更新！', false);
+        }).catch(function(error) {
+            if (error && error.status === 401) {
+                // 会话过期：清掉过期身份缓存，引导重新登录
+                window.AuthGuard.clearIdentity();
+                window.location.href = '/login.html';
+                return;
+            }
+            // 网络/服务端失败：保留上一次已保存的服务端状态，不写入本地缓存
+            showProfileMessage('保存失败，请检查网络后重试', true);
+        });
+    }
+
     // 保存
     profileSave.addEventListener('click', function() {
         var selected = profileInterests.querySelector('.interest-btn.selected');
-        profileMsg.className = 'form-msg';
-        if (selected) {
-            currentInterest = selected.dataset.interest;
-            localStorage.setItem('interest', currentInterest);
-            fetch('/api/auth/interest', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: currentUserId, interest: currentInterest })
-            }).catch(function(){});
-            profileMsg.textContent = '兴趣爱好已更新！';
-            profileMsg.classList.add('success');
-        } else {
-            profileMsg.textContent = '请选择一个兴趣偏好';
-            profileMsg.classList.add('error');
+        if (!selected) {
+            showProfileMessage('请选择一个兴趣偏好', true);
+            return;
         }
+        saveInterest(selected.dataset.interest);
     });
 
-    // 退出登录
+    // 退出登录：只有服务端确认退出后才清理缓存并跳转
     profileLogout.addEventListener('click', function() {
-        localStorage.removeItem('userId');
-        localStorage.removeItem('username');
-        localStorage.removeItem('interest');
-        window.location.href = '/login.html';
+        profileLogout.disabled = true;
+        window.AuthGuard.logout().then(function() {
+            window.location.href = '/login.html';
+        }).catch(function() {
+            profileLogout.disabled = false;
+            showProfileMessage('退出失败，请检查网络后重试', true);
+        });
     });
 
     // ===== 快捷按钮 =====
@@ -590,9 +681,33 @@
     chatInput.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
     quickActions.addEventListener('click', function(e) { var b = e.target.closest('.quick-btn'); if (!b) return; chatInput.value = b.dataset.msg; sendMessage(); });
 
-    // ===== 启动 =====
-    loadSpots();
-    initLive2D();
-    initSR();
+    // ===== 启动：先向服务端确认会话身份，localStorage 仅作显示缓存 =====
+    window.AuthGuard.me().then(function(user) {
+        if (!user) {
+            window.location.href = '/login.html';
+            return;
+        }
+        currentUserId = user.userId || '';
+        // 以服务端返回为准：新账号没有兴趣时清掉上一个账号留下的缓存
+        currentInterest = user.interest || '';
+        try {
+            localStorage.setItem('userId', currentUserId);
+            localStorage.setItem('username', user.username || '');
+            if (currentInterest) {
+                localStorage.setItem('interest', currentInterest);
+            } else {
+                localStorage.removeItem('interest');
+            }
+        } catch (e) { }
+        savedUsername = user.username || '';
+        if (headerUsername) headerUsername.textContent = savedUsername;
+        loadSpots();
+        initLive2D();
+        initSR();
+    }).catch(function() {
+        loadSpots();
+        initLive2D();
+        initSR();
+    });
     if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = function() { speechSynthesis.getVoices(); }; }
 })();
