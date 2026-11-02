@@ -4,7 +4,7 @@
 
 ## 已合并完成
 
-整合 PR [#27](https://github.com/D92647426/tourism-ai-avatar/pull/27) 已合入 main（ed420be），下列11个功能议题已关闭。
+整合 PR [#27](https://github.com/D92647426/tourism-ai-avatar/pull/27) 已合入 main（ed420be），下列第一轮功能议题均已合并关闭。#14 后续由 PR #28 合入 main（f19098b）。
 
 ## 已合并议题清单
 
@@ -21,23 +21,33 @@
 | [#17](https://github.com/D92647426/tourism-ai-avatar/issues/17) | 观察任务与可复用内容包 | [#18](https://github.com/D92647426/tourism-ai-avatar/pull/18) | 已合并并关闭 |
 | [#19](https://github.com/D92647426/tourism-ai-avatar/issues/19) | 有来源的讲解搭档 | [#18](https://github.com/D92647426/tourism-ai-avatar/pull/18) | 已合并并关闭 |
 | [#12](https://github.com/D92647426/tourism-ai-avatar/issues/12) | 景点详情提问入口 | [#26](https://github.com/D92647426/tourism-ai-avatar/pull/26) | 已合并并关闭 |
+| [#14](https://github.com/D92647426/tourism-ai-avatar/issues/14) | 语速、静音与设备声线 | [#28](https://github.com/D92647426/tourism-ai-avatar/pull/28) | 已合并并关闭 |
 
 ## 本轮新开发
 
-#14 语音参数生效已实现，刚提交 [PR #28](https://github.com/D92647426/tourism-ai-avatar/pull/28)：设备中文声线、音量0、语速、旧值兼容与Android参数回退。
+#14 / PR #28 已合并并关闭。本轮按用户确认的主次实现：
+
+| 议题 | 内容 | 状态 |
+|---|---|---|
+| [#29](https://github.com/D92647426/tourism-ai-avatar/issues/29) | 游览导演、情境重排、逐站理由 | 刚提交 [PR #32](https://github.com/D92647426/tourism-ai-avatar/pull/32)，待评审 |
+| [#30](https://github.com/D92647426/tourism-ai-avatar/issues/30) | 观察写作辅助、草稿保留、旅程衔接 | 刚提交 [PR #32](https://github.com/D92647426/tourism-ai-avatar/pull/32)，待评审 |
+| [#31](https://github.com/D92647426/tourism-ai-avatar/issues/31) | 游客界面美化、手机聊天修正 | 刚提交 [PR #32](https://github.com/D92647426/tourism-ai-avatar/pull/32)，待评审 |
+
+
+第一轮总计划 [#4](https://github.com/D92647426/tourism-ai-avatar/issues/4) 已全部勾选并关闭。
 
 ## 后续开发与团队工作
 
 | 议题 | 后续内容 |
 |---|---|
-| [#14](https://github.com/D92647426/tourism-ai-avatar/issues/14) | 本轮已开发，PR #28 待评审；合并后完成第一轮功能清单 |
 | [#1](https://github.com/D92647426/tourism-ai-avatar/issues/1) | 三人确认主创意、分工和 90 秒演示脚本；已有创意功能原型，仍需小组决定 |
 | [#2](https://github.com/D92647426/tourism-ai-avatar/issues/2) | 各成员实际跑通环境、提交与互审首个 PR |
 | [#3](https://github.com/D92647426/tourism-ai-avatar/issues/3) | 汇总上游复用与小组新增证据，核对素材和代码授权 |
-| [#4](https://github.com/D92647426/tourism-ai-avatar/issues/4) | 按依赖整合、回归验收，合并后勾选任务清单 |
 
 ## 本轮验证和整合事项
 
 整合版 Java221/221、Node152/152，文档链接、隔离HTTP冒烟和GitHub CI通过后合并。#14 后续新增至Node156项；真实后台验证保存重载音量0、语速0.75与设备声线，见 [语音验收](voice_settings.md#L17)。第三方真实模型、扬声器音质与Android真机未验收。
 
 此前各功能文档中的分支依赖属于提交时状态，整合已完成；后续开发从最新main开始。本表不替小组成员记录不存在的开发或评审贡献。
+
+本轮新功能与截图见 [设计验收](director_design.md#L3)。后续仍需#1/#2/#3的团队确认、互审联调与来源证据，以及真实场景/模型/设备验收。

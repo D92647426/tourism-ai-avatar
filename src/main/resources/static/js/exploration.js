@@ -68,6 +68,14 @@
         }
         function keepCurrent() { store.saveCurrent({ schemaVersion: 1, pack: pack, selectedId: selectedId, mode: mode.value }); }
         function task() { return pack.tasks.find(function (item) { return item.id === selectedId; }); }
+        // REQ-044: optional writing lenses insert an editable scaffold, never claims or saved records.
+        [['exploreSee','我看到：'],['exploreThink','我的猜想：'],['exploreVerify','还想核对：']].forEach(function(pair) {
+            byId(pair[0]).addEventListener('click',function() {
+                var next=input.value+(input.value && !input.value.endsWith('\n')?'\n':'')+pair[1];
+                if(next.length>1200){status('草稿已接近1200字，请先精简再添加提示。',true);return;}
+                invalidateCoach();input.value=next;input.focus();status('已加入写作提示；请补上自己的观察，再点击保存。');
+            });
+        });
         function entryFor(id) { return Object.prototype.hasOwnProperty.call(journal.entries, id) ? journal.entries[id] : null; }
         function text(tag, value, className) {
             var node = doc.createElement(tag); node.textContent = value;
@@ -88,6 +96,16 @@
                 nav.appendChild(button);
             });
         }
+        // REQ-044: focus a matching task without switching packs or losing unsaved drafts.
+        win.GuideExploreSpot = function(name) {
+            if (!pack) return {accepted:false,reason:'观察手册尚未准备好，请稍后重试。'};
+            var found=pack.tasks.find(function(item){return item.spotName===name;});
+            if(!found)return {accepted:false,reason:'当前内容包没有 '+name+' 的观察任务。可先用“带着问题问导游”，或自行选择内容包。'};
+            invalidateCoach();draftByTask[selectedId]=input.value;selectedId=found.id;renderTask();renderStations();keepCurrent();
+            var reduce=win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            var region=byId('exploration');if(region.scrollIntoView)region.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});
+            input.focus({preventScroll:true});return {accepted:true};
+        };
         function renderTask() {
             var item = task(), entry = entryFor(item.id);
             byId('exploreSpot').textContent = item.spotName;
@@ -200,6 +218,7 @@
         byId('exploreForm').addEventListener('submit', function (event) {
             event.preventDefault();
             try {
+                if(!input.value.replace(/我看到：|我的猜想：|还想核对：/g,'').trim()) throw new Error('请在写作提示后补上自己的观察，再保存发现。');
                 journal = core.record(pack, journal, selectedId, { text: input.value, mode: mode.value }, new Date().toISOString());
                 draftByTask[selectedId] = entryFor(selectedId).text; store.saveJournal(pack, journal); keepCurrent();
                 renderTask(); renderStations(); renderJournal(); status('发现已记录。可对照资料，或带着它继续问导游。');

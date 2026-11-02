@@ -21,6 +21,7 @@ function fixture(localStorage=storage()) {
         replaceChildren() {this.children=[];}
         remove() {if(this.parent)this.parent.children=this.parent.children.filter(n=>n!==this);}
         click() {}
+        focus() {this.focused=true;}
         setAttribute(key,value) {this[key]=value;}
         set innerHTML(value) {throw new Error('Unsafe HTML rendering: '+value);}
     }
@@ -156,4 +157,22 @@ test('coach cancellation, invalid input and failed HTTP preserve observation and
     await p.nodes.get('exploreCoachCancel').fire('click');assert.equal(p.nodes.get('exploreCoachAsk').disabled,false);
     await p.nodes.get('exploreCoachAsk').fire('click');await flush();p.coachCalls[1].resolve({ok:false,status:500});await flush();
     assert.equal(p.nodes.get('exploreObservation').value,'观察到一个特别的细节');assert.equal(p.nodes.get('exploreCoachAsk').disabled,false);assert.match(p.nodes.get('exploreCoachStatus').textContent,/重试/);
+});
+
+
+test('itinerary focus preserves unsaved station drafts and lenses never auto-save or invent observations',async()=>{
+    const p=fixture();await mount(p.win);
+    p.nodes.get('exploreObservation').value='我的未保存观察';
+    const first=p.nodes.get('exploreSpot').textContent;
+    let scrollOptions;p.win.matchMedia=()=>({matches:true});p.nodes.get('exploration').scrollIntoView=options=>{scrollOptions=options;};
+    const next=pack.tasks.find(t=>t.spotName!==first);
+    assert.equal(p.win.GuideExploreSpot(next.spotName).accepted,true);
+    assert.equal(scrollOptions.behavior,'auto');
+    await p.nodes.get('exploreSee').fire('click');assert.equal(p.nodes.get('exploreObservation').value,'我看到：');
+    await p.nodes.get('exploreForm').fire('submit');assert.match(p.nodes.get('exploreStatus').textContent,/补上自己的观察/);
+    assert.equal(p.nodes.get('exploreEntries').children.length,0);
+    assert.equal(p.win.GuideExploreSpot(first).accepted,true);
+    assert.equal(p.nodes.get('exploreObservation').value,'我的未保存观察');
+    assert.equal(p.win.GuideExploreSpot('内容包中没有的景点').accepted,false);
+    assert.equal(p.nodes.get('exploreObservation').value,'我的未保存观察');
 });

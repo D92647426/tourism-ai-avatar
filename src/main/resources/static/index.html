@@ -6,24 +6,39 @@
 <title>旅游 AI 数字人</title>
 <link rel="stylesheet" href="/css/style.css?v=speech-1">
 <link rel="stylesheet" href="/css/exploration.css?v=coach-1">
+<link rel="stylesheet" href="/css/tour-experience.css?v=director-1">
 </head>
 <body class="exploration-page">
 
 
 <header class="header">
   <div class="header-inner">
-    <div class="logo"><span class="logo-icon">🛕</span><span class="logo-text">旅游 AI 数字人</span></div>
+    <div class="logo"><svg class="tour-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M5 26V13l11-8 11 8v13M10 26V16h12v10M16 5v21M3 26h26"/></svg><span class="logo-text">旅游 AI 数字人</span></div>
+    <nav class="tour-nav" aria-label="游客功能"><a href="#director">游览导演</a><a href="#exploration">我的观察</a><a href="#spotIndex">景点索引</a><button type="button" class="chat-fab" id="chatFab" aria-label="打开数字人导游"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H9l-5 4V4Z"/><path d="M8 8h8M8 12h5"/></svg><span class="chat-fab-text">问导游</span></button></nav>
     <div class="header-right">
       <span class="header-username" id="headerUsername"></span>
-      <button class="profile-btn" id="profileBtn" title="个人信息">👤</button>
+      <button class="profile-btn" id="profileBtn" title="个人信息" aria-label="个人信息"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 21v-3a7 7 0 0 1 14 0v3"/></svg></button>
     </div>
   </div>
 </header>
 
 <main class="main-container">
+  <section class="director" id="director" aria-labelledby="directorHeading">
+    <div class="director-intro"><div><h1 id="directorHeading">好风景，<br>值得慢一点发现。</h1><p>先编一段属于你的游览，<br>再让数字人陪你看见更多。</p></div><a class="director-skip" href="#exploration">已有想去的地方？直接开始观察 <span aria-hidden="true">↗</span></a></div>
+    <div class="director-workspace">
+      <form id="directorForm" class="director-form"><h2>今天，你来做游览导演。</h2><p>选一个时间和偏好，给旅程一个开场。</p><div class="director-fields">
+        <label for="directorTime">留多少时间？<select id="directorTime"><option value="30">30 分钟 · 小段发现</option><option value="60" selected>60 分钟 · 慢慢看</option><option value="90">90 分钟 · 多看一站</option></select></label>
+        <label for="directorParty">和谁一起？<select id="directorParty"><option value="solo">自己或朋友</option><option value="family">亲子同行</option><option value="easy">轻松少站</option></select></label>
+        <label for="directorInterest">想看什么？<select id="directorInterest"><option value="culture">人文故事</option><option value="art">建筑艺术</option><option value="nature">自然观察</option></select></label>
+      </div><button type="submit" id="directorGenerate" class="director-generate" disabled>编排我的旅程 <span aria-hidden="true">→</span></button></form>
+      <aside class="director-note"><h3>行程，也可以临场改写。</h3><p>时间少了一半，哪些值得保留？下雨时，换一种观察方式。</p><div class="director-scenarios"><button id="directorHalf" type="button" disabled>时间减半</button><button id="directorRain" type="button" disabled>雨天备选</button><button id="directorRestore" type="button" disabled>恢复原方案</button></div><small>手动情境模拟 · 不读取实时天气</small></aside>
+    </div>
+    <div class="director-plan"><h2 id="directorSummary">正在准备可选景点…</h2><p id="directorStatus" role="status" aria-live="polite">读取景点后，你的方案会出现在这里。</p><p id="directorEmpty" hidden>这段时间没有匹配候选。可以增加预算，或恢复原方案。</p><ol id="directorStops" class="director-stops"></ol><p id="directorNotice" class="director-notice"></p></div>
+  </section>
+
   <section class="exploration" id="exploration" aria-labelledby="explorationHeading">
     <div class="explore-intro">
-      <div><p class="explore-kicker">把一次游览，变成自己的发现</p><h1 id="explorationHeading">今天，换你当导游。</h1><p>领一张观察任务，用自己的话讲给数字人听。你的发现，会留在这本旅程手册里。</p></div>
+      <div><h2 id="explorationHeading">风景的另一半，是你的发现。</h2><p>领一张观察任务，用自己的话讲给数字人听。你的发现，会留在这本旅程手册里。</p></div>
       <div class="explore-mode"><label for="exploreMode">记录方式</label><select id="exploreMode"><option value="demo">课堂演示</option><option value="onsite">现场观察</option></select><small>手动选站，不验证到访位置</small></div>
     </div>
     <p id="exploreStatus" class="explore-status" role="status" aria-live="polite">正在打开观察手册…</p>
@@ -36,6 +51,7 @@
           <details><summary>给我一点观察提示</summary><p id="exploreHint"></p></details>
           <form id="exploreForm">
             <label for="exploreObservation">现在，由你来讲解</label>
+            <div class="observe-lenses" aria-label="观察写作辅助"><button id="exploreSee" type="button">先说看到的</button><button id="exploreThink" type="button">再说我的猜想</button><button id="exploreVerify" type="button">留一个待核对问题</button></div>
             <textarea id="exploreObservation" minlength="4" maxlength="1200" rows="4" placeholder="例如：我注意到……，它让我想到……" required></textarea>
             <div class="explore-editor-footer"><small>4–1200 字；修改后保存会更新本站记录</small><button class="explore-primary" type="submit">保存我的发现</button></div>
           </form>
@@ -54,14 +70,14 @@
       <details class="explore-pack-tools"><summary>让其他景区也能用：内容包工具</summary><p>导入一份内容包，就能换一组观察任务。先预览，再决定是否使用。</p><p id="exploreLicense"></p><div class="explore-tool-actions"><button type="button" id="exploreExportPack" class="explore-secondary">下载当前内容包</button><a href="/exploration/campus-demo.json" download="campus-demo.json">下载校园观察示例包</a><label class="explore-file-label" for="exploreImportFile">选择 JSON 内容包</label><input id="exploreImportFile" type="file" accept=".json,application/json"></div><div id="exploreImportPreview" hidden><p id="exploreImportDescription"></p><button type="button" class="explore-primary" id="exploreUsePack">使用这份内容包</button><button type="button" class="explore-secondary" id="exploreCancelImport">取消</button><p>原包的已保存旅程会保留；重新导入相同 ID 和版本的包可恢复。包内容会作为当前包保存到本机。</p></div></details>
     </div>
   </section>
-  <section class="search-section">
+  <section class="search-section" id="spotIndex">
     <div class="search-bar">
       <input type="text" id="searchInput" class="search-input" placeholder="搜索景点名称、类型...">
-      <span class="search-icon">🔍</span>
+      <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></svg>
     </div>
   </section>
   <section class="spots-section">
-    <h2 class="section-title"><span class="title-icon">🏞️</span> 热门景点 <span class="spot-count" id="spotCount"></span></h2>
+    <h2 class="section-title"> 景点索引 <span class="spot-count" id="spotCount"></span></h2>
     <div class="spots-grid" id="spotsGrid"></div>
   </section>
   <footer class="footer"><p>灵山胜境 · 世界佛教论坛永久会址 · 国家5A级旅游景区</p></footer>
@@ -111,7 +127,7 @@
 </div>
 
 <!-- 聊天气泡 -->
-<div class="chat-fab" id="chatFab"><span class="chat-fab-icon">💬</span></div>
+
 
 <!-- 聊天面板（左侧） -->
 <div class="chat-panel-overlay" id="chatPanelOverlay">
@@ -167,6 +183,8 @@
 <script src="/js/exploration.js?v=coach-1"></script>
 <script src="/js/voice-settings.js"></script>
 <script src="/js/display-config.js?v=display-1"></script>
-<script src="/js/main.js?v=integrated-1"></script>
+<script src="/js/director-core.js"></script>
+<script src="/js/director.js"></script>
+<script src="/js/main.js?v=director-1"></script>
 </body>
 </html>

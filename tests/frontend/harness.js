@@ -63,6 +63,8 @@ class Element {
         return child;
     }
 
+    replaceChildren(...children) { this.children = []; children.forEach(child => this.appendChild(child)); }
+
     remove() { }
 
     contains() { return false; }
