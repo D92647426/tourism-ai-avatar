@@ -71,3 +71,19 @@
 ## REQ-036 语音播报与数字人状态同步（GitHub #7）
 
 真实播报事件驱动口型，任务ID隔离旧回调，声线等待/错误/关闭/后台统一收尾。新增待机/聆听/思考/等待声音/讲解/暂停/失败状态；Android协议2支持带ID回调，旧协议降级Web或文字。方案、分支顺序与未验证边界见 [speech_lifecycle.md:L1](./speech_lifecycle.md#L1)。实现见 [speech-lifecycle.js:L80](../src/main/resources/static/js/speech-lifecycle.js#L80)、[main.js:L336](../src/main/resources/static/js/main.js#L336)、[MainActivity.kt:L255](../android/app/src/main/java/com/guide/lingshan/MainActivity.kt#L255)。
+
+## REQ-038 展示设置（GitHub #8）
+
+管理员保存名称、首次欢迎语和主题色后，游客刷新即生效；只读接口保留公开访问，管理写入保留 ADMIN/CSRF。配置失败有默认显示，迟到欢迎语不改写聊天；非法更新整次拒绝，落盘失败不发布内存。
+
+| 环节 | 实现 / 验收定位 |
+|---|---|
+| 设计与边界 | [display_config.md:L1](display_config.md#L1) |
+| 公开只读 | [PublicConfigController.java:L21](../src/main/java/com/guide/controller/PublicConfigController.java#L21) |
+| 校验、快照与持久化 | [ConfigService.java:L128](../src/main/java/com/guide/service/ConfigService.java#L128) |
+| 管理 API 失败状态 | [AdminController.java:L116](../src/main/java/com/guide/controller/AdminController.java#L116) |
+| 页面默认、主题、超时 | [display-config.js:L1](../src/main/resources/static/js/display-config.js#L1) |
+| 后台加载与保存确认 | [admin.js:L479](../src/main/resources/static/js/admin.js#L479) |
+| 行为与真实 HTTP | [display-config.test.js:L24](../tests/frontend/display-config.test.js#L24)、[smoke_teacher_project.py:L1](../scripts/smoke_teacher_project.py#L1) |
+
+结果：65 Java、41 前端测试通过；JAR HTTP 覆盖管理员保存→匿名读取→非法拒绝→重启读取。语音参数播放消费属 #14；本次没有更换 Live2D 模型。

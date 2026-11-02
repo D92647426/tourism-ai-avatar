@@ -27,7 +27,7 @@ function setup(options) {
     doc._selectors['.live2d-label'] = doc.getElementById('live2dLabel');
 
     loadScript(env, 'security.js');
-    loadScript(env, 'main.js');
+    loadScript(env, 'display-config.js'); loadScript(env, 'main.js');
     return env;
 }
 

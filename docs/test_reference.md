@@ -122,3 +122,11 @@ TEST-040 的具体 Node 用例：[detail selects real spotId without sending; fo
 对应REQ-036/API-036。`node --test tests/frontend/*.test.js` 当前96项通过：新增 [speech-lifecycle.test.js:L1](../tests/frontend/speech-lifecycle.test.js#L1) 23项测试真实开始/结束、声线延迟、失败超时、暂停/恢复、旧ID、旧APK降级、清理与销毁；[speech-main.test.js:L1](../tests/frontend/speech-main.test.js#L1) 11项运行真实页面脚本，检查UI/文字/口型/取消/后台及探索草稿。假时钟和mock只作用于语音/DOM边界，不声称真实发声。失败先查当前status、语音ID与是否仍有timer，再对照 [speech_lifecycle.md:L1](./speech_lifecycle.md#L1)。
 
 2026-10-27 JDK19 `mvn -o clean verify` 67项Java继承测试通过；空Key隔离HTTP smoke和文档检查通过。Maven不编译Kotlin Android，Android缺工具链，未编译/未真机。截图采用 [浏览器mock:L1](../tests/fixtures/speech-browser-init.js#L1)，桌面/移动验收步骤见 [speech_lifecycle.md:L1](./speech_lifecycle.md#L1)。
+## TEST-038 展示配置全链路（REQ-038 / #8）
+
+- `mvn verify`：本分支65项 Java 全通过（0失败/错误/跳过）。新增21项 [ConfigServiceTest.java:L1](../src/test/java/com/guide/service/ConfigServiceTest.java#L1) 覆盖部分更新、类型/长度/颜色/数值边界、音量0、返回副本、保存失败、坏文件/尾随JSON与原文件保留、重建服务读取落盘配置。权限/CSRF 与 API 错误见 [SecurityIntegrationTest.java:L1](../src/test/java/com/guide/security/SecurityIntegrationTest.java#L1)。
+- `node --test tests/frontend/*.test.js`：41项全通过；新增14项 [display-config.test.js:L24](../tests/frontend/display-config.test.js#L24) 执行真实页面脚本，验证默认/HTML字面文本/迟到欢迎语/JSON解析超时/明暗主题，后台失败、重复提交、音量0和旧响应隔离。
+- `python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar`：15项检查通过。新增临时管理员+真实Cookie/CSRF保存、匿名读取、非法更新原文件不变、重新启动JAR仍读到新值、管理接口仍401。凭据临时随机生成且不打印，数据全部临时隔离，空模型Key，不读取真实用户/交互文件。
+- `python scripts/check_doc_links.py`：检查所有文档定位与链接。
+
+本机 Java19、Node24、Python3.12.7环境验证；GitHub CI 使用Java17/Node20/Python3.12，结果以PR检查为准。本轮未验证真实模型、系统发声或Android；语音参数消费属 #14。浏览器截图与操作记录见 [display_config.md:L1](display_config.md#L1)。

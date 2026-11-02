@@ -151,11 +151,11 @@
                     <div class="config-form">
                         <div class="form-group">
                             <label>导游名称</label>
-                            <input type="text" class="form-input" id="cfgName" placeholder="如：灵灵">
+                            <input type="text" class="form-input" id="cfgName" maxlength="40" placeholder="如：灵灵">
                         </div>
                         <div class="form-group">
                             <label>欢迎语</label>
-                            <textarea class="form-textarea" id="cfgWelcome" rows="3"
+                            <textarea class="form-textarea" id="cfgWelcome" rows="3" maxlength="500"
                                 placeholder="如：阿弥陀佛！我是您的AI导游灵灵..."></textarea>
                         </div>
                         <div class="form-group">
@@ -167,26 +167,29 @@
                         </div>
                         <div class="form-group">
                             <label>主题色</label>
-                            <input type="color" class="form-color" id="cfgColor" value="#2d8f4e">
+                            <input type="color" class="form-color" id="cfgColor" value="#c8963e">
                         </div>
                         <div class="form-group">
-                            <label>音量 (0.1 ~ 1.0)</label>
-                            <input type="range" class="form-range" id="cfgVolume" min="0.1" max="1.0" step="0.1" value="1.0">
+                            <label>音量 (0 ~ 1.0)</label>
+                            <input type="range" class="form-range" id="cfgVolume" min="0" max="1.0" step="any" value="1.0">
                             <span class="range-value" id="cfgVolumeLabel">1.0</span>
                         </div>
                         <div class="form-group">
                             <label>语速 (0.5 ~ 2.0)</label>
-                            <input type="range" class="form-range" id="cfgSpeed" min="0.5" max="2.0" step="0.1" value="1.0">
+                            <input type="range" class="form-range" id="cfgSpeed" min="0.5" max="2.0" step="any" value="1.0">
                             <span class="range-value" id="cfgSpeedLabel">1.0</span>
                         </div>
-                        <button class="btn btn-primary btn-block" id="btnSaveConfig">💾 保存配置</button>
+                        <p id="cfgStatus" role="status" aria-live="polite">打开后加载展示设置。</p>
+                        <button class="btn btn-secondary" id="btnReloadConfig" type="button">重新加载</button>
+                        <button class="btn btn-primary btn-block" id="btnSaveConfig" disabled>💾 保存配置</button>
                     </div>
                     <div class="config-preview">
-                        <h3>数字人预览</h3>
-                        <div class="preview-avatar">
-                            <canvas id="previewCanvas" width="200" height="200"></canvas>
+                        <h3>展示设置预览</h3>
+                        <div id="cfgPreview" class="display-preview">
+                            <div class="display-preview-header"><span aria-hidden="true">🌿</span><strong id="cfgPreviewName">AI导游灵灵</strong></div>
+                            <p id="cfgPreviewWelcome">欢迎语将在加载设置后显示。</p>
                         </div>
-                        <p class="preview-hint">配置将实时反映到游客端数字人</p>
+                        <p class="preview-hint">这里显示表单预览；保存成功后，游客刷新页面生效。</p>
                     </div>
                 </div>
             </section>
@@ -272,6 +275,7 @@
     </div>
 
     <script src="/js/security.js"></script>
-    <script src="/js/admin.js"></script>
+    <script src="/js/display-config.js?v=display-1"></script>
+    <script src="/js/admin.js?v=display-1"></script>
 </body>
 </html>

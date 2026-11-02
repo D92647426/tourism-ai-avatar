@@ -1,11 +1,15 @@
 package com.guide.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.guide.dto.UserView;
 import com.guide.model.*;
 import com.guide.service.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +23,7 @@ import java.util.stream.Collectors;
  * 统一保护，只有 ADMIN 角色可访问；匿名返回 401、普通游客返回 403。
  * 页面是否显示管理入口与真实权限无关。
  *
- * <p>文档：[API 说明](../../../../../docs/api_reference.md)。
+ * <p>文档：[API 说明](../../../../../../docs/api_reference.md#L1)。
  */
 @RestController
 @RequestMapping("/api/admin")
@@ -92,9 +96,38 @@ public class AdminController {
         return ResponseEntity.ok(configService.getConfig());
     }
 
+    /**
+     * 更新数字人展示配置（REQ-038 / API-038）。
+     *
+     * <p>请求体是 JSON 对象的部分更新：缺省字段保持原值，null、未知字段、类型错误或非法值整次拒绝，
+     * 不会部分改写已有配置。成功返回 200 与服务端标准化后的完整配置（例如颜色统一为小写）。
+     *
+     * <p>错误映射只在本方法内处理，不引入全局异常处理器，避免改变其他接口的错误行为：
+     * <ul>
+     *   <li>{@link IllegalArgumentException} → 400，{@code code=INVALID_CONFIG}，{@code message} 为中文原因；</li>
+     *   <li>{@link IOException} / {@link UncheckedIOException} → 500，{@code code=CONFIG_SAVE_FAILED}，
+     *       提示“数据未保存”，不返回文件路径或凭据信息。</li>
+     * </ul>
+     *
+     * @param patch 待修改字段的 JSON 对象
+     * @return 200 + 标准化后的配置；400 校验失败；500 落盘失败
+     */
     @PutMapping("/digital-human-config")
-    public ResponseEntity<DigitalHumanConfig> updateConfig(@RequestBody DigitalHumanConfig newConfig) {
-        return ResponseEntity.ok(configService.updateConfig(newConfig));
+    public ResponseEntity<?> updateConfig(@RequestBody JsonNode patch) {
+        try {
+            return ResponseEntity.ok(configService.updateConfig(patch));
+        } catch (IllegalArgumentException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("code", "INVALID_CONFIG");
+            error.put("message", e.getMessage() == null || e.getMessage().trim().isEmpty()
+                    ? "配置内容不合法" : e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        } catch (IOException | UncheckedIOException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("code", "CONFIG_SAVE_FAILED");
+            error.put("message", "配置保存失败，数据未保存，请稍后重试");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
     }
 
     // ========== 数据大屏 ==========
