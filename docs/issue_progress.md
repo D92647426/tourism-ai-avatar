@@ -28,7 +28,7 @@
 
 ## 本轮研究与新提交议题
 
-本轮先完成官方来源选型、主次计划、90秒演示脚本和三人分工建议，没有接入新引擎。详见 [创意路线](research/2026-11-02-creative-roadmap.md#L1)、[一手来源](research/2026-11-02-ar-story-panorama-sources.md#L1)。下列是刚创建的待开发议题，不是已实现功能。
+本轮先完成官方来源选型、主次计划、90秒演示脚本和三人分工建议，研究文档已提交 [PR #36](https://github.com/D92647426/tourism-ai-avatar/pull/36)，待评审，没有接入新引擎。详见 [创意路线](research/2026-11-02-creative-roadmap.md#L1)、[一手来源](research/2026-11-02-ar-story-panorama-sources.md#L1)。下列是刚创建的待开发议题，不是已实现功能。
 
 | 议题 | 内容 | 状态 |
 |---|---|---|
