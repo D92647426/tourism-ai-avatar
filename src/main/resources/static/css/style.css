@@ -521,6 +521,9 @@ body {
 .chat-new-btn { margin-left: auto; padding: 6px 10px; border: 1px solid currentColor; border-radius: 16px; color: inherit; background: transparent; cursor: pointer; white-space: nowrap; }
 .chat-new-btn:disabled { opacity: .45; cursor: wait; }
 .chat-header-status { font-size: 12px; opacity: 0.8; }
+.chat-context { padding: 10px 18px; background: #f0f7f4; color: #16352f; border-bottom: 1px solid #dbe8df; overflow-wrap: anywhere; flex-shrink: 0; font-size: 13px; }
+.detail-ask { display: block; width: 100%; min-height: 44px; margin: 16px 0; padding: 12px 18px; border: 0; border-radius: 12px; background: var(--primary); color: white; font: inherit; font-weight: 700; cursor: pointer; }
+.detail-ask:disabled { opacity: .55; cursor: wait; }
 
 .chat-panel-close {
     width: 32px; height: 32px;
@@ -682,6 +685,7 @@ body {
 
 .chat-input {
     flex: 1;
+    min-width: 0;
     padding: 10px 16px;
     border: 1px solid #e0dcd5;
     border-radius: 24px;
@@ -694,6 +698,8 @@ body {
 .chat-input:focus { border-color: var(--primary); }
 
 .chat-send-btn {
+    flex-shrink: 0;
+    white-space: nowrap;
     padding: 10px 20px;
     background: var(--primary);
     color: white;

@@ -39,3 +39,7 @@
 ## Issue #11：会话导览
 
 [会话设计、接口与验收](conversation_context.md#L3)；核心实现为 [ConversationService.java](../src/main/java/com/guide/service/ConversationService.java#L25) 与 [ChatService.java](../src/main/java/com/guide/service/ChatService.java#L110)。
+
+## 景点上下文入口
+
+[main.js 入口绑定](../src/main/resources/static/js/main.js#L98)、[上下文渲染](../src/main/resources/static/js/main.js#L194)，需求与测试见 [REQ-040](spot_chat_entry.md#L3)。

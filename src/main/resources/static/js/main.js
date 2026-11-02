@@ -27,6 +27,8 @@
 
     var allSpots = [], isChatOpen = false, pendingChats = 0;
     var conversationId = null;
+    var selectedSpot = null, resettingConversation = false;
+    var chatContext = S('chatContext');
     var api = window.AuthGuard.apiFetch;
     // 从登录信息读取（localStorage 只作显示缓存，真实身份以 /api/auth/me 为准）
     var currentUserId = localStorage.getItem('userId') || '';
@@ -93,6 +95,20 @@
             '<div class="detail-section"><h3>🎫 门票</h3><p>' + s.ticket + '</p></div>' +
             '<div class="detail-section"><h3>🚌 交通指南</h3><p>' + s.transportation + '</p></div>' +
             '<div class="detail-section"><h3>✨ 亮点推荐</h3><div class="detail-highlights">' + (s.highlights || []).map(function(h) { return '<span class="detail-highlight-tag">' + h + '</span>'; }).join('') + '</div></div>';
+        // REQ-040: explicit selection only; the next user submission carries the validated API spotId.
+        var ask = document.createElement('button');
+        ask.type = 'button'; ask.className = 'detail-ask';
+        ask.textContent = '问问 AI 导游';
+        ask.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (pendingChats || resettingConversation) {
+                ask.textContent = '请等待当前请求结束，再选择景点';
+                return;
+            }
+            selectedSpot = s;
+            renderChatContext(); closeDetail(); openChat();
+        });
+        modalBody.appendChild(ask);
         modalOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
     }
@@ -175,6 +191,9 @@
     }
 
     // ===== 聊天面板 =====
+    function renderChatContext() {
+        chatContext.textContent = selectedSpot ? '当前景点：' + selectedSpot.name + '（下次提问时使用）' : '当前：通用导览';
+    }
     live2dStage.addEventListener('click', function(e) { e.stopPropagation(); openChat(); });
     chatFab.addEventListener('click', function(e) { e.stopPropagation(); toggleChat(); });
     chatPanelClose.addEventListener('click', function(e) { e.stopPropagation(); closeChat(); });
@@ -201,25 +220,29 @@
     // ===== 发送消息 =====
     chatNewBtn.addEventListener('click', function() {
         if (pendingChats || chatNewBtn.disabled) return;
+        resettingConversation = true;
         chatNewBtn.disabled = true;
         api('/api/chat/new', {method:'POST'}).then(function(r) {
             if (!r.ok) throw new Error('new conversation ' + r.status);
             return r.json();
         }).then(function(data) {
             conversationId = data.conversationId;
+            selectedSpot = null; renderChatContext();
             stopTts();
             chatMessages.innerHTML = '';
             addMsg('bot', '新对话已开始。您可以继续提问。');
         }).catch(function() { addMsg('bot', '暂时无法开始新对话，请重试。'); })
-          .then(function() { chatNewBtn.disabled = false; });
+          .then(function() { resettingConversation = false; chatNewBtn.disabled = false; });
     });
     function sendMessage() {
+        if (pendingChats || resettingConversation) return;
         // 立即停止当前所有说话和口型
         stopTts();
         var text = chatInput.value.trim(); if (!text) return;
         pendingChats++; chatNewBtn.disabled = true;
         addMsg('user', text); chatInput.value = ''; showTyping();
         var body = { message: text, conversationId: conversationId };
+        if (selectedSpot) body.spotId = selectedSpot.id;
         if (currentInterest) body.interest = currentInterest;
 
         api('/api/chat', {
@@ -232,6 +255,8 @@
             return r.json();
         }).then(function(d) {
             conversationId = d.conversationId || conversationId;
+            selectedSpot = allSpots.find(function(spot) { return spot.id === d.spotId; }) || null;
+            renderChatContext();
             removeTyping();
             addMsg('bot', d.reply);
             if (d.recommendedRoutes && d.recommendedRoutes.length) {

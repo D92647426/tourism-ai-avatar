@@ -114,3 +114,7 @@ X-XSRF-TOKEN: <token>
 ```
 
 测试命令：`mvn -o clean verify`、`node --test tests/frontend/*.test.js`、`python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar --java <java可执行文件> --port 18080`。具体上下文和限制见 [会话设计](conversation_context.md#L9)。
+
+## API-040 景点详情提问
+
+复用 API-039 的 `POST /api/chat` 与 `/api/chat/new`，参数/响应/错误码/服务函数/示例保持上节约定。入口和数据流见 [交互约定](spot_chat_entry.md#L9)，测试命令 `node --test tests/frontend/*.test.js`。

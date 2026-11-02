@@ -52,3 +52,7 @@
 ## REQ-039 会话隔离与景点上下文
 
 游客的多轮追问、景点切换、显式新对话、六轮上限与 20 分钟过期，见 [功能与验收说明](conversation_context.md#L3)、[实现](../src/main/java/com/guide/service/ConversationService.java#L25) 和 [测试](../src/test/java/com/guide/service/ConversationServiceTest.java#L1)。
+
+## REQ-040 景点详情提问入口
+
+对应 #12，景点 ID 随主动提问发送、明确显示当前上下文、切换与重开无自动重复消息。见 [设计与验收](spot_chat_entry.md#L3)。
