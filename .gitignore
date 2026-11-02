@@ -38,3 +38,6 @@ __pycache__/
 .pytest_cache/
 .DS_Store
 Thumbs.db
+
+# Local UI review captures; curated evidence lives in docs/screenshots
+.impeccable/review/

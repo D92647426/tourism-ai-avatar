@@ -46,6 +46,7 @@
     function loadSpots() {
         fetch('/api/spots').then(function(r) { return r.json(); }).then(function(d) {
             allSpots = d; renderSpots(d);
+            if (window.GuideDirectorPage) window.GuideDirectorPage.mount(window, d);
             return api('/api/chat/context').then(function(r) {
                 if (!r.ok) throw new Error('context ' + r.status);
                 return r.json();
@@ -55,6 +56,7 @@
                 contextReady = true; renderChatContext();
             }).catch(function() { chatContext.textContent = '会话状态未同步，请点击“新对话”后提问。'; });
         }).catch(function() {
+            if (S('directorStatus')) S('directorStatus').textContent = '景点读取失败，请刷新页面后重试。';
             spotsGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:60px;color:#999;">景点数据加载中...</p>';
         });
     }
@@ -67,22 +69,14 @@
             return;
         }
         spots.forEach(function(s, i) {
-            var card = document.createElement('div');
+            var card = document.createElement('button'); card.type = 'button';
             card.className = 'spot-card';
-            card.style.animationDelay = (i * 0.06) + 's';
-            card.style.animation = 'cardIn 0.5s ease forwards';
-            card.style.opacity = '0';
-            card.innerHTML =
-                '<div class="spot-card-image">' +
-                '<div class="spot-card-image-bg" style="background:' + s.gradient + ';"></div>' +
-                '<span class="spot-card-icon">' + (s.icon || '🏞️') + '</span>' +
-                '<span class="spot-card-badge">' + s.category + '</span>' +
-                '</div>' +
-                '<div class="spot-card-body">' +
-                '<div class="spot-card-name">' + s.name + '</div>' +
-                '<div class="spot-card-brief">' + s.brief + '</div>' +
-                '<div class="spot-card-footer"><span>📍 ' + s.address.substring(0, 12) + '...</span><span>查看详情 →</span></div>' +
-                '</div>';
+            var index = document.createElement('span'); index.className='spot-index'; index.textContent=String(i+1).padStart(2,'0');card.appendChild(index);
+            var body=document.createElement('span');body.className='spot-card-body';
+            var name=document.createElement('strong');name.className='spot-card-name';name.textContent=s.name;body.appendChild(name);
+            var brief=document.createElement('span');brief.className='spot-card-brief';brief.textContent=s.brief;body.appendChild(brief);card.appendChild(body);
+            var category=document.createElement('span');category.className='spot-card-category';category.textContent=s.category || '景点';card.appendChild(category);
+            var more=document.createElement('span');more.className='spot-card-more';more.textContent='查看详情 ↗';card.appendChild(more);
             card.addEventListener('click', function() { openDetail(s); });
             spotsGrid.appendChild(card);
         });
@@ -342,14 +336,21 @@
     retryRequestBtn.addEventListener('click', function() { if (!resettingConversation && contextReady) chatRequest.retry(); });
 
     /** REQ-032: prepare an explicit, editable exploration question without sending.
-     * Input: nonempty question string (max 5000 chars); output: acceptance/reason.
+     * Input: nonempty question string (max 5000 chars), optional context.spotId from loaded spots;
+     * output: acceptance/reason. Explicit context selects the pending place without sending.
      * Busy requests and existing drafts are preserved; no exceptions are expected.
      * Change handoff policy here; see docs/exploration_design.md, acceptance 5.
      */
-    window.GuideChatDraft = function(text) {
+    window.GuideChatDraft = function(text, context) {
         if (typeof text !== 'string' || !text.trim() || text.length > 5000) return { accepted: false, reason: '问题内容无效或过长，请精简后重试。' };
+        if (!contextReady) return {accepted:false,reason:'会话状态尚未同步，请稍后重试，或先在聊天中点击“新对话”。'};
         if (chatRequest.isPending() || resettingConversation) return { accepted: false, reason: '导游还在回答上一个问题，请等回答结束或先取消等待。' };
         if (chatInput.value.trim()) return { accepted: false, reason: '聊天框里还有草稿，请先发送或清空，再带入这份发现。' };
+        if (context && context.spotId) {
+            var spot=allSpots.find(function(item){return item.id===context.spotId;});
+            if(!spot)return {accepted:false,reason:'景点信息尚未加载，请稍后重试。'};
+            chatRequest.reset();selectedSpot=spot;pendingSpot=spot;renderChatContext();
+        } else { pendingSpot=null; }
         speechGeneration++;
         stopTts();
         stopListen();

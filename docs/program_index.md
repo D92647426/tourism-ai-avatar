@@ -105,3 +105,6 @@
 
 
 [voice-settings.js](../src/main/resources/static/js/voice-settings.js#L1) 是REQ-042配置/设备声线的纯模块；调用边界见 [实现记录](voice_settings.md#L17)。
+
+
+[director-core.js](../src/main/resources/static/js/director-core.js#L1) 负责编排；[director.js](../src/main/resources/static/js/director.js#L1) 适配DOM；[界面与边界](director_design.md#L15) 说明观察和样式扩展。

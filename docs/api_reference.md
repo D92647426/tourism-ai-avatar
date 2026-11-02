@@ -214,3 +214,6 @@ PUT 接受部分对象，例如 `{"name":"山川向导","welcomeMessage":"欢迎
 
 
 API-042：复用公开配置GET和管理员GET/PUT；路径、参数、示例、错误码与服务函数见 [语音配置契约](voice_settings.md#L11)。验证 `mvn -o verify` 与 `node --test tests/frontend/*.test.js`。
+
+
+API-043：复用景点GET与聊天POST，输入输出、错误码和实现位置见 [接口约定](director_design.md#L23)。测试 `node --test tests/frontend/*.test.js`、`mvn -o verify`。

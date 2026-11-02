@@ -171,3 +171,9 @@ TEST-041：完整命令、组合回归和失败排查见 [整合验收](integrat
 
 
 TEST-042：对应REQ-042，具体测试函数行为、文件、命令、预期与排查见 [语音验收](voice_settings.md#L17)。完整Node当前预期156/156、Java221/221；真实音质另行设备验收。
+
+
+TEST-043/044/045：规则/适配器/草稿/实际浏览器测试，文件、命令、预期行为和排查方向见 [验收记录](director_design.md#L27)。
+
+
+TEST-043 具体用例：[预算/候选/输入不变](../tests/frontend/director.test.js#L7)、[重排差异与恢复](../tests/frontend/director.test.js#L17)、[显式交接及拒绝状态](../tests/frontend/director.test.js#L25)。TEST-044：[跨站草稿、模板与减少动态](../tests/frontend/exploration-page.test.js#L163)。运行 `node --test tests/frontend/*.test.js` 预期160/160；Java完整验收 `mvn -o verify` 预期221/221。检查失败先核对API候选与当前内容包、点击冒泡、matchMedia和草稿保护。
