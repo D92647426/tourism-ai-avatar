@@ -31,7 +31,7 @@
     var allSpots = [], isChatOpen = false, pendingChats = 0;
     var conversationId = null;
     var selectedSpot = null, resettingConversation = false;
-    var pendingSpot = null, contextReady = false;
+    var pendingSpot = null, contextReady = false, contextGeneration = 0;
     var chatContext = S('chatContext');
     var narrationSelect = S('chatNarrationMode'), narrationHint = S('chatNarrationHint');
     var narrationMode = 'standard';
@@ -48,18 +48,23 @@
 
     // ===== 景点 =====
     function loadSpots() {
+        var restoreGeneration = contextGeneration;
         fetch('/api/spots').then(function(r) { return r.json(); }).then(function(d) {
             allSpots = d; renderSpots(d);
             if (window.GuideDirectorPage) window.GuideDirectorPage.mount(window, d);
+            if (restoreGeneration !== contextGeneration) return;
             return api('/api/chat/context').then(function(r) {
                 if (!r.ok) throw new Error('context ' + r.status);
                 return r.json();
             }).then(function(snapshot) {
+                if (restoreGeneration !== contextGeneration) return;
                 conversationId = snapshot.conversationId || null;
                 narrationMode = normalizeNarration(snapshot.narrationMode);
                 selectedSpot = allSpots.find(function(spot) { return spot.id === snapshot.spotId; }) || null;
                 contextReady = true; renderChatContext(); renderNarration();
-            }).catch(function() { chatContext.textContent = '会话状态未同步，请点击“新对话”后提问。'; });
+            }).catch(function() {
+                if (restoreGeneration === contextGeneration) chatContext.textContent = '会话状态未同步，请点击“新对话”后提问。';
+            });
         }).catch(function() {
             if (S('directorStatus')) S('directorStatus').textContent = '景点读取失败，请刷新页面后重试。';
             spotsGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:60px;color:#999;">景点数据加载中...</p>';
@@ -282,6 +287,7 @@
     chatNewBtn.addEventListener('click', function() {
         if (pendingChats || chatNewBtn.disabled) return;
         resettingConversation = true;
+        contextGeneration++; contextReady = false;
         renderNarration();
         chatNewBtn.disabled = true;
         api('/api/chat/new', {method:'POST'}).then(function(r) {
@@ -295,7 +301,10 @@
             stopTts();
             chatMessages.innerHTML = '';
             addMsg('bot', '新对话已开始。您可以继续提问。');
-        }).catch(function() { addMsg('bot', '暂时无法开始新对话，请重试。'); })
+        }).catch(function() {
+            chatContext.textContent = '新对话尚未确认，请重试“新对话”后提问。';
+            addMsg('bot', '暂时无法开始新对话，请重试。');
+        })
           .then(function() { resettingConversation = false; chatNewBtn.disabled = false; renderNarration(); });
     });
     // REQ-031: all entry points share one request lifecycle.

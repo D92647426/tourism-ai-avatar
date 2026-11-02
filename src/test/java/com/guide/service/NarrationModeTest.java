@@ -129,4 +129,16 @@ class NarrationModeTest {
             assertFalse(reply.isFallback());assertEquals(mode.getValue(),reply.getNarrationMode());server.verify();
         }
     }
+
+    @Test void shortFollowupsUseCurrentFieldsButOtherPlacesNeverInheritThem() {
+        Spot s=spot();ChatService chat=local(s);
+        for(NarrationMode mode:Arrays.asList(NarrationMode.FAMILY,NarrationMode.BRIEF)) {
+            assertTrue(chat.chat("免费吗",null,Collections.emptyList(),s,mode).getReply().contains(s.getTicket()));
+            assertTrue(chat.chat("有什么特点？",null,Collections.emptyList(),s,mode).getReply().contains(s.getBrief()));
+            for(String question:Arrays.asList("鼋头渚门票多少钱","乐山大佛这里门票多少钱","故宫门票多少钱")) {
+                String reply=chat.chat(question,null,Collections.emptyList(),s,mode).getReply();
+                assertFalse(reply.contains(s.getTicket()),question);assertFalse(reply.contains("一票制"),question);
+            }
+        }
+    }
 }

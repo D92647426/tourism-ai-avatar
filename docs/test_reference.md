@@ -183,3 +183,5 @@ TEST-043 具体用例：[预算/候选/输入不变](../tests/frontend/director.
 对应 [REQ-046设计](narration_design.md#L1)。[会话沿用/隔离与重置](../src/test/java/com/guide/service/NarrationModeTest.java#L41)、[非法值/失败不提交/过期/身份](../src/test/java/com/guide/service/NarrationModeTest.java#L60)、[本地字段与缺失](../src/test/java/com/guide/service/NarrationModeTest.java#L80)、[模型真实请求JSON](../src/test/java/com/guide/service/NarrationModeTest.java#L113)、[HTTP字段契约](../src/test/java/com/guide/controller/NarrationContractTest.java#L17)；前端 [恢复/草稿/重置](../tests/frontend/narration.test.js#L24)、[忙态与重试快照](../tests/frontend/narration.test.js#L37)。
 
 命令：`mvn -o verify`、`node --test tests/frontend/*.test.js`、`python scripts/check_doc_links.py`、`python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar`。预期非法值400、无跨主体偏好、失败不提交、无自动发问、切模式无旧重试。失败先核对模式枚举/候选会话/请求快照，而非根据真实模型文风判断功能是否实现。实际浏览器和最终计数见 [交付记录](narration_design.md#L25)。
+
+TEST-046复查回归：[免费/特点与外景不串事实](../src/test/java/com/guide/service/NarrationModeTest.java#L133)、[迟到初始化与重置失败](../tests/frontend/narration.test.js#L50)。短追问规则和外景字典边界见 [设计](narration_design.md#L21)。

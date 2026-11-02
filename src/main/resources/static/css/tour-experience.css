@@ -170,4 +170,8 @@
 .chat-narration select:disabled { color:#53665d; background:#edf1ee; cursor:wait; }
 .chat-narration p { grid-column:1/-1; margin:0; color:#36574a; font-size:12px; line-height:1.5; }
 .narration-caption { margin-bottom:8px; font-size:12px; line-height:1.4; color:#36574a; }
+@media(max-height:500px) {
+    .exploration-page .chat-quick-actions,.chat-narration p { display:none; }
+    .chat-narration { padding:6px 14px; }
+}
 @media(prefers-reduced-motion:reduce) { .exploration-page * { animation:none !important; transition:none !important; scroll-behavior:auto !important; } }

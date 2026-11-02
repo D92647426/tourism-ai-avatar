@@ -51,6 +51,7 @@ public class ChatService {
     private final AnalyticsService analyticsService;
     private final AiCompletionClient aiCompletionClient;
     private final ObjectMapper objectMapper;
+    private final KnowledgeRetriever scopeResolver = new KnowledgeRetriever();
 
     public ChatService(SpotService spotService, KnowledgeService knowledgeService,
                        AnalyticsService analyticsService, AiCompletionClient aiCompletionClient) {
@@ -215,6 +216,21 @@ public class ChatService {
         String msg = userMessage.toLowerCase(Locale.ROOT);
         String knowledgeContext = knowledge.getContext();
         List<String> entities = knowledge.getEntityNames();
+        // 扩展的本地关键词匹配
+        if (scopeResolver.mentionsExcludedName(msg) || entities.isEmpty() && containsAny(msg, "拈花湾", "三圣殿", "慈恩塔", "灵山精舍",
+                "鼋头渚", "太湖", "三国", "水浒", "惠山",
+                "梅园", "蠡园", "南禅寺", "清名桥")) {
+            if (!knowledgeContext.isEmpty()) return "问题涉及当前景点之外的地点，以下仅为匹配的资料候选：\n" + KNOWLEDGE_BOUNDARY_PREFIX + "\n" + knowledgeContext;
+            return "您问的这个地方非常值得一游！不过它暂时不在我当前的16个导览卡片中。\n\n" +
+                   "当前没有足够的本地资料为这个地方作可靠讲解，建议查询对应景区的官方信息。\n\n" +
+                   "目前我的数据库中包含以下16个核心景点：\n" +
+                   "灵山大照壁、五明桥、佛足坛、五智门、菩提大道、\n" +
+                   "九龙灌浴、降魔浮雕、阿育王柱、百子戏弥勒、\n" +
+                   "祥符禅寺、灵山大佛、佛教文化博览馆、灵山梵宫、\n" +
+                   "五印坛城、曼飞龙塔、无尽意斋\n\n" +
+                   "点击左下角卡片可以查看详细介绍哦~";
+        }
+
         if (entities.size() > 1) {
             return "你提到了多个景点：" + String.join("、", entities) + "。\n\n"
                     + (knowledgeContext.isEmpty() ? "没有匹配的知识条目，请补充景点名称或具体想了解的问题。" :
@@ -230,24 +246,16 @@ public class ChatService {
             }
         }
 
-        if (currentSpot != null && (containsAny(msg, "它", "这里", "这个景点", "故事", "开放", "几点")
-                || mode != NarrationMode.STANDARD && containsAny(msg, "介绍", "讲解", "门票", "票价", "收费", "价格", "交通", "怎么去", "公交", "到达", "历史"))) {
+        boolean currentQuestion = mode == NarrationMode.STANDARD
+                ? containsAny(msg, "它", "这里", "这个景点", "故事", "开放", "几点") : isNarrationFollowup(msg);
+        if (currentSpot != null && currentQuestion) {
             return mode == NarrationMode.STANDARD ? spotReplyForQuestion(currentSpot, msg, interest) + "\n" + SAMPLE_BOUNDARY
                     : narratedSpotReply(currentSpot, msg, mode);
         }
-
-        // 扩展的本地关键词匹配
-        if (containsAny(msg, "拈花湾", "三圣殿", "慈恩塔", "灵山精舍",
-                "鼋头渚", "太湖", "三国", "水浒", "惠山",
-                "梅园", "蠡园", "南禅寺", "清名桥")) {
-            return "您问的这个地方非常值得一游！不过它暂时不在我当前的16个导览卡片中。\n\n" +
-                   "当前没有足够的本地资料为这个地方作可靠讲解，建议查询对应景区的官方信息。\n\n" +
-                   "目前我的数据库中包含以下16个核心景点：\n" +
-                   "灵山大照壁、五明桥、佛足坛、五智门、菩提大道、\n" +
-                   "九龙灌浴、降魔浮雕、阿育王柱、百子戏弥勒、\n" +
-                   "祥符禅寺、灵山大佛、佛教文化博览馆、灵山梵宫、\n" +
-                   "五印坛城、曼飞龙塔、无尽意斋\n\n" +
-                   "点击左下角卡片可以查看详细介绍哦~";
+        if (currentSpot != null && mode != NarrationMode.STANDARD && spotTopic(msg) != SpotTopic.OTHER
+                && !msg.contains("灵山胜境")) {
+            return "没有确认这次问题指向哪个景点。当前选中的是【" + currentSpot.getName()
+                    + "】；如果继续问它，可以说“它的门票”或“有什么特点”，也可以明确提供其他景点名称。";
         }
 
         if (containsAny(msg, "推荐", "好玩", "值得", "必去", "最")) {
@@ -301,16 +309,43 @@ public class ChatService {
      * Missing fields get an explicit message; no model or external lookup. TEST-046/docs/narration_design.md. */
     private String narratedSpotReply(Spot spot, String question, NarrationMode mode) {
         String fact;
-        boolean general = false;
-        if (containsAny(question, "开放", "几点")) fact = spot.getOpeningHours();
-        else if (containsAny(question, "门票", "票价", "收费", "价格")) fact = spot.getTicket();
-        else if (containsAny(question, "交通", "怎么去", "公交", "到达")) fact = spot.getTransportation();
-        else if (containsAny(question, "故事", "历史")) fact = spot.getHistory();
-        else { fact = spot.getBrief(); general = true; }
+        SpotTopic topic = spotTopic(question);
+        boolean general = topic == SpotTopic.INTRO || topic == SpotTopic.OTHER;
+        switch (topic) {
+            case HOURS: fact = spot.getOpeningHours(); break;
+            case TICKET: fact = spot.getTicket(); break;
+            case TRANSPORT: fact = spot.getTransportation(); break;
+            case HISTORY: fact = spot.getHistory(); break;
+            default: fact = spot.getBrief();
+        }
         if (fact == null || fact.trim().isEmpty()) fact = "这部分资料暂未收录，请查看现场说明或咨询景区工作人员。";
         String reply = "【" + spot.getName() + "】本地资料摘录\n\n" + fact;
         if (mode == NarrationMode.FAMILY && general) reply += "\n\n可以和孩子一起看看：这个景点最先吸引你的细节是什么？先说看到的，再说自己的猜想。";
         return reply + "\n\n" + SAMPLE_BOUNDARY;
+    }
+
+    private enum SpotTopic { INTRO, HOURS, TICKET, TRANSPORT, HISTORY, OTHER }
+
+    /** REQ-046: one classifier for field selection and contextual follow-ups.
+     * Input: question; output: topic, OTHER when unsupported. No inferred facts; TEST-046. */
+    private SpotTopic spotTopic(String question) {
+        if (containsAny(question, "开放", "几点")) return SpotTopic.HOURS;
+        if (containsAny(question, "门票", "票价", "收费", "免费", "价格", "多少钱")) return SpotTopic.TICKET;
+        if (containsAny(question, "交通", "怎么去", "公交", "到达")) return SpotTopic.TRANSPORT;
+        if (containsAny(question, "故事", "历史")) return SpotTopic.HISTORY;
+        if (containsAny(question, "介绍", "讲解", "特点", "特色", "亮点", "看点")) return SpotTopic.INTRO;
+        return SpotTopic.OTHER;
+    }
+
+    /** REQ-046: inherit a place only for explicit reference or a bounded bare follow-up.
+     * Unknown place words must not be guessed as the current place. This is a rule list,
+     * not NER; extend phrases with regression tests in NarrationModeTest. */
+    private boolean isNarrationFollowup(String question) {
+        if (containsAny(question, "它", "这里", "这个景点", "当前景点")) return true;
+        if (spotTopic(question) == SpotTopic.OTHER) return false;
+        String bare = java.text.Normalizer.normalize(question, java.text.Normalizer.Form.NFKC)
+                .replaceAll("[\\p{P}\\p{Z}\\s]", "").replaceFirst("^(请问|请|我想知道|我想了解)", "");
+        return bare.matches("(介绍(一下)?|讲解(一下)?|有什么(特点|特色|亮点|看点)|历史|故事|几点(开门|开放|关门)?|什么时候开放|开放时间|开放|门票(多少(钱)?)?|票价(多少(钱)?)?|收费|免费|价格(多少)?|多少钱|怎么去|交通(怎么走)?|坐什么公交)(呢|吗|啊)?");
     }
 
     /**

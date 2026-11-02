@@ -86,6 +86,14 @@ public final class KnowledgeRetriever {
                 entities.stream().map(e -> e.name).collect(Collectors.toList()));
     }
 
+    /** REQ-046: prevent an explicitly excluded namesake from inheriting current-spot facts.
+     * Input may be null; output is a dictionary scope hint, not open-world place recognition.
+     * No retrieval/storage/network. Tune excludedNames in retrieval-entities.json; TEST-046. */
+    public boolean mentionsExcludedName(String question) {
+        String query = normalize(question);
+        return dictionary.excludedNames.stream().anyMatch(name -> query.contains(normalize(name)));
+    }
+
     private Candidate score(String query, String localQuery, List<Entity> entities, KnowledgeItem item) {
         int terms = 0;
         String title = normalize(item.getTitle());

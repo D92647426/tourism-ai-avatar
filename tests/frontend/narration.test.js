@@ -46,3 +46,46 @@ test('pending disables selection; changing mode discards an old retry snapshot',
     assert.equal(h.calls.length,1);assert.equal(h.el('chatRetryBtn').hidden,true);
     assert.equal(h.el('chatNarrationMode').disabled,false);
 });
+
+test('late initialization cannot restore a replaced conversation or its narration',async()=>{
+    for(const stage of ['spots','context']) {
+        let finish;
+        const calls=[];
+        const env=createEnv({fetch(url,opts) {
+            if(url==='/api/auth/me')return response(200,{username:'alice',role:'GUEST'});
+            if(url==='/api/auth/csrf')return response(200,{headerName:'X-XSRF-TOKEN',token:'test'});
+            if(url===(stage==='spots'?'/api/spots':'/api/chat/context'))return new Promise(resolve=>{finish=resolve;});
+            if(url==='/api/spots')return response(200,[]);
+            if(url==='/api/chat/new')return response(200,{conversationId:'new',narrationMode:'standard'});
+            if(url==='/api/chat') { calls.push(JSON.parse(opts.body));return response(200,{reply:'答',conversationId:'new',narrationMode:'standard'}); }
+            return response(200,{});
+        }});
+        loadScript(env,'security.js');loadScript(env,'main.js');await flush(env);
+        const el=id=>env.document.getElementById(id);
+        el('chatNewBtn').dispatch('click');await flush(env);
+        finish(stage==='spots'?response(200,[]):response(200,{conversationId:'old',narrationMode:'family'}));await flush(env);
+        assert.equal(el('chatNarrationMode').value,'standard',stage);
+        el('chatInput').value='介绍';el('chatSendBtn').dispatch('click');await flush(env);
+        assert.equal(calls[0].conversationId,'new');assert.equal(calls[0].narrationMode,'standard');
+    }
+});
+
+test('unconfirmed new conversation blocks sends until reset can be confirmed',async()=>{
+    let resetFails=true;const calls=[];
+    const env=createEnv({fetch(url,opts){
+        if(url==='/api/auth/me')return response(200,{username:'alice',role:'GUEST'});
+        if(url==='/api/auth/csrf')return response(200,{headerName:'X-XSRF-TOKEN',token:'test'});
+        if(url==='/api/spots')return response(200,[]);
+        if(url==='/api/chat/context')return response(200,{conversationId:'old',narrationMode:'family'});
+        if(url==='/api/chat/new')return response(resetFails?503:200,{conversationId:'new',narrationMode:'standard'});
+        if(url==='/api/chat'){calls.push(JSON.parse(opts.body));return response(200,{reply:'答',conversationId:'new',narrationMode:'standard'});}
+        return response(200,{});
+    }});
+    loadScript(env,'security.js');loadScript(env,'main.js');await flush(env);
+    const el=id=>env.document.getElementById(id);
+    el('chatInput').value='草稿';el('chatNewBtn').dispatch('click');await flush(env);
+    el('chatSendBtn').dispatch('click');await flush(env);
+    assert.equal(calls.length,0);assert.equal(el('chatInput').value,'草稿');assert.equal(el('chatNarrationMode').disabled,true);
+    resetFails=false;el('chatNewBtn').dispatch('click');await flush(env);
+    assert.equal(el('chatNarrationMode').value,'standard');assert.equal(el('chatNarrationMode').disabled,false);
+});
