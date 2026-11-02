@@ -34,4 +34,22 @@ TEST-047：真实ID、上/下一站、空/无效/重复方案不破坏旧状态�
 
 ## 实际验证（合并前）
 
-Java228/228、Node176/176、文档链接和隔离JAR HTTP冒烟通过，包含journey_assets、journey_station_handoff、knowledge_candidate_contract。无真实模型调用。桌面/手机与双轴复查后补充截图和合并证据。
+Java228/228、Node176/176、文档链接和隔离JAR HTTP冒烟通过，包含journey_assets、journey_station_handoff、knowledge_candidate_contract。无真实模型调用。Edge1365×900、390×844和844×390实际验证；最终合并状态以关联PR为准。
+
+Edge验证：灵山大佛→佛教文化博览馆沿用family；最后一站无下一站按钮。重编后点击快捷问题，草稿“保留这句想法”保持原文且仍提示重新选站。桌面候选K4可展开，博览馆无匹配候选也有明确说明，两条回答不混资料。
+
+桌面scrollWidth=1365、发送底部741px；390×844页面scrollWidth=390、输入底部781px、发送底部769px；844×390横屏输入底部331px、发送底部319px。候选在消息区内部滚动可展开，不覆盖发送区。
+
+### Standards
+
+初次与增量独立复查均无发现。共享请求的400纠正只由主聊天显式启用；无新增库、后端接口或未说明的全局配置。
+
+### Spec
+
+发现1项P2（无景点的观察草稿绕过重编阻塞）和1项补充交互风险（快捷问题覆盖保留草稿），均修复并经独立复查resolved，限定范围内无剩余项；独立运行联动测试7/7通过。审查不代替组员人工贡献。
+
+实现：[纯状态](../src/main/resources/static/js/journey-core.js#L1)、[页面衔接](../src/main/resources/static/js/journey.js#L1)、[候选渲染](../src/main/resources/static/js/chat-references.js#L1)、[请求与守卫](../src/main/resources/static/js/main.js#L1)。合并交付：[PR #41](https://github.com/D92647426/tourism-ai-avatar/pull/41)，按用户明确授权在CI通过后合并。
+
+![桌面候选与下一站](screenshots/issue-38-39-desktop.png)
+
+![手机无候选说明](screenshots/issue-38-39-mobile.png)
