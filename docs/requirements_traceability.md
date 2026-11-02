@@ -3,6 +3,9 @@
 ## REQ-033 当前观察的讲解搭档（GitHub #19）
 
 根据当前任务/草稿提供建议与后续观察问题，展示真实生成方式和本次资料来源，编辑/切站后失效，不判分、不自动保存或播报。抽取旧聊天和搭档共同的供应商调用，限制连接与读取时间、严格检查空响应并明确降级。设计：[exploration_coach_design.md:L1](./exploration_coach_design.md#L1)；API：[api_reference.md:L3](./api_reference.md#L3)；页面请求：[coach-request.js:L1](../src/main/resources/static/js/coach-request.js#L1)。
+## REQ-034 后台统计口径纠正（GitHub #13）
+
+实际问答次数、近7天上海时区窗口、有效情绪样本与正向问句占比；无样本null、真实0%保留，未采集的访客/满意度/耗时不输出假数值。Dashboard和报告按单一时刻与日志副本聚合，页面失败不冒充空数据，空图表不造样本。设计与迁移见 [analytics_accuracy.md:L1](./analytics_accuracy.md#L1)。
 
 ## REQ-026 三人协作
 

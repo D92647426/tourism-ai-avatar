@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理后台 - 灵山胜境AI数字人导览系统</title>
-    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="/css/admin.css?v=metrics-1">
     <!-- ECharts CDN -->
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 </head>
@@ -53,7 +53,7 @@
                     <span class="nav-icon">🎭</span> 数字人形象
                 </a>
                 <a class="nav-item" data-tab="reports">
-                    <span class="nav-icon">📋</span> 感受度报告
+                    <span class="nav-icon">📋</span> 问句情绪报告
                 </a>
                 <a class="nav-item" data-tab="users">
                     <span class="nav-icon">👥</span> 用户列表
@@ -72,39 +72,43 @@
             <!-- ===== Tab 1: 数据大屏 ===== -->
             <section class="tab-content active" id="tab-dashboard">
                 <h1 class="page-title">📊 数据大屏概览</h1>
+                <p id="dashboardPeriod" class="metrics-note">正在读取统计范围…</p>
+                <p id="dashboardStatus" class="metrics-status" role="status" aria-live="polite"></p>
                 <div class="stat-cards" id="statCards">
                     <div class="stat-card">
                         <div class="stat-value" id="statToday">--</div>
-                        <div class="stat-label">今日服务人次</div>
+                        <div class="stat-label">今日问答次数</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value" id="statWeek">--</div>
-                        <div class="stat-label">本周服务人次</div>
+                        <div class="stat-label">近7天问答次数</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value" id="statSatisfaction">--</div>
-                        <div class="stat-label">游客满意度</div>
+                        <div class="stat-value" id="statPositiveRate">--</div>
+                        <div class="stat-label">正向问句占比（规则估计）</div>
+                        <div class="stat-sample" id="statSentimentSample">样本尚未加载</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value" id="statKnowledge">--</div>
                         <div class="stat-label">知识库条目数</div>
                     </div>
                 </div>
+                <p class="metrics-note">问句情绪来自关键词规则，不能视为满意度。未采集独立访客、真实评价或响应耗时。</p>
                 <div class="charts-grid">
                     <div class="chart-card">
-                        <h3>🔥 热门问答 Top 5</h3>
+                        <h3>🔥 近7天热门问答 Top 5</h3>
                         <div class="chart-container" id="chartHotQuestions" style="height:320px;"></div>
                     </div>
                     <div class="chart-card">
-                        <h3>📈 满意度趋势（近7天）</h3>
+                        <h3>📈 近7天问句情绪（规则估计）</h3>
                         <div class="chart-container" id="chartSentiment" style="height:320px;"></div>
                     </div>
                     <div class="chart-card">
-                        <h3>🏞️ 景点关注度排名</h3>
+                        <h3>🏞️ 近7天景点提及次数</h3>
                         <div class="chart-container" id="chartSpots" style="height:320px;"></div>
                     </div>
                     <div class="chart-card">
-                        <h3>🕐 时段分布</h3>
+                        <h3>🕐 近7天问答时段（上海时间）</h3>
                         <div class="chart-container" id="chartHourly" style="height:320px;"></div>
                     </div>
                 </div>
@@ -196,14 +200,17 @@
 
             <!-- ===== Tab 4: 感受度报告 ===== -->
             <section class="tab-content" id="tab-reports">
-                <h1 class="page-title">📋 游客感受度报告</h1>
+                <h1 class="page-title">📋 问句情绪报告（规则估计）</h1>
+                <p id="reportPeriod" class="metrics-note">近7天（含今天），Asia/Shanghai。</p>
+                <p id="reportSample" class="metrics-note">问句情绪不是游客满意度；未知标签不纳入有效情绪样本。</p>
+                <p id="reportStatus" class="metrics-status" role="status" aria-live="polite"></p>
                 <div class="reports-grid">
                     <div class="report-card">
-                        <h3>😊 情感趋势</h3>
+                        <h3>😊 近7天问句情绪分布（规则估计）</h3>
                         <div class="chart-container" id="chartReportSentiment" style="height:350px;"></div>
                     </div>
                     <div class="report-card">
-                        <h3>💬 游客关注点分析</h3>
+                        <h3>💬 近7天景点提及次数</h3>
                         <div class="chart-container" id="chartReportTopics" style="height:350px;"></div>
                     </div>
                     <div class="report-card">
@@ -276,6 +283,7 @@
 
     <script src="/js/security.js"></script>
     <script src="/js/display-config.js?v=display-1"></script>
-    <script src="/js/admin.js?v=display-1"></script>
+    <script src="/js/admin-stats.js?v=metrics-1"></script>
+    <script src="/js/admin.js?v=integrated-1"></script>
 </body>
 </html>

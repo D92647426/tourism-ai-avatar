@@ -11,6 +11,13 @@ HTTP构建产物检查同 [smoke_teacher_project.py:L1](../scripts/smoke_teacher
 ## TEST-032 观察式导览
 
 对应 REQ-032。执行 `node --test tests/frontend/*.test.js`。规则与异常包见 [exploration-core.test.js:L1](../tests/frontend/exploration-core.test.js#L1)，存储隔离、导入预览、恢复、未保存草稿与安全渲染见 [exploration-page.test.js:L1](../tests/frontend/exploration-page.test.js#L1)，聊天交接保护见 [chat-main.test.js:L1](../tests/frontend/chat-main.test.js#L1)。预期所有用例通过，原聊天测试仍通过；具体数量以执行结果为准。
+## TEST-034 后台真实统计
+
+对应REQ-034。Java运行 `mvn clean verify`；依赖已缓存且网络受限时可 `mvn -o clean verify`。切分支后先clean，避免把其他PR的测试产物计入本分支。固定Clock、临时JSON、时区/七日边界/未知样本/0%/快照/并发保存见 [AnalyticsServiceTest.java:L1](../src/test/java/com/guide/service/AnalyticsServiceTest.java#L1)，API转发与null字段见 [AdminControllerTest.java:L1](../src/test/java/com/guide/controller/AdminControllerTest.java#L1)。预期无失败、无真实模型或历史数据访问。
+
+前端 `node --test tests/frontend/*.test.js`，执行真实后台脚本；empty metrics、zero positive share、HTTP failures、stale dashboard response、CDN chart failure、report network failures等用例验证空样本/真实零值/单快照报告/过期刷新/图表缺失。见 [admin-stats.test.js:L1](../tests/frontend/admin-stats.test.js#L1)。应用运行不依赖Node。
+
+HTTP运行 [smoke_teacher_project.py:L1](../scripts/smoke_teacher_project.py#L1)，新增empty_analytics/zero_positive_question_rate；检查为隔离空Key环境，管理员权限合并后应适配其测试身份，不绕过权限。失败先对照新API字段和Asia/Shanghai窗口，不能将旧95当默认值。
 
 ## TEST-027 Java 基线导入验收
 

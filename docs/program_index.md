@@ -9,6 +9,14 @@
 | HTTP与400错误映射 | [ExplorationCoachController.java:L1](../src/main/java/com/guide/controller/ExplorationCoachController.java#L1) |
 | 请求快照、20秒等待、引用一致性校验 | [coach-request.js:L1](../src/main/resources/static/js/coach-request.js#L1) |
 | 编辑/切站/切包时清理反馈 | [exploration.js:L1](../src/main/resources/static/js/exploration.js#L1) |
+## 后台统计（REQ-034）
+
+| 功能 | 位置 |
+|---|---|
+| 单时刻/日志副本、上海七日窗口、真实计数与情绪规则 | [AnalyticsService.java:L1](../src/main/java/com/guide/service/AnalyticsService.java#L1) |
+| 仪表盘/报告契约 | [DashboardData.java:L1](../src/main/java/com/guide/model/DashboardData.java#L1)、[SentimentReport.java:L1](../src/main/java/com/guide/model/SentimentReport.java#L1) |
+| 数字格式、0/null区分、旧口径隔离 | [admin-stats.js:L1](../src/main/resources/static/js/admin-stats.js#L1) |
+| 页面刷新/图表空态/失败状态与报告快照 | [admin.js:L1](../src/main/resources/static/js/admin.js#L1)、[admin.html:L1](../src/main/resources/static/admin.html#L1) |
 
 | 功能 | 位置 |
 |---|---|

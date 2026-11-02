@@ -193,28 +193,67 @@
     var spotsChart = null;
     var hotQuestionsChart = null;
     var hourlyChart = null;
+    var dashboardGeneration = 0;
+    var reportGeneration = 0;
+
+    function readJson(url) {
+        return apiFetch(url).then(function(res) { if (!res.ok) throw new Error('统计接口请求失败'); return res.json(); });
+    }
+    function resetDashboardCharts(message) {
+        [sentimentChart, spotsChart, hotQuestionsChart, hourlyChart].forEach(function(chart) { if (chart) chart.dispose(); });
+        sentimentChart = spotsChart = hotQuestionsChart = hourlyChart = null;
+        ['chartHotQuestions','chartSentiment','chartSpots','chartHourly'].forEach(function(id) {
+            var node = document.getElementById(id); node.textContent = message || '';
+            if (message) node.classList.add('chart-unavailable'); else node.classList.remove('chart-unavailable');
+        });
+    }
+    /** REQ-034: one accepted dashboard response updates counts and charts together.
+     * HTTP/shape failures display unavailable, never fabricated zeroes or 95%.
+     * A stale response cannot overwrite a later refresh. See docs/analytics_accuracy.md.
+     */
 
     function loadDashboard() {
-        apiFetch('/api/admin/dashboard')
-            .then(function(res) { return res.json(); })
+        var generation = ++dashboardGeneration;
+        document.getElementById('dashboardStatus').textContent = '正在读取统计数据…';
+        readJson('/api/admin/dashboard')
             .then(function(data) {
+                if (generation !== dashboardGeneration) return;
                 updateStatCards(data);
-                renderHotQuestions(data.hotQuestions || []);
-                renderSentimentTrend(data.sentimentTrend || []);
-                renderSpotRanking(data.spotRanking || []);
-                renderHourlyDistribution(data.hourlyDistribution || []);
+                if (!Array.isArray(data.hotQuestions) || !Array.isArray(data.sentimentTrend) || !Array.isArray(data.spotRanking) || !Array.isArray(data.hourlyDistribution)) throw new Error('图表数据结构缺失');
+                resetDashboardCharts();
+                try {
+                    if (typeof echarts === 'undefined') throw new Error('chart unavailable');
+                    renderHotQuestions(data.hotQuestions);
+                    renderSentimentTrend(data.sentimentTrend);
+                    renderSpotRanking(data.spotRanking);
+                    renderHourlyDistribution(data.hourlyDistribution);
+                    document.getElementById('dashboardStatus').textContent = '已按当前日志更新。问答次数不代表独立访客。';
+                } catch (chartError) {
+                    resetDashboardCharts('图表组件暂不可用；上方统计卡片已更新。');
+                    document.getElementById('dashboardStatus').textContent = '数值已更新，图表组件未加载；请检查网络后刷新。';
+                }
                 document.getElementById('lastRefresh').textContent = new Date().toLocaleTimeString();
             })
             .catch(function(err) {
+                if (generation !== dashboardGeneration) return;
+                ['statToday','statWeek','statPositiveRate','statKnowledge'].forEach(function(id) { document.getElementById(id).textContent = '--'; });
+                document.getElementById('statSentimentSample').textContent = '样本数不可用';
+                document.getElementById('dashboardPeriod').textContent = '统计范围未加载';
+                document.getElementById('dashboardStatus').textContent = '统计加载失败，请稍后刷新；当前不展示无法确认的数据。';
+                document.getElementById('lastRefresh').textContent = '未刷新成功';
+                resetDashboardCharts('统计数据不可用');
                 console.error('仪表盘加载失败:', err);
             });
     }
 
     function updateStatCards(data) {
-        document.getElementById('statToday').textContent = data.todayVisitors || 0;
-        document.getElementById('statWeek').textContent = data.weekVisitors || 0;
-        document.getElementById('statSatisfaction').textContent = (data.satisfactionRate || 95) + '%';
-        document.getElementById('statKnowledge').textContent = data.totalKnowledgeItems || 0;
+        var view = window.AdminStats.dashboard(data);
+        document.getElementById('statToday').textContent = view.today;
+        document.getElementById('statWeek').textContent = view.last7;
+        document.getElementById('statPositiveRate').textContent = view.rate;
+        document.getElementById('statKnowledge').textContent = view.knowledge;
+        document.getElementById('statSentimentSample').textContent = view.sample;
+        document.getElementById('dashboardPeriod').textContent = view.period;
     }
 
     function renderHotQuestions(questions) {
@@ -225,10 +264,10 @@
         var names = questions.map(function(q) { return q.question; });
         var values = questions.map(function(q) { return q.count; });
 
-        // 如果没有数据，显示示例
+        // REQ-034: an empty state has no synthetic sample or chart bar.
         if (names.length === 0) {
-            names = ['暂无数据'];
-            values = [0];
+            hotQuestionsChart.setOption({ title: { text: '暂无问答数据', left: 'center', top: 'center' }, series: [] });
+            return;
         }
 
         hotQuestionsChart.setOption({
@@ -250,22 +289,27 @@
         var dom = document.getElementById('chartSentiment');
         if (sentimentChart) sentimentChart.dispose();
         sentimentChart = echarts.init(dom);
+        if (!trend.some(function(day) { return day.total > 0; })) {
+            sentimentChart.setOption({ title: { text: '暂无问句情绪样本', left: 'center', top: 'center' }, series: [] }); return;
+        }
 
         var dates = trend.map(function(d) { return d.date; });
         var positive = trend.map(function(d) { return d.positive || 0; });
         var neutral = trend.map(function(d) { return d.neutral || 0; });
         var negative = trend.map(function(d) { return d.negative || 0; });
+        var unclassified = trend.map(function(d) { return d.unclassified || 0; });
 
         sentimentChart.setOption({
             tooltip: { trigger: 'axis' },
-            legend: { data: ['正面', '中性', '负面'], bottom: 0 },
+            legend: { data: ['正向问句', '中性问句', '负向问句', '未分类'], bottom: 0 },
             grid: { left: '3%', right: '4%', bottom: '12%', containLabel: true },
             xAxis: { type: 'category', data: dates },
             yAxis: { type: 'value', name: '交互次数' },
             series: [
-                { name: '正面', type: 'line', data: positive, smooth: true, itemStyle: { color: '#4caf50' } },
-                { name: '中性', type: 'line', data: neutral, smooth: true, itemStyle: { color: '#ff9800' } },
-                { name: '负面', type: 'line', data: negative, smooth: true, itemStyle: { color: '#f44336' } }
+                { name: '正向问句', type: 'line', data: positive, itemStyle: { color: '#4caf50' } },
+                { name: '中性问句', type: 'line', data: neutral, itemStyle: { color: '#ff9800' } },
+                { name: '负向问句', type: 'line', data: negative, itemStyle: { color: '#f44336' } },
+                { name: '未分类', type: 'line', data: unclassified, itemStyle: { color: '#87958b' } }
             ]
         });
     }
@@ -279,11 +323,9 @@
         var values = ranking.map(function(r) { return r.count; });
 
         if (names.length === 0) {
-            names = ['暂无数据'];
-            values = [{ value: 1, name: '暂无数据', itemStyle: { color: '#ddd' } }];
             spotsChart.setOption({
                 title: { text: '暂无景点关注数据', left: 'center', top: 'center', textStyle: { color: '#999', fontSize: 14 } },
-                series: [{ type: 'pie', radius: ['40%', '70%'], data: values }]
+                series: []
             });
             return;
         }
@@ -308,6 +350,9 @@
 
         var hours = data.map(function(d) { return d.hour; });
         var values = data.map(function(d) { return d.count; });
+        if (!values.some(function(value) { return value > 0; })) {
+            hourlyChart.setOption({ title: { text: '暂无问答数据', left: 'center', top: 'center' }, series: [] }); return;
+        }
 
         hourlyChart.setOption({
             tooltip: { trigger: 'axis' },
@@ -573,67 +618,81 @@
 
     // ===== 感受度报告 =====
 
+    function resetReportCharts(message) {
+        if (window._reportSentimentChart) window._reportSentimentChart.dispose();
+        if (window._reportTopicsChart) window._reportTopicsChart.dispose();
+        window._reportSentimentChart = window._reportTopicsChart = null;
+        ['chartReportSentiment','chartReportTopics'].forEach(function(id) { document.getElementById(id).textContent = message || ''; });
+    }
+
+    /** REQ-034: render one report snapshot; all panels share its cutoff and sample.
+     * On failure clear stale panels. CDN failures keep verified numbers available.
+     * See docs/analytics_accuracy.md, API-034; no fabricated rating or visitor data.
+     */
     function loadReports() {
-        loadSentimentReport();
-        loadTopicsReport();
-        loadSuggestions();
+        var generation = ++reportGeneration;
+        document.getElementById('reportStatus').textContent = '正在读取近7天报告…';
+        readJson('/api/admin/reports/sentiment').then(function(data) {
+            if (generation !== reportGeneration) return;
+            var view = window.AdminStats.report(data);
+            if (!Array.isArray(data.trend) || !Array.isArray(data.topics) || !Array.isArray(data.suggestions)) throw new Error('报告数据结构缺失');
+            document.getElementById('reportPeriod').textContent = view.period;
+            document.getElementById('reportSample').textContent = view.sample + '；正向问句占比：' + view.rate + '。这不是游客满意度。';
+            resetReportCharts();
+            try {
+                if (typeof echarts === 'undefined') throw new Error('chart unavailable');
+                renderReportSentiment(data.trend);
+                renderReportTopics(data.topics);
+                document.getElementById('reportStatus').textContent = '整份报告采用同一快照；问句情绪来自关键词规则。';
+            } catch (chartError) {
+                resetReportCharts('图表组件暂不可用，样本与统计范围已显示。');
+                document.getElementById('reportStatus').textContent = '数值与建议已更新；图表组件未加载，请检查网络后刷新。';
+            }
+            renderSuggestions(data.suggestions);
+        }).catch(function() {
+            if (generation !== reportGeneration) return;
+            resetReportCharts('报告数据不可用');
+            document.getElementById('reportPeriod').textContent = '统计范围未加载';
+            document.getElementById('reportSample').textContent = '样本数不可用';
+            document.getElementById('reportStatus').textContent = '情绪报告加载失败，请稍后重试。';
+            document.getElementById('suggestionsList').textContent = '建议加载失败，请稍后重试。';
+        });
     }
 
-    function loadSentimentReport() {
-        apiFetch('/api/admin/reports/sentiment')
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                renderReportSentiment(data.trend || []);
-            });
-    }
-
-    function loadTopicsReport() {
-        apiFetch('/api/admin/reports/topics')
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                renderReportTopics(data.topics || []);
-            });
-    }
-
-    function loadSuggestions() {
-        apiFetch('/api/admin/reports/suggestions')
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                var list = document.getElementById('suggestionsList');
-                var suggestions = data.suggestions || [];
-                if (suggestions.length === 0) {
-                    list.innerHTML = '<p class="loading-text">暂无服务建议，积累更多交互数据后将自动生成。</p>';
-                    return;
-                }
-                list.innerHTML = suggestions.map(function(s) {
-                    return '<div class="suggestion-item ' + (s.level || 'info') + '">' +
-                        '<div class="sug-title">' + (s.level === 'danger' ? '⚠️ ' : s.level === 'warning' ? '⚡ ' : '💡 ') + s.title + '</div>' +
-                        '<div class="sug-detail">' + s.detail + '</div>' +
-                    '</div>';
-                }).join('');
-            });
+    function renderSuggestions(suggestions) {
+        var list = document.getElementById('suggestionsList');
+        if (!suggestions.length) { list.textContent = '暂无规则建议，积累更多问答后再查看。'; return; }
+        list.innerHTML = suggestions.map(function(s) {
+            var level = ['info','warning','danger'].indexOf(s.level) >= 0 ? s.level : 'info';
+            return '<div class="suggestion-item ' + level + '"><div class="sug-title">' + escapeHtml(s.title) + '</div><div class="sug-detail">' + escapeHtml(s.detail) + '</div></div>';
+        }).join('');
     }
 
     function renderReportSentiment(trend) {
         var dom = document.getElementById('chartReportSentiment');
         if (window._reportSentimentChart) window._reportSentimentChart.dispose();
         window._reportSentimentChart = echarts.init(dom);
+        if (!trend.some(function(day) { return day.total > 0; })) {
+            window._reportSentimentChart.setOption({ title: { text: '暂无问句情绪样本', left: 'center', top: 'center' }, series: [] }); return;
+        }
 
         var dates = trend.map(function(d) { return d.date; });
         var positive = trend.map(function(d) { return d.positive || 0; });
         var neutral = trend.map(function(d) { return d.neutral || 0; });
         var negative = trend.map(function(d) { return d.negative || 0; });
+        var unclassified = trend.map(function(d) { return d.unclassified || 0; });
 
         window._reportSentimentChart.setOption({
             tooltip: { trigger: 'axis' },
-            legend: { data: ['正面', '中性', '负面'], bottom: 0 },
+            legend: { data: ['正向问句', '中性问句', '负向问句', '未分类'], bottom: 0 },
             grid: { left: '3%', right: '4%', bottom: '12%', containLabel: true },
             xAxis: { type: 'category', data: dates },
             yAxis: { type: 'value' },
             series: [
-                { name: '正面', type: 'line', data: positive, smooth: true, areaStyle: { color: 'rgba(76,175,80,0.2)' }, itemStyle: { color: '#4caf50' } },
-                { name: '中性', type: 'line', data: neutral, smooth: true, areaStyle: { color: 'rgba(255,152,0,0.1)' }, itemStyle: { color: '#ff9800' } },
-                { name: '负面', type: 'line', data: negative, smooth: true, areaStyle: { color: 'rgba(244,67,54,0.1)' }, itemStyle: { color: '#f44336' } }
+                { name: '正向问句', type: 'line', data: positive, itemStyle: { color: '#4caf50' } },
+                { name: '中性问句', type: 'line', data: neutral, itemStyle: { color: '#ff9800' } },
+                { name: '负向问句', type: 'line', data: negative, itemStyle: { color: '#f44336' } },
+                { name: '未分类', type: 'line', data: unclassified, itemStyle: { color: '#87958b' } }
             ]
         });
     }
