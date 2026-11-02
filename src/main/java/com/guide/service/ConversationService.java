@@ -3,6 +3,7 @@ package com.guide.service;
 import com.guide.model.ChatRequest;
 import com.guide.model.ChatResponse;
 import com.guide.model.Spot;
+import com.guide.model.NarrationMode;
 import org.springframework.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -20,6 +21,8 @@ import java.util.UUID;
  * REQ-039: keep one bounded conversation per HTTP Session and authenticated identity.
  * Inputs, responses and error statuses: docs/conversation_context.md#L9.
  * Change limits here and recheck TEST-039: docs/conversation_context.md#L21.
+ * REQ-046: narration is copied to the candidate and published only on success;
+ * invalid modes return400 before changing state. See docs/narration_design.md, API-046.
  */
 @Service
 public class ConversationService {
@@ -62,7 +65,7 @@ public class ConversationService {
         synchronized (session) {
             State state = (State) session.getAttribute(ATTRIBUTE);
             return state != null && state.owner.equals(owner()) && clock.millis() - state.lastActive <= IDLE_MILLIS
-                    ? state.snapshot() : new Snapshot(null, null);
+                    ? state.snapshot() : new Snapshot(null, null, NarrationMode.STANDARD);
         }
     }
 
@@ -76,6 +79,11 @@ public class ConversationService {
         if (request == null || request.getMessage() == null || request.getMessage().trim().isEmpty()
                 || request.getMessage().length() > 5000) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "message must contain 1-5000 characters");
+        }
+        NarrationMode requestedMode;
+        try { requestedMode = request.getNarrationMode() == null ? null : NarrationMode.parse(request.getNarrationMode()); }
+        catch (IllegalArgumentException invalid) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, invalid.getMessage());
         }
         Spot selected = null;
         if (request.getSpotId() != null) {
@@ -101,6 +109,7 @@ public class ConversationService {
                 stored = null;
             }
             State candidate = stored == null ? new State(owner, now) : new State(stored);
+            if (requestedMode != null) candidate.narrationMode = requestedMode;
             if (selected != null && !Integer.valueOf(selected.getId()).equals(candidate.spotId)) {
                 candidate.turns.clear(); // A new place must never inherit the old place's pronouns.
                 candidate.spotId = selected.getId();
@@ -114,7 +123,7 @@ public class ConversationService {
             }
             Spot context = candidate.spotId == null ? null : spotService.getSpotById(candidate.spotId).orElse(null);
             ChatResponse response = chatService.chat(request.getMessage(), request.getInterest(),
-                    new ArrayList<>(candidate.turns), context);
+                    new ArrayList<>(candidate.turns), context, candidate.narrationMode);
             if (response == null || response.getReply() == null || response.getReply().trim().isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "empty guide response");
             }
@@ -126,6 +135,7 @@ public class ConversationService {
             session.setAttribute(ATTRIBUTE, candidate);
             response.setConversationId(candidate.id);
             response.setSpotId(candidate.spotId);
+            response.setNarrationMode(candidate.narrationMode.getValue());
             return response;
         }
     }
@@ -141,6 +151,7 @@ public class ConversationService {
         final String owner;
         final List<ChatService.Turn> turns;
         Integer spotId;
+        NarrationMode narrationMode = NarrationMode.STANDARD;
         long lastActive;
         State(String owner, long time) {
             this.id = UUID.randomUUID().toString(); this.owner = owner;
@@ -149,18 +160,22 @@ public class ConversationService {
         State(State other) {
             this.id = other.id; this.owner = other.owner;
             this.turns = new ArrayList<>(other.turns); this.spotId = other.spotId;
+            this.narrationMode = other.narrationMode;
             this.lastActive = other.lastActive;
         }
-        Snapshot snapshot() { return new Snapshot(id, spotId); }
+        Snapshot snapshot() { return new Snapshot(id, spotId, narrationMode); }
     }
 
     public static class Snapshot {
         private final String conversationId;
         private final Integer spotId;
-        Snapshot(String conversationId, Integer spotId) {
+        private final String narrationMode;
+        Snapshot(String conversationId, Integer spotId, NarrationMode mode) {
             this.conversationId = conversationId; this.spotId = spotId;
+            this.narrationMode = mode.getValue();
         }
         public String getConversationId() { return conversationId; }
         public Integer getSpotId() { return spotId; }
+        public String getNarrationMode() { return narrationMode; }
     }
 }

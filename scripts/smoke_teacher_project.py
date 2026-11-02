@@ -145,6 +145,7 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                 assert chat.get("conversationId"), "Server must establish a conversation id."
                 snapshot = json.loads(fetch(base + "/api/chat/context", opener=opener))
                 assert snapshot["conversationId"] == chat["conversationId"]
+                assert snapshot["narrationMode"] == "standard"
                 first, second = spots[0], spots[1]
                 opening = json.loads(fetch(base + "/api/chat",
                     {"message":"它什么时候开放", "spotId":first["id"],
@@ -156,15 +157,35 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                      "conversationId":chat["conversationId"]}, {csrf_header:token}, opener))
                 assert switched["spotId"] == second["id"] and second["name"] in switched["reply"]
                 assert second["history"][:20] in switched["reply"], "Story follow-up must use the new place's history."
+                # REQ-046: actual cookie/session mode persistence, invalid rollback, reset.
+                family = json.loads(fetch(base + "/api/chat",
+                    {"message":"介绍一下这里", "spotId":first["id"], "narrationMode":"family",
+                     "conversationId":chat["conversationId"]}, {csrf_header:token}, opener))
+                assert family["narrationMode"] == "family" and first["brief"] in family["reply"]
+                assert "可以和孩子一起看看" in family["reply"] and "未核验" in family["reply"]
+                follow = json.loads(fetch(base + "/api/chat",
+                    {"message":"它几点开放", "conversationId":chat["conversationId"]}, {csrf_header:token}, opener))
+                assert follow["narrationMode"] == "family" and first["openingHours"] in follow["reply"]
+                brief = json.loads(fetch(base + "/api/chat",
+                    {"message":"介绍一下这里", "narrationMode":"brief",
+                     "conversationId":chat["conversationId"]}, {csrf_header:token}, opener))
+                assert brief["narrationMode"] == "brief" and first["brief"] in brief["reply"]
+                assert "可以和孩子一起看看" not in brief["reply"]
+                bad_mode, _ = status_of(base + "/api/chat",
+                    {"message":"介绍", "narrationMode":"unknown"}, {csrf_header:token}, opener)
+                assert bad_mode == 400
+                assert json.loads(fetch(base + "/api/chat/context", opener=opener))["narrationMode"] == "brief"
                 other = make_opener()
                 other_csrf = json.loads(fetch(base + "/api/auth/csrf", opener=other))
                 assert json.loads(fetch(base + "/api/chat/context", opener=other))["conversationId"] is None
+                assert json.loads(fetch(base + "/api/chat/context", opener=other))["narrationMode"] == "standard"
                 stolen_status, _ = status_of(base + "/api/chat",
                     {"message":"偷看", "conversationId":chat["conversationId"]},
                     {other_csrf["headerName"]:other_csrf["token"]}, other)
                 assert stolen_status == 403, "Conversation id from another cookie must be rejected."
                 fresh = json.loads(fetch(base + "/api/chat/new", {}, {csrf_header:token}, opener))
                 assert fresh["conversationId"] != chat["conversationId"] and fresh["spotId"] is None
+                assert fresh["narrationMode"] == "standard"
                 old_status, _ = status_of(base + "/api/chat",
                     {"message":"旧的", "conversationId":chat["conversationId"]},
                     {csrf_header:token}, opener)
@@ -205,6 +226,7 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                 assert status_of(base + "/api/admin/digital-human-config")[0] == 401
                 return {"status": "passed", "spot_count": len(spots),
                         "checks": ["homepage", "spots", "csrf_token", "public_config",
+                                   "narration_modes", "narration_session_restore", "narration_invalid_rollback", "narration_reset",
                                    "admin_anonymous_401", "csrf_missing_rejected",
                                    "offline_chat", "live2d_definition",
                                    "live2d_model_file", "live2d_helper", "admin_display_partial_save",

@@ -33,6 +33,10 @@
     var selectedSpot = null, resettingConversation = false;
     var pendingSpot = null, contextReady = false;
     var chatContext = S('chatContext');
+    var narrationSelect = S('chatNarrationMode'), narrationHint = S('chatNarrationHint');
+    var narrationMode = 'standard';
+    var NARRATION_LABELS = {standard:'标准讲解',family:'亲子讲解',brief:'精简讲解'};
+    var NARRATION_HINTS = {standard:'自然介绍，适合第一次了解景点。',family:'用容易理解的短句，邀请孩子一起观察。',brief:'先说重点，适合边走边听。'};
     var hasStartedChat = false;
     var api = window.AuthGuard.apiFetch;
     // 从登录信息读取（localStorage 只作显示缓存，真实身份以 /api/auth/me 为准）
@@ -52,8 +56,9 @@
                 return r.json();
             }).then(function(snapshot) {
                 conversationId = snapshot.conversationId || null;
+                narrationMode = normalizeNarration(snapshot.narrationMode);
                 selectedSpot = allSpots.find(function(spot) { return spot.id === snapshot.spotId; }) || null;
-                contextReady = true; renderChatContext();
+                contextReady = true; renderChatContext(); renderNarration();
             }).catch(function() { chatContext.textContent = '会话状态未同步，请点击“新对话”后提问。'; });
         }).catch(function() {
             if (S('directorStatus')) S('directorStatus').textContent = '景点读取失败，请刷新页面后重试。';
@@ -228,6 +233,22 @@
     function renderChatContext() {
         chatContext.textContent = selectedSpot ? '当前景点：' + selectedSpot.name + '（下次提问时使用）' : '当前：通用导览';
     }
+    /** REQ-046: map only allowlisted modes to controls; no storage/network.
+     * Unknown/missing values use standard. Change labels with docs/narration_design.md. */
+    function normalizeNarration(value) {
+        return typeof value === 'string' && Object.prototype.hasOwnProperty.call(NARRATION_LABELS,value) ? value : 'standard';
+    }
+    function renderNarration() {
+        narrationSelect.value = narrationMode;
+        narrationSelect.disabled = !contextReady || !!pendingChats || resettingConversation;
+        narrationHint.textContent = '下次提问使用' + NARRATION_LABELS[narrationMode] + '。' + NARRATION_HINTS[narrationMode];
+    }
+    narrationSelect.addEventListener('change',function() {
+        if (!contextReady || pendingChats || resettingConversation) { renderNarration(); return; }
+        narrationMode = normalizeNarration(narrationSelect.value);
+        chatRequest.reset(); // A retry must never replay a request with the previous mode.
+        speechGeneration++; stopTts(); stopListen(); renderNarration();
+    });
     live2dStage.addEventListener('click', function(e) { e.stopPropagation(); openChat(); });
     chatFab.addEventListener('click', function(e) { e.stopPropagation(); toggleChat(); });
     chatPanelClose.addEventListener('click', function(e) { e.stopPropagation(); closeChat(); });
@@ -261,6 +282,7 @@
     chatNewBtn.addEventListener('click', function() {
         if (pendingChats || chatNewBtn.disabled) return;
         resettingConversation = true;
+        renderNarration();
         chatNewBtn.disabled = true;
         api('/api/chat/new', {method:'POST'}).then(function(r) {
             if (!r.ok) throw new Error('new conversation ' + r.status);
@@ -268,12 +290,13 @@
         }).then(function(data) {
             chatRequest.reset();
             conversationId = data.conversationId;
+            narrationMode = normalizeNarration(data.narrationMode);
             selectedSpot = null; pendingSpot = null; contextReady = true; renderChatContext();
             stopTts();
             chatMessages.innerHTML = '';
             addMsg('bot', '新对话已开始。您可以继续提问。');
         }).catch(function() { addMsg('bot', '暂时无法开始新对话，请重试。'); })
-          .then(function() { resettingConversation = false; chatNewBtn.disabled = false; });
+          .then(function() { resettingConversation = false; chatNewBtn.disabled = false; renderNarration(); });
     });
     // REQ-031: all entry points share one request lifecycle.
     var chatRequest = window.GuideChatRequest.create({
@@ -295,6 +318,7 @@
         onState: function(state) {
             var busy = state.status === 'pending';
             pendingChats = busy ? 1 : 0; chatNewBtn.disabled = busy || resettingConversation;
+            renderNarration();
             chatSendBtn.disabled = busy;
             voiceBtn.disabled = busy;
             quickActions.querySelectorAll('button').forEach(function(button) { button.disabled = busy; });
@@ -320,8 +344,9 @@
         },
         onSuccess: function(d) {
             conversationId = d.conversationId || conversationId; pendingSpot = null;
+            narrationMode = normalizeNarration(d.narrationMode || narrationMode); renderNarration();
             selectedSpot = allSpots.find(function(spot) { return spot.id === d.spotId; }) || null; renderChatContext();
-            addMsg('bot', d.reply);
+            addMsg('bot', d.reply, NARRATION_LABELS[narrationMode] + (d.fallback ? ' · 本地资料' : ''));
             if (Array.isArray(d.recommendedRoutes) && d.recommendedRoutes.length) {
                 var div = document.createElement('div'); div.className = 'chat-msg bot';
                 var h = '<div class="msg-bubble"><div class="route-card"><div class="route-title">🗺️ 推荐路线</div>';
@@ -363,7 +388,7 @@
     function sendMessage() {
         if (chatRequest.isPending() || resettingConversation || !contextReady) return;
         var text = chatInput.value.trim(); if (!text) return;
-        var body = { message: text, conversationId: conversationId };
+        var body = { message: text, conversationId: conversationId, narrationMode:narrationMode };
         if (pendingSpot) body.spotId = pendingSpot.id;
         if (currentInterest) body.interest = currentInterest;
         chatRequest.send(body);
@@ -376,9 +401,9 @@
         chatMessages.appendChild(d); chatMessages.scrollTop = chatMessages.scrollHeight;
     }
     function removeTyping() { var e = S('typingIndicator'); if (e) e.remove(); }
-    function addMsg(type, text) {
+    function addMsg(type, text, caption) {
         var d = document.createElement('div'); d.className = 'chat-msg ' + type;
-        d.innerHTML = '<div class="msg-bubble">' + esc(text) + '</div>';
+        d.innerHTML = '<div class="msg-bubble">' + (caption ? '<div class="narration-caption">' + esc(caption) + '</div>' : '') + esc(text) + '</div>';
         chatMessages.appendChild(d); chatMessages.scrollTop = chatMessages.scrollHeight;
     }
     function esc(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }

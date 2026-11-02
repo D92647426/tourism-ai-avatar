@@ -6,7 +6,7 @@
 <title>旅游 AI 数字人</title>
 <link rel="stylesheet" href="/css/style.css?v=speech-1">
 <link rel="stylesheet" href="/css/exploration.css?v=coach-1">
-<link rel="stylesheet" href="/css/tour-experience.css?v=director-1">
+<link rel="stylesheet" href="/css/tour-experience.css?v=narration-1">
 </head>
 <body class="exploration-page">
 
@@ -14,7 +14,7 @@
 <header class="header">
   <div class="header-inner">
     <div class="logo"><svg class="tour-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M5 26V13l11-8 11 8v13M10 26V16h12v10M16 5v21M3 26h26"/></svg><span class="logo-text">旅游 AI 数字人</span></div>
-    <nav class="tour-nav" aria-label="游客功能"><a href="#director">游览导演</a><a href="#exploration">我的观察</a><a href="#spotIndex">景点索引</a><button type="button" class="chat-fab" id="chatFab" aria-label="打开数字人导游"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H9l-5 4V4Z"/><path d="M8 8h8M8 12h5"/></svg><span class="chat-fab-text">问导游</span></button></nav>
+    <nav class="tour-nav" aria-label="游客功能"><a href="#spotIndex">景点导览</a><a href="#director">游览方案</a><a href="#exploration">随手记</a><button type="button" class="chat-fab" id="chatFab" aria-label="打开数字人导游"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H9l-5 4V4Z"/><path d="M8 8h8M8 12h5"/></svg><span class="chat-fab-text">问导游</span></button></nav>
     <div class="header-right">
       <span class="header-username" id="headerUsername"></span>
       <button class="profile-btn" id="profileBtn" title="个人信息" aria-label="个人信息"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 21v-3a7 7 0 0 1 14 0v3"/></svg></button>
@@ -24,7 +24,7 @@
 
 <main class="main-container">
   <section class="director" id="director" aria-labelledby="directorHeading">
-    <div class="director-intro"><div><h1 id="directorHeading">好风景，<br>值得慢一点发现。</h1><p>先编一段属于你的游览，<br>再让数字人陪你看见更多。</p></div><a class="director-skip" href="#exploration">已有想去的地方？直接开始观察 <span aria-hidden="true">↗</span></a></div>
+    <div class="director-intro"><div><h1 id="directorHeading">跟着数字人，<br>读懂眼前的风景。</h1><p>选一个景点，听讲解、随时追问；<br>也可以按时间和偏好安排游览。</p></div><a class="director-skip" href="#spotIndex">已有想去的地方？直接选景点 <span aria-hidden="true">↗</span></a></div>
     <div class="director-workspace">
       <form id="directorForm" class="director-form"><h2>今天，你来做游览导演。</h2><p>选一个时间和偏好，给旅程一个开场。</p><div class="director-fields">
         <label for="directorTime">留多少时间？<select id="directorTime"><option value="30">30 分钟 · 小段发现</option><option value="60" selected>60 分钟 · 慢慢看</option><option value="90">90 分钟 · 多看一站</option></select></label>
@@ -38,7 +38,7 @@
 
   <section class="exploration" id="exploration" aria-labelledby="explorationHeading">
     <div class="explore-intro">
-      <div><h2 id="explorationHeading">风景的另一半，是你的发现。</h2><p>领一张观察任务，用自己的话讲给数字人听。你的发现，会留在这本旅程手册里。</p></div>
+      <div><h2 id="explorationHeading">想留下发现时，再写一笔。</h2><p>随手记是可选的游览补充。写下感兴趣的细节，也可以带着问题继续问数字人。</p></div>
       <div class="explore-mode"><label for="exploreMode">记录方式</label><select id="exploreMode"><option value="demo">课堂演示</option><option value="onsite">现场观察</option></select><small>手动选站，不验证到访位置</small></div>
     </div>
     <p id="exploreStatus" class="explore-status" role="status" aria-live="polite">正在打开观察手册…</p>
@@ -141,6 +141,7 @@
       <button class="chat-panel-close" id="chatPanelClose">✕</button>
     </div>
     <div class="chat-context" id="chatContext" role="status" aria-live="polite">正在同步会话状态…</div>
+    <div class="chat-narration"><label for="chatNarrationMode">讲解方式</label><select id="chatNarrationMode" aria-describedby="chatNarrationHint" disabled><option value="standard">标准讲解</option><option value="family">亲子讲解</option><option value="brief">精简讲解</option></select><p id="chatNarrationHint" role="status">正在同步本次讲解方式…</p></div>
     <div class="chat-context" id="speechSettingsStatus" role="status">默认语速 1、音量 1；加载管理员配置后更新。播放取决于设备中文声线。</div>
     <div class="chat-messages" id="chatMessages">
       <div class="chat-msg bot"><div class="msg-bubble" id="chatWelcome">阿弥陀佛！我是您的AI导游灵灵，欢迎来到灵山胜境，愿您在此感悟灵山，吉祥平安！</div></div>
@@ -185,6 +186,6 @@
 <script src="/js/display-config.js?v=display-1"></script>
 <script src="/js/director-core.js"></script>
 <script src="/js/director.js"></script>
-<script src="/js/main.js?v=director-1"></script>
+<script src="/js/main.js?v=narration-1"></script>
 </body>
 </html>

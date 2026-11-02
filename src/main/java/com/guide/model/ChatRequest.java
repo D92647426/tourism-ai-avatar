@@ -8,6 +8,7 @@ public class ChatRequest {
     private String interest;  // 游客兴趣标签：历史人文/自然风光/亲子出游/摄影打卡
     private Integer spotId;
     private String conversationId;
+    private String narrationMode; // REQ-046: omitted keeps the current conversation's choice.
 
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }
@@ -17,4 +18,6 @@ public class ChatRequest {
     public void setSpotId(Integer spotId) { this.spotId = spotId; }
     public String getConversationId() { return conversationId; }
     public void setConversationId(String conversationId) { this.conversationId = conversationId; }
+    public String getNarrationMode() { return narrationMode; }
+    public void setNarrationMode(String narrationMode) { this.narrationMode = narrationMode; }
 }

@@ -119,3 +119,7 @@ REQ-042 / #14：语音设置进入实际播报，含0音量、设备声线与And
 
 
 REQ-043（#29）情境编排、REQ-044（#30）观察辅助、REQ-045（#31）游客界面，见 [验收说明](director_design.md#L3)。
+
+## REQ-046 游客讲解方式（#37）
+
+当前主题以景区数字人导览为主线，标准/亲子/精简方式沿当前会话延续，新对话回标准；观察为可选补充。行为、API与边界见 [设计](narration_design.md#L1)，实现为 [模式白名单](../src/main/java/com/guide/model/NarrationMode.java#L1)、[成功后提交](../src/main/java/com/guide/service/ConversationService.java#L78)、[回答组织](../src/main/java/com/guide/service/ChatService.java#L78)、[页面控件](../src/main/resources/static/js/main.js#L235)。
