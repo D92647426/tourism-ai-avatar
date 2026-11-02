@@ -120,6 +120,7 @@
                 ask.textContent = '请等待当前请求结束，再选择景点';
                 return;
             }
+            chatRequest.reset();
             selectedSpot = s;
             pendingSpot = s;
             renderChatContext(); closeDetail(); openChat();
@@ -270,6 +271,7 @@
             if (!r.ok) throw new Error('new conversation ' + r.status);
             return r.json();
         }).then(function(data) {
+            chatRequest.reset();
             conversationId = data.conversationId;
             selectedSpot = null; pendingSpot = null; contextReady = true; renderChatContext();
             stopTts();
@@ -307,12 +309,14 @@
             chatMessages.setAttribute('aria-busy', busy ? 'true' : 'false');
             if (busy) showTyping(); else removeTyping();
             var messages = {
+                expired: '对话已过期，请点“新对话”继续。',
                 timeout: '等待超过 30 秒，可重试上一个问题。',
                 cancelled: '已取消等待，可重试上一个问题。',
                 http: '服务暂时无法回答，请稍后重试。',
                 network: '网络请求失败，请检查连接后重试。',
                 'invalid-response': '收到的回答格式有误，请重试。'
             };
+            if (state.reason === 'expired') addMsg('bot', messages.expired);
             requestStatus.textContent = busy ? '正在思考…' : messages[state.reason] || '';
             if (speech) {
                 speech.setActivity(busy ? 'thinking' : 'idle');
@@ -334,7 +338,7 @@
     });
 
     cancelRequestBtn.addEventListener('click', function() { chatRequest.cancel(); });
-    retryRequestBtn.addEventListener('click', function() { chatRequest.retry(); });
+    retryRequestBtn.addEventListener('click', function() { if (!resettingConversation && contextReady) chatRequest.retry(); });
 
     /** REQ-032: prepare an explicit, editable exploration question without sending.
      * Input: nonempty question string (max 5000 chars); output: acceptance/reason.
@@ -343,7 +347,7 @@
      */
     window.GuideChatDraft = function(text) {
         if (typeof text !== 'string' || !text.trim() || text.length > 5000) return { accepted: false, reason: '问题内容无效或过长，请精简后重试。' };
-        if (chatRequest.isPending()) return { accepted: false, reason: '导游还在回答上一个问题，请等回答结束或先取消等待。' };
+        if (chatRequest.isPending() || resettingConversation) return { accepted: false, reason: '导游还在回答上一个问题，请等回答结束或先取消等待。' };
         if (chatInput.value.trim()) return { accepted: false, reason: '聊天框里还有草稿，请先发送或清空，再带入这份发现。' };
         speechGeneration++;
         stopTts();
@@ -804,6 +808,7 @@
         loadSpots();
         initLive2D();
         initSR();
+        if (window.GuideExplorationPage) window.GuideExplorationPage.mount(window, user.userId);
     }).catch(function() {
         loadSpots();
         initLive2D();

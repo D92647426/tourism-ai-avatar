@@ -86,6 +86,7 @@ class Element {
         return this._queryAll ? this._queryAll(selector) : [];
     }
 
+    setAttribute(k,v) { this[k]=v; }
     getContext() {
         const noop = () => { };
         return {
@@ -202,6 +203,12 @@ function createEnv(options) {
 }
 
 function loadScript(env, filename) {
+    if (filename === 'main.js') {
+        if (!env.GuideChatRequest) loadScript(env,'chat-request.js');
+        if (!env.GuideSpeech) loadScript(env,'speech-lifecycle.js');
+        if (!env.GuideDisplayConfig) loadScript(env,'display-config.js');
+    }
+    if (filename === 'admin.js' && !env.AdminStats) loadScript(env,'admin-stats.js');
     const file = path.join(STATIC_JS, filename);
     const code = fs.readFileSync(file, 'utf8');
     vm.runInContext(code, env._context, { filename: file });

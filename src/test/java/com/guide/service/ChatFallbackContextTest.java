@@ -18,7 +18,7 @@ class ChatFallbackContextTest {
         SpotService spots = mock(SpotService.class);
         KnowledgeService knowledge = mock(KnowledgeService.class);
         when(spots.getAllSpots()).thenReturn(Collections.singletonList(spot));
-        when(knowledge.retrieveRelevantContext(anyString())).thenReturn("");
+        when(knowledge.retrieve(anyString())).thenReturn(new KnowledgeRetrieval("", java.util.Collections.emptyList(), java.util.Collections.emptyList()));
         ChatService service = new ChatService(spots, knowledge, mock(AnalyticsService.class), mock(AiCompletionClient.class));
 
         String story = service.chat("它有什么故事", null, Collections.emptyList(), spot).getReply();

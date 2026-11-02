@@ -210,7 +210,7 @@ public class ChatService {
         }
         if (entities.size() == 1) {
             for (Spot spot : spotService.getAllSpots()) if (spot.getName().equals(entities.get(0))) {
-                return spotReplyForQuestion(spot, msg, interest) + "\n\n" + (knowledgeContext.isEmpty()
+                return spotReplyForQuestion(spot, msg, interest) + "\n" + SAMPLE_BOUNDARY + "\n\n" + (knowledgeContext.isEmpty()
                         ? "目前没有匹配的知识条目，以上是景点卡片中的参考信息。你想进一步了解哪方面？"
                         : knowledgeContext);
             }

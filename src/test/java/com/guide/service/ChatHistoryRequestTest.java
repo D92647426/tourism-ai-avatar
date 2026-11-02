@@ -26,7 +26,7 @@ class ChatHistoryRequestTest {
         KnowledgeService knowledge = mock(KnowledgeService.class);
         AnalyticsService analytics = mock(AnalyticsService.class);
         when(spots.buildSpotContext()).thenReturn("景点目录");
-        when(knowledge.retrieveRelevantContext(anyString())).thenReturn("参考资料");
+        when(knowledge.retrieve(anyString())).thenReturn(new KnowledgeRetrieval("参考资料", java.util.Collections.emptyList(), java.util.Collections.emptyList()));
         RestTemplate client = new RestTemplate();
         AiCompletionClient ai = new AiCompletionClient(client, "test-key-only", "https://model.example/v1", "test-model");
         ChatService service = new ChatService(spots, knowledge, analytics, ai);

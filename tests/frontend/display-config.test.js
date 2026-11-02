@@ -146,7 +146,7 @@ test('admin previews draft text and theme without announcing a saved change', as
     a.doc.getElementById('cfgColor').value = '#ffffff';
     a.doc.getElementById('cfgName').dispatch('input');
     assert.equal(a.doc.getElementById('cfgPreviewName').textContent, 'AI导游<b>新向导</b>');
-    assert.equal(a.doc.getElementById('cfgPreviewName').innerHTML, '');
+    assert.equal(a.doc.getElementById('cfgPreviewName').innerHTML, 'AI导游&lt;b&gt;新向导&lt;/b&gt;');
     assert.equal(a.doc.getElementById('cfgPreview').style['--preview-on'], '#000000');
     assert.match(a.doc.getElementById('cfgStatus').textContent, /未保存/);
     assert.equal(a.puts.length, 0);

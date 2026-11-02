@@ -111,9 +111,7 @@ class NaturalChatTest {
             server.start();
             try {
                 ChatService service = chat(knowledge);
-                ReflectionTestUtils.setField(service, "apiKey", "local-mock-only");
-                ReflectionTestUtils.setField(service, "baseUrl", "http://127.0.0.1:" + server.getAddress().getPort() + "/v1");
-                ReflectionTestUtils.setField(service, "model", "local-mock");
+                ReflectionTestUtils.setField(service, "aiCompletionClient", new AiCompletionClient("local-mock-only", "http://127.0.0.1:" + server.getAddress().getPort() + "/v1", "local-mock"));
                 ChatResponse response = service.chat("大佛有什么故事？", null);
                 assertNotNull(captured.get());
                 assertTrue(mapper.readTree(captured.get()).path("messages").get(0).path("content").asText().contains("资料 K4】"));
@@ -136,7 +134,7 @@ class NaturalChatTest {
         SpotService spots = new SpotService(); spots.loadSpots();
         AnalyticsService analytics = new AnalyticsService();
         ReflectionTestUtils.setField(analytics, "interactionsFilePath", temp.resolve("interactions.json").toString());
-        ChatService chat = new ChatService(spots, knowledge, analytics);
-        ReflectionTestUtils.setField(chat, "apiKey", ""); return chat;
+        ChatService chat = new ChatService(spots, knowledge, analytics, new AiCompletionClient("", "", ""));
+        return chat;
     }
 }

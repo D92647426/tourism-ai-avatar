@@ -126,7 +126,7 @@ GET /api/admin/reports/sentiment 返回trend、positiveQuestionRate、sentimentS
 
 | API | 方法与路径 | 请求参数 | 响应字段 | 错误码 |
 |---|---|---|---|---|
-| API-039a | `POST /api/chat` | JSON `message` 必填（1–600 字符）；`conversationId`、`spotId`、`interest` 可选 | `reply` 文本、`fallback` 布尔值、`conversationId` 服务端随机 ID、`spotId` 当前景点 ID 或 `null`，以及原有路线字段 | 400 消息为空/过长或景点不存在；403 CSRF 错误、其他会话/已重置 ID；410 当前会话闲置过期；502 空回复 |
+| API-039a | `POST /api/chat` | JSON `message` 必填（1–5000 字符）；`conversationId`、`spotId`、`interest` 可选 | `reply` 文本、`fallback` 布尔值、`conversationId` 服务端随机 ID、`spotId` 当前景点 ID 或 `null`，以及原有路线字段 | 400 消息为空/过长或景点不存在；403 CSRF 错误、其他会话/已重置 ID；410 当前会话闲置过期；502 空回复 |
 | API-039b | `POST /api/chat/new` | 无请求体要求，可发送 `{}` | `conversationId` 新 ID、`spotId: null` | 403 CSRF 错误 |
 
 示例（省略从 `GET /api/auth/csrf` 取得的 Cookie 和令牌值）：

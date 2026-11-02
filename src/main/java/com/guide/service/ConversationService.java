@@ -29,6 +29,7 @@ public class ConversationService {
     private final ChatService chatService;
     private final SpotService spotService;
     private final Clock clock;
+    private final KnowledgeRetriever entityResolver = new KnowledgeRetriever();
 
     @Autowired
     public ConversationService(ChatService chatService, SpotService spotService) {
@@ -73,8 +74,8 @@ public class ConversationService {
      */
     public ChatResponse chat(HttpSession session, ChatRequest request) {
         if (request == null || request.getMessage() == null || request.getMessage().trim().isEmpty()
-                || request.getMessage().length() > 600) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "message must contain 1-600 characters");
+                || request.getMessage().length() > 5000) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "message must contain 1-5000 characters");
         }
         Spot selected = null;
         if (request.getSpotId() != null) {
@@ -104,12 +105,10 @@ public class ConversationService {
                 candidate.turns.clear(); // A new place must never inherit the old place's pronouns.
                 candidate.spotId = selected.getId();
             } else if (selected == null) {
-                for (Spot spot : spotService.getAllSpots()) {
-                    if (request.getMessage().contains(spot.getName())
-                            && !Integer.valueOf(spot.getId()).equals(candidate.spotId)) {
-                        candidate.turns.clear();
-                        candidate.spotId = spot.getId();
-                        break;
+                List<String> names = entityResolver.retrieve(request.getMessage(), java.util.Collections.emptyList()).getEntityNames();
+                if (names.size() == 1) for (Spot spot : spotService.getAllSpots()) {
+                    if (spot.getName().equals(names.get(0)) && !Integer.valueOf(spot.getId()).equals(candidate.spotId)) {
+                        candidate.turns.clear(); candidate.spotId = spot.getId(); break;
                     }
                 }
             }

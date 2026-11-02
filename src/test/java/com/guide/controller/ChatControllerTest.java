@@ -38,7 +38,7 @@ class ChatControllerTest {
     @BeforeEach
     void setUp() {
         chatService = mock(ChatService.class);
-        mockMvc = MockMvcBuilders.standaloneSetup(new ChatController(chatService)).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(new ChatController(new com.guide.service.ConversationService(chatService, mock(com.guide.service.SpotService.class)))).build();
     }
 
     @Test
@@ -46,7 +46,7 @@ class ChatControllerTest {
         ChatResponse response = new ChatResponse("灵山大佛通高88米。", false);
         response.setInterest("历史人文");
         response.setRecommendedRoutes(Arrays.asList("推荐路线一", "推荐路线二"));
-        when(chatService.chat(eq("大佛有多高"), eq("历史人文"))).thenReturn(response);
+        when(chatService.chat(eq("大佛有多高"), eq("历史人文"), any(), any())).thenReturn(response);
 
         mockMvc.perform(post("/api/chat")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -58,13 +58,13 @@ class ChatControllerTest {
                 .andExpect(jsonPath("$.interest").value("历史人文"))
                 .andExpect(jsonPath("$.recommendedRoutes[0]").value("推荐路线一"));
 
-        verify(chatService).chat("大佛有多高", "历史人文");
+        verify(chatService).chat(eq("大佛有多高"), eq("历史人文"), any(), any());
     }
 
     @Test
     void offlineChatKeepsFallbackSemantics() throws Exception {
         ChatResponse response = new ChatResponse("你好呀，我是灵灵。", true);
-        when(chatService.chat(eq("你好"), any())).thenReturn(response);
+        when(chatService.chat(eq("你好"), any(), any(), any())).thenReturn(response);
 
         mockMvc.perform(post("/api/chat")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -73,6 +73,6 @@ class ChatControllerTest {
                 .andExpect(jsonPath("$.reply").value("你好呀，我是灵灵。"))
                 .andExpect(jsonPath("$.fallback").value(true));
 
-        verify(chatService).chat("你好", null);
+        verify(chatService).chat(eq("你好"), any(), any(), any());
     }
 }

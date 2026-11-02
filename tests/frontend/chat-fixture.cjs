@@ -34,7 +34,7 @@ function page(options = {}) {
     let stops = 0;
     class Element {
         constructor() {
-            this.children = []; this.events = {}; this.style = {}; this.dataset = {}; this.attributes = {};
+            this.children = []; this.events = {}; this.style = {setProperty(){}}; this.dataset = {}; this.attributes = {};
             this.value = ''; this.textContent = ''; this.disabled = false; this.hidden = false;
             const classes = new Set();
             this.classList = { add: x => classes.add(x), remove: x => classes.delete(x), contains: x => classes.has(x) };
@@ -60,7 +60,7 @@ function page(options = {}) {
     const document = {
         getElementById(id) { return nodes.get(id) || [...nodes.values()].map(n => find(n, id)).find(Boolean) || null; },
         createElement: () => new Element(), querySelector: () => null,
-        body: new Element(), head: new Element(), hidden: false,
+        body: new Element(), head: new Element(), documentElement: new Element(), hidden: false,
         addEventListener: documentEvents.addEventListener.bind(documentEvents)
     };
     const quick = new Element(); quick.dataset.msg = 'quick question'; quick.closest = () => quick;
@@ -72,6 +72,8 @@ function page(options = {}) {
         addEventListener: voiceEvents.addEventListener.bind(voiceEvents),
         removeEventListener: (type, fn) => { voiceEvents.events[type] = (voiceEvents.events[type] || []).filter(x => x !== fn); } };
     function fetch(url, options) {
+        if(url === '/api/auth/me') return Promise.resolve(response({userId:'test',username:'test'}));
+        if(url === '/api/auth/csrf') return Promise.resolve(response({headerName:'X-XSRF-TOKEN',token:'test'}));
         if (url !== '/api/chat') return Promise.resolve(response(url === '/api/spots' ? [] : {}));
         const job = deferred(); requests.push({ ...job, options, body: JSON.parse(options.body) }); return job.promise;
     }
@@ -83,7 +85,7 @@ function page(options = {}) {
         addEventListener: windowEvents.addEventListener.bind(windowEvents),
         location: {}, requestAnimationFrame: fn => time.setTimeout(fn, 16), cancelAnimationFrame: time.clearTimeout });
     context.window = context;
-    for (const name of ['chat-request.js', 'speech-lifecycle.js', 'main.js']) {
+    for (const name of ['security.js', 'chat-request.js', 'speech-lifecycle.js', 'display-config.js', 'main.js']) {
         vm.runInContext(fs.readFileSync(path.join(root, 'src/main/resources/static/js', name), 'utf8'), context, { filename: name });
     }
     return { time, nodes, requests, spoken, utterances, synthesis, context, quick, recognitions,

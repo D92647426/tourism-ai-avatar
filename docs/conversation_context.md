@@ -10,7 +10,7 @@
 
 `POST /api/chat` 接受 JSON `{ "message": "它有什么故事", "conversationId": "...", "spotId": 1 }`。`conversationId` 和 `spotId` 可以省略。响应沿用 `reply`、`fallback`，增加当前 `conversationId` 和 `spotId`。`POST /api/chat/new` 接受 `{}`，返回新的 `{ "conversationId": "...", "spotId": null }`。两个写接口都使用现有 CSRF 令牌。
 
-`message` 必须为 1–600 个非空字符，`spotId` 必须对应存在的景点，否则返回 400。其他会话的 ID、点击新对话后失效的 ID 返回 403；当前会话闲置过期并携带原 ID 返回 410。底层 HTTP Session 本身过期后服务器已无法识别旧 ID 的归属，因此返回 403。模型调用失败且没有可用回复时，不将这次问答写入历史。已有本地兜底答复是成功回复，会进入历史并以 `fallback: true` 标明。离线兜底对“故事”“开放”追问会直接使用当前景点的历史与开放时间字段。
+`message` 必须为 1–5000 个非空字符，`spotId` 必须对应存在的景点，否则返回 400。其他会话的 ID、点击新对话后失效的 ID 返回 403；当前会话闲置过期并携带原 ID 返回 410。底层 HTTP Session 本身过期后服务器已无法识别旧 ID 的归属，因此返回 403。模型调用失败且没有可用回复时，不将这次问答写入历史。已有本地兜底答复是成功回复，会进入历史并以 `fallback: true` 标明。离线兜底对“故事”“开放”追问会直接使用当前景点的历史与开放时间字段。
 
 ## 实现与限制
 

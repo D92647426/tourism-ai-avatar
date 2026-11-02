@@ -110,3 +110,6 @@
 ## REQ-037 自然提问检索（GitHub #10）
 
 人工实体/别名/关键词，确定性排序、多实体分配与1200字符知识上下文上限；返回本地候选引用，简称可用于离线景点回复，无命中明确说明。沿用既有字段和管理搜索，不引入向量库/付费模型/会话。方案与依赖见 [natural_retrieval.md:L1](./natural_retrieval.md#L1)。代码：[KnowledgeRetriever.java:L54](../src/main/java/com/guide/service/KnowledgeRetriever.java#L54)、[KnowledgeService.java:L297](../src/main/java/com/guide/service/KnowledgeService.java#L297)、[ChatService.java:L65](../src/main/java/com/guide/service/ChatService.java#L65)。
+
+
+REQ-041：第一轮组合整合与验收，见 [整合记录](integration_first_round.md#L3)。

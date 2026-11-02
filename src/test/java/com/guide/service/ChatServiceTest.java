@@ -48,7 +48,7 @@ class ChatServiceTest {
         aiCompletionClient = mock(AiCompletionClient.class);
         chatService = new ChatService(spotService, knowledgeService, analyticsService, aiCompletionClient);
         when(spotService.buildSpotContext()).thenReturn("灵山大佛、九龙灌浴");
-        when(knowledgeService.retrieveRelevantContext(anyString())).thenReturn("");
+        when(knowledgeService.retrieve(anyString())).thenReturn(new KnowledgeRetrieval("", java.util.Collections.emptyList(), java.util.Collections.emptyList()));
     }
 
     @Test

@@ -122,6 +122,20 @@ class ConversationServiceTest {
         assertNull(service.current(session).getConversationId());
     }
 
+    @Test void aliasesSwitchContextAndCreativeDraftsFitTheSameChatContract() {
+        Spot a=spot(11,"灵山大佛"), b=spot(13,"灵山梵宫");
+        when(spots.getAllSpots()).thenReturn(Arrays.asList(a,b));
+        when(spots.getSpotById(11)).thenReturn(Optional.of(a));
+        when(spots.getSpotById(13)).thenReturn(Optional.of(b)); answer();
+        MockHttpSession session=new MockHttpSession();
+        String id=service.chat(session,request("介绍",11,null)).getConversationId();
+        assertEquals(13,service.chat(session,request("梵宫有什么故事",null,id)).getSpotId());
+        assertEquals(13,service.chat(session,request("它什么时候开放",null,id)).getSpotId());
+        assertNotNull(service.chat(session,request("观察发现".repeat(400),null,id)).getReply());
+        assertEquals(400,assertThrows(ResponseStatusException.class,
+                () -> service.chat(session,request("字".repeat(5001),null,id))).getRawStatusCode());
+    }
+
     static class MutableClock extends Clock {
         long now = 1_000_000L;
         public ZoneId getZone() { return ZoneOffset.UTC; }

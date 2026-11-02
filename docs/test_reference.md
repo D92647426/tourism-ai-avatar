@@ -165,3 +165,6 @@ Java 测试用 @TempDir 与反射直接构造服务，不启动 Spring 上下文
 
 
 2026-10-29 TEST-037最终验收：24项NaturalRetrievalTest、18项NaturalChatTest（含同组12题最终回复）与继承22项合计64项Java；44项Python数据检查测试。完整标题自然句与外景短关键词旁路两项审查发现均有先红后绿回归；查询实际模型使用本机HTTP mock，不是付费联网模型。
+
+
+TEST-041：完整命令、组合回归和失败排查见 [整合验收](integration_first_round.md#L13)。

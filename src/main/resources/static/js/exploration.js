@@ -3,7 +3,7 @@
     'use strict';
     var api = factory(typeof module === 'object' && module.exports ? require('./exploration-core.js') : root.GuideExploration);
     if (typeof module === 'object' && module.exports) module.exports = api;
-    else { root.GuideExplorationPage = api; if (root.document) api.mount(root); }
+    else { root.GuideExplorationPage = api; if (root.document && !root.AuthGuard) api.mount(root); }
 })(typeof window !== 'undefined' ? window : globalThis, function (core) {
     'use strict';
 
@@ -48,7 +48,7 @@
      * Change interaction/rendering here; rules remain in exploration-core.js.
      * See docs/exploration_design.md for acceptance and explicit limitations.
      */
-    async function mount(win) {
+    async function mount(win, trustedUserId) {
         var doc = win.document, byId = function (id) { return doc.getElementById(id); };
         if (!byId('exploration') || !core) return;
         var pack, journal, selectedId, pendingPack = null, importGeneration = 0;
@@ -132,7 +132,7 @@
         }
         try {
             var userId;
-            try { userId = win.localStorage.getItem('userId'); }
+            try { userId = (trustedUserId || win.localStorage.getItem('userId')); }
             catch (error) { userId = 'temporary-session'; storageWarning = '浏览器禁止存储，当前为临时体验。'; }
             // A blocked Storage getter is handled through a throwing adapter.
             var storage;

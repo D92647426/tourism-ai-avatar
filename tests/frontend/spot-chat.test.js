@@ -78,3 +78,23 @@ test('pending question cannot race a new spot selection or send twice', async ()
     assert.doesNotMatch(el('chatContext').textContent,/第一站/);
     resolveChat(response(200,{reply:'完成',spotId:null,conversationId:'room'}));await flush(env);
 });
+
+
+test('new conversation drops failed retry so it cannot send an obsolete conversation id', async () => {
+    let attempts=0;
+    const env=createEnv({fetch(url) {
+        if(url==='/api/spots') return response(200,[]);
+        if(url==='/api/auth/me') return response(200,{username:'alice',role:'GUEST'});
+        if(url==='/api/auth/csrf') return response(200,{headerName:'X-XSRF-TOKEN',token:'test'});
+        if(url==='/api/chat/new') return response(200,{conversationId:'new',spotId:null});
+        if(url==='/api/chat') {attempts++;return response(500,{});}
+        return response(200,{});
+    }});
+    loadScript(env,'security.js');loadScript(env,'main.js');await flush(env);
+    const el=id=>env.document.getElementById(id);
+    el('chatInput').value='旧问题';el('chatSendBtn').dispatch('click');await flush(env);
+    assert.equal(el('chatRetryBtn').hidden,false);
+    el('chatNewBtn').dispatch('click');await flush(env);
+    assert.equal(el('chatRetryBtn').hidden,true);
+    el('chatRetryBtn').dispatch('click');await flush(env);assert.equal(attempts,1);
+});

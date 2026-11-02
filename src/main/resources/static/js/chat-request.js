@@ -72,7 +72,7 @@
                 if (active !== request) return null;
                 if (!response || !response.ok) {
                     var error = new Error('Unsuccessful HTTP response');
-                    error.chatReason = 'http';
+                    error.chatReason = response && response.status === 410 ? 'expired' : 'http';
                     throw error;
                 }
                 // The deadline remains active while json() is pending.
@@ -99,6 +99,7 @@
                 finish(active, 'cancelled');
                 return true;
             },
+            reset: function () { if (active) finish(active, "cancelled"); retryPayload = null; publish("idle"); },
             isPending: function () { return !!active; },
             getState: function () { return Object.assign({}, state); }
         };
