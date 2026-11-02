@@ -4,7 +4,7 @@
 
 ## 已合并完成
 
-整合 PR [#27](https://github.com/D92647426/tourism-ai-avatar/pull/27) 已合入 main（ed420be），下列第一轮功能议题均已合并关闭。#14 后续由 PR #28 合入 main（f19098b）。
+整合 PR [#27](https://github.com/D92647426/tourism-ai-avatar/pull/27) 已合入 main（ed420be），下列第一轮功能议题均已合并关闭。#14 后续由 PR #28 合入 main（f19098b）；#29/#30/#31 由 PR #32 合入 main（a40f763）。
 
 ## 已合并议题清单
 
@@ -22,16 +22,19 @@
 | [#19](https://github.com/D92647426/tourism-ai-avatar/issues/19) | 有来源的讲解搭档 | [#18](https://github.com/D92647426/tourism-ai-avatar/pull/18) | 已合并并关闭 |
 | [#12](https://github.com/D92647426/tourism-ai-avatar/issues/12) | 景点详情提问入口 | [#26](https://github.com/D92647426/tourism-ai-avatar/pull/26) | 已合并并关闭 |
 | [#14](https://github.com/D92647426/tourism-ai-avatar/issues/14) | 语速、静音与设备声线 | [#28](https://github.com/D92647426/tourism-ai-avatar/pull/28) | 已合并并关闭 |
+| [#29](https://github.com/D92647426/tourism-ai-avatar/issues/29) | 游览导演、情境重排、逐站理由 | [#32](https://github.com/D92647426/tourism-ai-avatar/pull/32) | 已合并并关闭 |
+| [#30](https://github.com/D92647426/tourism-ai-avatar/issues/30) | 观察辅助、草稿保留、旅程衔接 | [#32](https://github.com/D92647426/tourism-ai-avatar/pull/32) | 已合并并关闭 |
+| [#31](https://github.com/D92647426/tourism-ai-avatar/issues/31) | 游客界面与手机聊天 | [#32](https://github.com/D92647426/tourism-ai-avatar/pull/32) | 已合并并关闭 |
 
-## 本轮新开发
+## 本轮研究与新提交议题
 
-#14 / PR #28 已合并并关闭。本轮按用户确认的主次实现：
+本轮先完成官方来源选型、主次计划、90秒演示脚本和三人分工建议，没有接入新引擎。详见 [创意路线](research/2026-11-02-creative-roadmap.md#L1)、[一手来源](research/2026-11-02-ar-story-panorama-sources.md#L1)。下列是刚创建的待开发议题，不是已实现功能。
 
 | 议题 | 内容 | 状态 |
 |---|---|---|
-| [#29](https://github.com/D92647426/tourism-ai-avatar/issues/29) | 游览导演、情境重排、逐站理由 | 刚提交 [PR #32](https://github.com/D92647426/tourism-ai-avatar/pull/32)，待评审 |
-| [#30](https://github.com/D92647426/tourism-ai-avatar/issues/30) | 观察写作辅助、草稿保留、旅程衔接 | 刚提交 [PR #32](https://github.com/D92647426/tourism-ai-avatar/pull/32)，待评审 |
-| [#31](https://github.com/D92647426/tourism-ai-avatar/issues/31) | 游客界面美化、手机聊天修正 | 刚提交 [PR #32](https://github.com/D92647426/tourism-ai-avatar/pull/32)，待评审 |
+| [#33](https://github.com/D92647426/tourism-ai-avatar/issues/33) | P0：inkjs 一幕可重玩的景区推理故事 | 下一步优先开发；单设备两角色、三决策节点、两个结尾 |
+| [#34](https://github.com/D92647426/tourism-ai-avatar/issues/34) | P1：MindAR 实体证据卡与手动回退 | 依赖 #33，须真实手机/HTTPS验收 |
+| [#35](https://github.com/D92647426/tourism-ai-avatar/issues/35) | P2：双人互补线索与共享证据板验证 | #33 稳定后验证收益，再决定是否引入 Yjs |
 
 
 第一轮总计划 [#4](https://github.com/D92647426/tourism-ai-avatar/issues/4) 已全部勾选并关闭。
@@ -50,4 +53,4 @@
 
 此前各功能文档中的分支依赖属于提交时状态，整合已完成；后续开发从最新main开始。本表不替小组成员记录不存在的开发或评审贡献。
 
-本轮新功能与截图见 [设计验收](director_design.md#L3)。后续仍需#1/#2/#3的团队确认、互审联调与来源证据，以及真实场景/模型/设备验收。
+PR #32 新功能与截图见 [设计验收](director_design.md#L3)，其头提交 a952b3d 的两组GitHub CI成功后本轮合并。创意研究仅文档改动，验证文档链接与差异格式，不代表新引擎或真机已经测试。后续仍需#1/#2/#3的团队确认、互审联调与来源证据，以及真实场景/模型/设备验收。
