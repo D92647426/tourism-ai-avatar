@@ -211,3 +211,6 @@ PUT 接受部分对象，例如 `{"name":"山川向导","welcomeMessage":"欢迎
 空Key示例：`{"message":"大佛有什么故事？"}` → HTTP200，`{"reply":"…【资料 K4】…","fallback":true,"knowledgeReferences":[{"id":4,"title":"灵山大佛详解","source":"local-knowledge:4"}]}`（省略继承字段/示例正文）。`{"message":"它有什么故事？"}`在本地降级时回复请补充景点名称、knowledgeReferences=[]。有景点卡片但无知识时，仍可介绍卡片，并明确没有匹配知识；不能将景点规则当作检索命中。
 
 不新增错误码或认证策略。空白/无关/含糊检索为空，不抛检索错误；模型调用失败沿用fallback=true，并复用同一候选快照。无实际声称消解所有自然语言或跨轮指代。完整规则见 [natural_retrieval.md:L1](./natural_retrieval.md#L1)，位置 [ChatService.java:L65](../src/main/java/com/guide/service/ChatService.java#L65)、[KnowledgeReference.java:L1](../src/main/java/com/guide/model/KnowledgeReference.java#L1)。验证 `mvn test` 或 [smoke_teacher_project.py:L1](../scripts/smoke_teacher_project.py#L1)，仅用临时数据/空Key或本机mock。
+
+
+API-042：复用公开配置GET和管理员GET/PUT；路径、参数、示例、错误码与服务函数见 [语音配置契约](voice_settings.md#L11)。验证 `mvn -o verify` 与 `node --test tests/frontend/*.test.js`。

@@ -37,6 +37,7 @@
     var api = window.AuthGuard.apiFetch;
     // 从登录信息读取（localStorage 只作显示缓存，真实身份以 /api/auth/me 为准）
     var speechGeneration = 0;
+    var voiceSettings = window.GuideVoiceSettings.normalize(null);
     var speech = null, speechSendTimer = null, focusTimer = null, expressionTimer = null;
     var currentUserId = localStorage.getItem('userId') || '';
     var currentInterest = localStorage.getItem('interest') || '';
@@ -401,6 +402,12 @@
     }
 
     speech = window.GuideSpeech.create({
+        getSettings: function() { return Object.assign({},voiceSettings); },
+        selectVoice: function(voices, settings) {
+            var choice = window.GuideVoiceSettings.choose(settings || voiceSettings, voices);
+            S('speechSettingsStatus').textContent = choice.notice + (window.AndroidSpeech ? ' Android 原生桥接不支持这些参数，使用浏览器语音。' : '');
+            return choice.voice;
+        },
         synthesis: window.speechSynthesis,
         Utterance: window.SpeechSynthesisUtterance,
         nativeBridge: window.AndroidSpeech,
@@ -506,7 +513,10 @@
 
     // REQ-038: labels/theme may load late; welcome cannot rewrite started chat.
     var displayConfig = window.GuideDisplayConfig.load({ document: document,
-        fetch: window.fetch.bind(window), canUpdateWelcome: function() { return !hasStartedChat; } });
+        fetch: window.fetch.bind(window), onConfig: function(raw) {
+            voiceSettings = window.GuideVoiceSettings.normalize(raw);
+            S('speechSettingsStatus').textContent = '语音设置已加载：语速 '+voiceSettings.speechRate+'，音量 '+voiceSettings.volume+'。'+(window.AndroidSpeech ? ' Android 原生桥接不支持这些参数，使用浏览器语音。' : '');
+        }, canUpdateWelcome: function() { return !hasStartedChat; } });
     window.addEventListener('pagehide', function() { displayConfig.stop(); });
 
     // ===== 语音输入（优先原生 Android，兜底 Web Speech API） =====

@@ -73,6 +73,7 @@
         }).then(function(raw) {
             if (!active) return;
             active = false; clear(timer); apply(normalize(raw));
+            if (options.onConfig) options.onConfig(raw);
         }).catch(function() { stop(); });
         return {stop:stop, done:done};
     }

@@ -29,7 +29,7 @@ function fixture({charts=true}={}) {
         fetch:url=>{const job=deferred();calls.push({...job,url});return job.promise;},setInterval(){},setTimeout(){},addEventListener(){},console:{error(){},log(){}}};
     if(charts)context.echarts={init:dom=>({setOption:o=>options.set(dom,o),dispose(){options.delete(dom);},resize(){}}),graphic:{LinearGradient:function(){}}};
     context.window=context;context.AuthGuard={me:async()=>({role:"ADMIN",username:"test"}),apiFetch:context.fetch};vm.createContext(context);
-    for(const name of ['admin-stats.js','admin.js'])vm.runInContext(fs.readFileSync(path.join(root,'src/main/resources/static/js',name),'utf8'),context,{filename:name});
+    for(const name of ['voice-settings.js','admin-stats.js','admin.js'])vm.runInContext(fs.readFileSync(path.join(root,'src/main/resources/static/js',name),'utf8'),context,{filename:name});
     return {nodes,nav,calls,options};
 }
 function resolve(call,body,ok=true){call.resolve({ok,json:async()=>body});}

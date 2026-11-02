@@ -12,7 +12,7 @@
     var adminGateError = S('adminGateError');
     var adminIdentity = S('adminIdentity');
     var adminStarted = false;
-    var configEpoch = 0, configLoaded = false, configSaving = false, savedVoiceOption = null;
+    var configEpoch = 0, configLoaded = false, configSaving = false;
 
     // 会话失效/被拒绝时结束页面上的管理员状态，避免继续展示或误用此前的数据
     function endAdminSession() {
@@ -546,17 +546,26 @@
             return validConfig(data);
         });
     }
+    var savedVoiceType = 'auto';
+    // REQ-042: options reflect this device; preserve saved values absent here. docs/voice_settings.md.
+    function refreshVoiceOptions(value) {
+        var select = S('cfgVoice');
+        var selected = value || select.value || savedVoiceType;
+        var voices = [];
+        try { voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : []; } catch(e) {}
+        var list = window.GuideVoiceSettings.chinese(voices);
+        select.innerHTML = '';
+        function option(key,label) { var node=document.createElement('option');node.value=key;node.textContent=label;select.appendChild(node); }
+        option('auto','设备默认中文声线');
+        list.forEach(function(voice) { option(voice.voiceURI,(voice.name || voice.voiceURI)+' · '+voice.lang); });
+        if(selected !== 'auto' && !list.some(function(v){return v.voiceURI===selected;})) option(selected,'已保存但本设备未提供：'+selected);
+        select.value = selected;
+        S('cfgVoiceNotice').textContent = window.GuideVoiceSettings.choose({voiceType:selected},voices).notice + ' 声线依赖游客设备，不保证跨设备或男女声。Android 参数使用浏览器语音回退。';
+    }
+    if (window.speechSynthesis && window.speechSynthesis.addEventListener) window.speechSynthesis.addEventListener('voiceschanged',function(){refreshVoiceOptions();});
     function showConfig(config) {
-        // Preserve configured voice IDs that the legacy female/male menu cannot represent.
-        if (config.voiceType !== 'female' && config.voiceType !== 'male') {
-            if (!savedVoiceOption) {
-                savedVoiceOption = document.createElement('option'); S('cfgVoice').appendChild(savedVoiceOption);
-            }
-            savedVoiceOption.value = config.voiceType;
-            savedVoiceOption.textContent = '已保存声线：' + config.voiceType;
-        }
         S('cfgName').value = config.name; S('cfgWelcome').value = config.welcomeMessage;
-        S('cfgVoice').value = config.voiceType; S('cfgColor').value = config.primaryColor;
+        savedVoiceType = config.voiceType; refreshVoiceOptions(config.voiceType); S('cfgColor').value = config.primaryColor;
         S('cfgVolume').value = config.volume; S('cfgSpeed').value = config.speechRate;
         S('cfgVolumeLabel').textContent = config.volume; S('cfgSpeedLabel').textContent = config.speechRate;
         renderConfigPreview();

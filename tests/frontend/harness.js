@@ -209,6 +209,7 @@ function loadScript(env, filename) {
         if (!env.GuideDisplayConfig) loadScript(env,'display-config.js');
     }
     if (filename === 'admin.js' && !env.AdminStats) loadScript(env,'admin-stats.js');
+    if ((filename === 'main.js' || filename === 'admin.js') && !env.GuideVoiceSettings) loadScript(env,'voice-settings.js');
     const file = path.join(STATIC_JS, filename);
     const code = fs.readFileSync(file, 'utf8');
     vm.runInContext(code, env._context, { filename: file });

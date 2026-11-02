@@ -163,11 +163,11 @@
                                 placeholder="如：阿弥陀佛！我是您的AI导游灵灵..."></textarea>
                         </div>
                         <div class="form-group">
-                            <label>声音类型</label>
+                            <label>设备中文声线</label>
                             <select class="form-input" id="cfgVoice">
-                                <option value="female">女声（推荐）</option>
-                                <option value="male">男声</option>
+                                <option value="auto">设备默认中文声线</option>
                             </select>
+                            <p id="cfgVoiceNotice">声线由设备提供，不保证男女声或跨设备可用；保存后游客刷新生效。</p>
                         </div>
                         <div class="form-group">
                             <label>主题色</label>
@@ -282,7 +282,8 @@
     </div>
 
     <script src="/js/security.js"></script>
-    <script src="/js/display-config.js?v=display-1"></script>
+    <script src="/js/voice-settings.js"></script>
+<script src="/js/display-config.js?v=display-1"></script>
     <script src="/js/admin-stats.js?v=metrics-1"></script>
     <script src="/js/admin.js?v=integrated-1"></script>
 </body>

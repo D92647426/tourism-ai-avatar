@@ -54,7 +54,7 @@ test('late config updates labels but cannot rewrite welcome after chat started',
     assert.equal(doc.getElementById('chatHeaderName').textContent, 'AI导游小旅');
 });
 
-function admin(get, put) {
+function admin(get, put, setup) {
     const alerts = [], puts = [];
     const env = createEnv({fetch(url, opts) {
         if (url === '/api/auth/me') return response(200, { role: 'ADMIN', username: 'test-admin' });
@@ -65,6 +65,7 @@ function admin(get, put) {
         }
         return response(200, {});
     }});
+    if (setup) setup(env);
     env.alert = msg => alerts.push(msg);
     const nav = env.document.createElement('a'); nav.dataset.tab = 'digital-human'; nav._classes.add('active');
     env.document._selectorsAll['.nav-item'] = [nav];
@@ -157,11 +158,26 @@ test('admin display edits preserve a configured voice outside the legacy menu', 
     const a = admin(() => response(200, custom), data => response(200, {...custom,...data}));
     await flush(a.env);
     const voice = a.doc.getElementById('cfgVoice');
-    assert.equal(voice.children[0].value, 'device-voice-id');
-    assert.equal(voice.children[0].textContent, '已保存声线：device-voice-id');
+    assert.equal(voice.children.at(-1).value, 'device-voice-id');
+    assert.equal(voice.children.at(-1).textContent, '已保存但本设备未提供：device-voice-id');
     a.doc.getElementById('cfgName').value = '新名称';
     a.doc.getElementById('btnSaveConfig').dispatch('click'); await flush(a.env);
     assert.equal(a.puts[0].voiceType, custom.voiceType);
     assert.equal(a.puts[0].volume, 0.15); assert.equal(a.puts[0].speechRate, 1.15);
     assert.match(a.doc.getElementById('cfgStatus').textContent, /已保存/);
+});
+
+
+test('device voices populate asynchronously without losing draft URI; saved zero volume reloads',async()=>{
+    let voices=[],voiceEvent;let saved=config({voiceType:'auto',volume:0,speechRate:0.75});
+    const a=admin(()=>response(200,saved),payload=>{saved=payload;return response(200,saved);},env=>{
+        env.speechSynthesis={getVoices:()=>voices,addEventListener:(type,fn)=>{voiceEvent=fn;}};
+    });await flush(a.env);
+    voices=[{voiceURI:'device-a',name:'设备甲',lang:'zh-CN'},{voiceURI:'device-b',name:'设备乙',lang:'zh-TW'}];voiceEvent();
+    const select=a.doc.getElementById('cfgVoice');assert.equal(select.children.at(-1).value,'device-b');
+    select.value='device-b';voiceEvent();assert.equal(select.value,'device-b');
+    a.doc.getElementById('btnSaveConfig').dispatch('click');await flush(a.env);
+    assert.equal(a.puts[0].voiceType,'device-b');assert.equal(a.puts[0].volume,0);
+    a.doc.getElementById('btnReloadConfig').dispatch('click');await flush(a.env);
+    assert.equal(select.value,'device-b');assert.equal(a.doc.getElementById('cfgVolume').value,0);
 });
