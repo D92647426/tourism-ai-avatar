@@ -229,3 +229,7 @@ API-043：复用景点GET与聊天POST，输入输出、错误码和实现位置
 ## API-049 景点追问草稿
 
 复用 POST /api/chat，必填 message，沿用 conversationId、spotId、narrationMode 和既有响应字段、400/403/410/502。示例请求 `{"message":"关于【灵山大佛】，请把核心看点压缩为三句，方便我边走边听。","spotId":11,"narrationMode":"brief"}`，示例响应 `{"reply":"讲解正文","spotId":11,"narrationMode":"brief","knowledgeReferences":[]}`。实际 ID 从 GET /api/spots 取，响应其他字段沿用现有会话契约。客户端点击只准备草稿，确认发送才调用接口。入口与验收见 [设计](followups_design.md#L11)、[主聊天](../src/main/resources/static/js/main.js#L1) 和 [联动测试](../tests/frontend/followups-page.test.js#L1)。无新增配置。
+
+## API-050 本地追问讲解
+
+POST /api/chat 沿用既有请求 message/spotId/conversationId/narrationMode 和响应 reply/fallback/knowledgeReferences。服务函数为 [LocalFollowupReply.build](../src/main/java/com/guide/service/LocalFollowupReply.java#L20)，由 [ChatService](../src/main/java/com/guide/service/ChatService.java#L215) 的本地路径调用。固定模板完整匹配时返回分块回复，fallback=true，原错误码400/403/410/502沿用。请求与响应示例、验收命令见 [设计](local_followups_design.md#L13)。

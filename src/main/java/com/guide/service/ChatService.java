@@ -239,6 +239,8 @@ public class ChatService {
         }
         if (entities.size() == 1) {
             for (Spot spot : spotService.getAllSpots()) if (spot.getName().equals(entities.get(0))) {
+                String followup = LocalFollowupReply.build(spot, userMessage, mode);
+                if (followup != null) return followup + "\n\n" + SAMPLE_BOUNDARY;
                 if (mode != NarrationMode.STANDARD) return narratedSpotReply(spot, msg, mode);
                 return spotReplyForQuestion(spot, msg, interest) + "\n" + SAMPLE_BOUNDARY + "\n\n" + (knowledgeContext.isEmpty()
                         ? "目前没有匹配的知识条目，以上是景点卡片中的参考信息。你想进一步了解哪方面？"
@@ -246,6 +248,8 @@ public class ChatService {
             }
         }
 
+        String followup = LocalFollowupReply.build(currentSpot, userMessage, mode);
+        if (followup != null) return followup + "\n\n" + SAMPLE_BOUNDARY;
         boolean currentQuestion = mode == NarrationMode.STANDARD
                 ? containsAny(msg, "它", "这里", "这个景点", "故事", "开放", "几点") : isNarrationFollowup(msg);
         if (currentSpot != null && currentQuestion) {

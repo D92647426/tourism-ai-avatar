@@ -195,3 +195,7 @@ TEST-046复查回归：[免费/特点与外景不串事实](../src/test/java/com
 ## TEST-049 导游追问卡
 
 [模板、站点快照、文本安全与拒绝](../tests/frontend/chat-followups.test.js#L1) 和 [真实页面、历史选站、模式、重编、忙态及迟到](../tests/frontend/followups-page.test.js#L1)。命令 `node --test tests/frontend/chat-followups.test.js tests/frontend/followups-page.test.js`，预期 9/9。全套运行 `node --test tests/frontend/*.test.js`、`mvn -o verify`、`python scripts/check_doc_links.py` 和 `python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar`。失败先检查当次响应 spotId 与真实景点匹配，以及 GuideChatDraft 草稿/请求守卫。实际截图与完整结果见 [交付记录](followups_design.md#L1)。
+
+## TEST-050 本地追问讲解
+
+[LocalFollowupReplyTest](../src/test/java/com/guide/service/LocalFollowupReplyTest.java#L1) 包含三意图/模式矩阵、完整字段限定语/缺失、自定义名/非模板、当前和解析景点、外景/多实体、在线原问/历史、故障/候选快照与前端模板契约。运行 `mvn -o -Dtest=LocalFollowupReplyTest test`，预期8/8。完整验证 `mvn -o verify`、`node --test tests/frontend/*.test.js`、`python scripts/check_doc_links.py` 及 `python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar`。HTTP 预期三模板 reply 不同，spot/mode/fallback 正确。失败先核对完整模板匹配、景点解析顺序及实际构建 JAR，详见 [设计](local_followups_design.md#L19)。
