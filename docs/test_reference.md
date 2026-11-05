@@ -191,3 +191,7 @@ TEST-046复查回归：[免费/特点与外景不串事实](../src/test/java/com
 [纯状态/下一站/无效方案与快照](../tests/frontend/journey-core.test.js#L1)、[主页面联动/拒绝/重编/迟到/切站](../tests/frontend/journey-page.test.js#L1)、[候选安全与归属](../tests/frontend/chat-references.test.js#L1)；[请求生命周期](../tests/frontend/chat-request.test.js#L1)另验主聊天HTTP400不重放。实际JAR的模块资源、连续切站/模式及候选source契约见 [smoke](../scripts/smoke_teacher_project.py#L1)。
 
 命令：`node --test tests/frontend/*.test.js`、`mvn -o verify`、`python scripts/check_doc_links.py`、`python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar`。预期不自动发送、不覆盖草稿、重编后旧重试/候选不复活，候选不作逐句事实证明。失败先核对主页面方案来源标记、生命周期身份和本次响应对象。真实浏览器、计数和截图在 [交付设计](journey_references_design.md#L27)追加。
+
+## TEST-049 导游追问卡
+
+[模板、站点快照、文本安全与拒绝](../tests/frontend/chat-followups.test.js#L1) 和 [真实页面、历史选站、模式、重编、忙态及迟到](../tests/frontend/followups-page.test.js#L1)。命令 `node --test tests/frontend/chat-followups.test.js tests/frontend/followups-page.test.js`，预期 9/9。全套运行 `node --test tests/frontend/*.test.js`、`mvn -o verify`、`python scripts/check_doc_links.py` 和 `python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar`。失败先检查当次响应 spotId 与真实景点匹配，以及 GuideChatDraft 草稿/请求守卫。实际截图与完整结果见 [交付记录](followups_design.md#L1)。

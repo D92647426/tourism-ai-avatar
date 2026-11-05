@@ -372,6 +372,7 @@
             }
             var answer=addMsg('bot', d.reply, NARRATION_LABELS[narrationMode] + (d.fallback ? ' · 本地资料' : ''));
             if(window.GuideChatReferences)window.GuideChatReferences.append(document,answer,d);
+            if(window.GuideChatFollowups)window.GuideChatFollowups.append(document,answer,selectedSpot,prepareFollowup);
             chatMessages.scrollTop=chatMessages.scrollHeight;
             if (Array.isArray(d.recommendedRoutes) && d.recommendedRoutes.length) {
                 var div = document.createElement('div'); div.className = 'chat-msg bot';
@@ -398,7 +399,7 @@
         if (!contextReady) return {accepted:false,reason:'会话状态尚未同步，请稍后重试，或先在聊天中点击“新对话”。'};
         if(tourNeedsSelection&&!(context&&Number.isSafeInteger(context.spotId)&&allSpots.some(function(spot){return spot.id===context.spotId;})))return {accepted:false,reason:'方案已更新，请先重新选择讲解站，或点击“新对话”；未发送草稿会保留。'};
         if (chatRequest.isPending() || resettingConversation) return { accepted: false, reason: '导游还在回答上一个问题，请等回答结束或先取消等待。' };
-        if (chatInput.value.trim()) return { accepted: false, reason: '聊天框里还有草稿，请先发送或清空，再带入这份发现。' };
+        if (chatInput.value.trim()) return { accepted: false, reason: '聊天框里还有草稿，请先发送或清空，再准备新的问题。' };
         if (context && context.spotId) {
             var spot=allSpots.find(function(item){return item.id===context.spotId;});
             if(!spot)return {accepted:false,reason:'景点信息尚未加载，请稍后重试。'};
@@ -414,6 +415,16 @@
         chatInput.focus();
         return { accepted: true };
     };
+
+    /** REQ-049: explicitly prepare a historical answer's station-bound question.
+     * Input text/id come from the validated card snapshot. Returns draft acceptance.
+     * Existing guards handle refusal without changing state; same tour stop keeps relay.
+     * No network or mode change. See docs/followups_design.md for template policy.
+     */
+    function prepareFollowup(text, spotId) {
+        var tour = window.GuideTour && window.GuideTour.snapshot();
+        return window.GuideChatDraft(text, {spotId: spotId, tour: !!(tour && tour.current && tour.current.id === spotId)});
+    }
 
     function sendMessage() {
         if (chatRequest.isPending() || resettingConversation || !contextReady) return;

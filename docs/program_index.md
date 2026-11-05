@@ -116,3 +116,7 @@
 ## REQ-047/048 导览衔接与候选
 
 [journey-core.create](../src/main/resources/static/js/journey-core.js#L8)纯状态和原子校验；[journey.mount](../src/main/resources/static/js/journey.js#L7)处理真实站点选择/下一站/拒绝反馈；[chat-references.append](../src/main/resources/static/js/chat-references.js#L8)做白名单、去重、限量与纯文本披露。主页面仍由 [main.js](../src/main/resources/static/js/main.js#L1)管理请求/语音及方案失效守卫。主聊天单独启用HTTP400纠正模式，共享 [chat-request.create](../src/main/resources/static/js/chat-request.js#L25)默认契约保持兼容。
+
+## REQ-049 追问模块
+
+[chat-followups.append](../src/main/resources/static/js/chat-followups.js#L21) 验证并复制站点、渲染纯文本折叠卡与局部反馈。主聊天 [prepareFollowup](../src/main/resources/static/js/main.js#L424) 将显式站点交给既有草稿守卫，同一当前方案站保持接力。模板和扩展位置见 [设计](followups_design.md#L15)。
