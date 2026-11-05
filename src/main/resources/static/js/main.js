@@ -33,6 +33,7 @@
     var selectedSpot = null, resettingConversation = false;
     var pendingSpot = null, contextReady = false, contextGeneration = 0;
     var tourChatActive = false, tourNeedsSelection = false;
+    var pendingThemeDraft = null;
     var chatContext = S('chatContext');
     var narrationSelect = S('chatNarrationMode'), narrationHint = S('chatNarrationHint');
     var narrationMode = 'standard';
@@ -53,7 +54,8 @@
         var restoreGeneration = contextGeneration;
         fetch('/api/spots').then(function(r) { return r.json(); }).then(function(d) {
             allSpots = d; renderSpots(d);
-            if (window.GuideDirectorPage) window.GuideDirectorPage.mount(window, d);
+            if (window.GuideDirectorPage) window.GuideDirectorView = window.GuideDirectorPage.mount(window, d);
+            if (window.GuideThemePage) window.GuideTheme = window.GuideThemePage.mount(window, d);
             if (restoreGeneration !== contextGeneration) return;
             return api('/api/chat/context').then(function(r) {
                 if (!r.ok) throw new Error('context ' + r.status);
@@ -241,10 +243,12 @@
     // ===== 聊天面板 =====
     // REQ-040: render local selection/server snapshot as text; no requests. See docs/spot_chat_entry.md#L3.
     function renderChatContext() {
+        if(window.GuideTheme)window.GuideTheme.sync();
         if(tourNeedsSelection){chatContext.textContent='方案已更新，请重新选讲解站；原草稿已保留，也可开始新对话。';return;}
         chatContext.textContent = selectedSpot ? '当前景点：' + selectedSpot.name + '（下次提问时使用）' : '当前：通用导览';
         var tour=window.GuideTour&&window.GuideTour.snapshot();
         if(tour&&tour.current&&selectedSpot&&tour.current.id===selectedSpot.id)chatContext.textContent+='；'+(tour.next?'下一站：'+tour.next.name:'方案最后一站');
+        if(tour&&tour.current&&selectedSpot&&tour.current.id===selectedSpot.id&&window.GuideTheme){var caption=window.GuideTheme.caption(selectedSpot.id);if(caption)chatContext.textContent+='；'+caption;}
     }
     /** REQ-046: map only allowlisted modes to controls; no storage/network.
      * Unknown/missing values use standard. Change labels with docs/narration_design.md. */
@@ -306,7 +310,9 @@
             conversationId = data.conversationId;
             narrationMode = normalizeNarration(data.narrationMode);
             tourChatActive=false;tourNeedsSelection=false;
+            pendingThemeDraft=null;
             if(window.GuideTour)window.GuideTour.clearSelection();
+            if(window.GuideTheme)window.GuideTheme.reset();
             selectedSpot = null; pendingSpot = null; contextReady = true; renderChatContext();
             stopTts();
             chatMessages.innerHTML = '';
@@ -333,7 +339,7 @@
             speechGeneration++;
             stopTts();
             stopListen();
-            if (!isRetry) { addMsg('user', body.message); chatInput.value = ''; }
+            if (!isRetry) { addMsg('user', body.message); chatInput.value = ''; pendingThemeDraft=null; }
         },
         onState: function(state) {
             var busy = state.status === 'pending';
@@ -371,6 +377,7 @@
                 window.GuideTour.syncSpot(d.spotId);
                 if(!window.GuideTour.snapshot().current)tourChatActive=false;
             }
+            if(window.GuideTheme)window.GuideTheme.success(d);
             var answer=addMsg('bot', d.reply, NARRATION_LABELS[narrationMode] + (d.fallback ? ' · 本地资料' : ''));
             if(window.GuideChatReferences)window.GuideChatReferences.append(document,answer,d);
             if(window.GuideChatFollowups)window.GuideChatFollowups.append(document,answer,selectedSpot,prepareFollowup);
@@ -402,12 +409,15 @@
         if(tourNeedsSelection&&!(context&&Number.isSafeInteger(context.spotId)&&allSpots.some(function(spot){return spot.id===context.spotId;})))return {accepted:false,reason:'方案已更新，请先重新选择讲解站，或点击“新对话”；未发送草稿会保留。'};
         if (chatRequest.isPending() || resettingConversation) return { accepted: false, reason: '导游还在回答上一个问题，请等回答结束或先取消等待。' };
         if (chatInput.value.trim()) return { accepted: false, reason: '聊天框里还有草稿，请先发送或清空，再准备新的问题。' };
+        var themeTour=window.GuideTour&&window.GuideTour.snapshot();
+        if(context&&context.themeId&&(!context.tour||!themeTour||context.themeId!==themeTour.themeId||!themeTour.stops.some(function(stop){return stop.id===context.spotId;})))return {accepted:false,reason:'主题方案已变化，请重新选择本站讲解。'};
         if (context && context.spotId) {
             var spot=allSpots.find(function(item){return item.id===context.spotId;});
             if(!spot)return {accepted:false,reason:'景点信息尚未加载，请稍后重试。'};
             chatRequest.reset();selectedSpot=spot;pendingSpot=spot;renderChatContext();
         } else { pendingSpot=null; }
         tourChatActive=!!(context&&context.tour&&context.spotId);tourNeedsSelection=false;
+        pendingThemeDraft=context&&context.themeId&&context.themeLecture?{id:context.themeId,text:text}:null;
         if(!tourChatActive&&window.GuideTour)window.GuideTour.clearSelection();
         speechGeneration++;
         stopTts();
@@ -434,6 +444,11 @@
         var text = chatInput.value.trim(); if (!text) return;
         var body = { message: text, conversationId: conversationId, narrationMode:narrationMode };
         if (pendingSpot) body.spotId = pendingSpot.id;
+        var themeTour=window.GuideTour&&window.GuideTour.snapshot();
+        if(tourChatActive&&themeTour&&themeTour.themeId&&themeTour.current&&selectedSpot&&themeTour.current.id===selectedSpot.id){
+            body.themeId=themeTour.themeId;
+            if(pendingThemeDraft&&pendingThemeDraft.id===body.themeId&&pendingThemeDraft.text===text)body.themeLecture=true;
+        }
         if (currentInterest) body.interest = currentInterest;
         chatRequest.send(body);
     }
@@ -906,7 +921,7 @@
      * Server work already received cannot be undone. docs/journey_references_design.md. */
     function invalidateTour(){
         if(!tourChatActive)return;
-        tourNeedsSelection=true;pendingSpot=null;
+        tourNeedsSelection=true;pendingSpot=null;pendingThemeDraft=null;
         chatRequest.reset();speechGeneration++;stopTts();stopListen();renderChatContext();
         requestStatus.textContent='游览方案已改变，请重新选择讲解站。草稿已保留。';
     }

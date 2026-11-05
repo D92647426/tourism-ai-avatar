@@ -207,6 +207,7 @@ function createEnv(options) {
 function loadScript(env, filename) {
     if (filename === 'main.js') {
         if (!env.GuideChatRequest) loadScript(env,'chat-request.js');
+        if (!env.GuideThemePage) loadScript(env,'theme-guide.js');
         if (!env.GuideJourney) loadScript(env,'journey-core.js');
         if (!env.GuideJourneyPage) loadScript(env,'journey.js');
         if (!env.GuideChatReferences) loadScript(env,'chat-references.js');

@@ -128,3 +128,7 @@
 ## REQ-051 讲解回听
 
 [chat-audio.paragraphs/append](../src/main/resources/static/js/chat-audio.js#L1) 负责完整段落快照、最多12段、安全控件与状态。主聊天的 [回听入口](../src/main/resources/static/js/main.js#L1) 守卫会话/请求、取消语音待发送计时并管理单一卡片归属，复用既有 speech-lifecycle。接口见 [设计](segmented_audio_design.md#L9)。
+
+## REQ-052 主题服务与页面
+
+[ThemeGuideService](../src/main/java/com/guide/service/ThemeGuideService.java#L1) 读取可信方法内容并绑定实际景点，校验请求和生成本地讲解；[ThemeGuideController](../src/main/java/com/guide/controller/ThemeGuideController.java#L1) 提供目录。[theme-guide.js](../src/main/resources/static/js/theme-guide.js#L1) 校验目录、管理本页响应回顾，复用 [director](../src/main/resources/static/js/director.js#L1)/[journey](../src/main/resources/static/js/journey.js#L1)/[main](../src/main/resources/static/js/main.js#L1) 的方案、草稿和生命周期。接口与验收见 [设计](superpowers/specs/2026-11-05-theme-guide-design.md#L9)。
