@@ -105,3 +105,16 @@ test('a server-invalid station leaves a corrective message and permits another e
     assert.equal(h.env.GuideTour.prepare(stops[1].id).accepted,true);click(h.el('chatSendBtn'));await flush(h.env);
     assert.equal(h.calls[1].spotId,stops[1].id);
 });
+
+
+test('answer replay preserves the actual current journey, draft and narration without chat requests', async () => {
+    const h = await setup(), first = h.env.GuideTour.snapshot().stops[0];
+    h.env.GuideTour.prepare(first.id); click(h.el('chatSendBtn')); await flush(h.env);
+    const before = JSON.stringify(h.env.GuideTour.snapshot()), context = h.el('chatContext').textContent;
+    const card = h.el('chatMessages').children.flatMap(message => message.children.filter(child => child.className === 'chat-audio'))[0];
+    assert.ok(card); h.el('chatInput').value = '保留这句草稿';
+    click(card.children[1].children[0]); await flush(h.env);
+    assert.equal(h.calls.length, 1); assert.equal(JSON.stringify(h.env.GuideTour.snapshot()), before);
+    assert.equal(h.el('chatContext').textContent, context); assert.equal(h.el('chatInput').value, '保留这句草稿');
+    assert.equal(h.el('chatNarrationMode').value, 'family');
+});

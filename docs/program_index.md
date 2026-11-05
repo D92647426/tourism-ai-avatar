@@ -124,3 +124,7 @@
 ## REQ-050 本地追问组织
 
 [LocalFollowupReply.build](../src/main/java/com/guide/service/LocalFollowupReply.java#L20) 完整匹配本站固定模板并组织既有字段，返回文本或 null；[ChatService.localFallback](../src/main/java/com/guide/service/ChatService.java#L215) 在外景/多实体判断后复用并追加统一提示。模板与前端契约见 [设计](local_followups_design.md#L13)。
+
+## REQ-051 讲解回听
+
+[chat-audio.paragraphs/append](../src/main/resources/static/js/chat-audio.js#L1) 负责完整段落快照、最多12段、安全控件与状态。主聊天的 [回听入口](../src/main/resources/static/js/main.js#L1) 守卫会话/请求、取消语音待发送计时并管理单一卡片归属，复用既有 speech-lifecycle。接口见 [设计](segmented_audio_design.md#L9)。

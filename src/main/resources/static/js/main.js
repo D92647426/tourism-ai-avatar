@@ -44,6 +44,7 @@
     var speechGeneration = 0;
     var voiceSettings = window.GuideVoiceSettings.normalize(null);
     var speech = null, speechSendTimer = null, focusTimer = null, expressionTimer = null;
+    var activeAudioCard = null, activeAudioPart = -1;
     var currentUserId = localStorage.getItem('userId') || '';
     var currentInterest = localStorage.getItem('interest') || '';
 
@@ -373,6 +374,7 @@
             var answer=addMsg('bot', d.reply, NARRATION_LABELS[narrationMode] + (d.fallback ? ' · 本地资料' : ''));
             if(window.GuideChatReferences)window.GuideChatReferences.append(document,answer,d);
             if(window.GuideChatFollowups)window.GuideChatFollowups.append(document,answer,selectedSpot,prepareFollowup);
+            var audioCard = window.GuideAudioCard ? window.GuideAudioCard.append(document, answer, d.reply, {play: replayAnswer, stop: stopAnswer}) : null;
             chatMessages.scrollTop=chatMessages.scrollHeight;
             if (Array.isArray(d.recommendedRoutes) && d.recommendedRoutes.length) {
                 var div = document.createElement('div'); div.className = 'chat-msg bot';
@@ -380,7 +382,7 @@
                 d.recommendedRoutes.forEach(function(r) { h += '<div class="route-path">📍 ' + esc(String(r)) + '</div>'; });
                 h += '</div></div>'; div.innerHTML = h; chatMessages.appendChild(div);
             }
-            speak(d.reply);
+            speak(d.reply, audioCard, -1);
         }
     });
 
@@ -463,6 +465,10 @@
      * Change wording here; speech owns timers and stale-callback rejection.
      */
     function renderAvatarState(state) {
+        if (activeAudioCard) {
+            activeAudioCard.render(state, activeAudioPart);
+            if (['queued', 'speaking', 'paused'].indexOf(state.status) === -1) activeAudioCard = null;
+        }
         var text = state.message || stateLabels[state.status] || stateLabels.idle;
         [S('avatarState'), S('avatarChatState')].forEach(function(node) {
             if (node) { node.textContent = text; node.dataset.state = state.status; }
@@ -490,18 +496,43 @@
     window.onTtsError = function(error, id) { speech.nativeEvent('error', id, error); };
     window.onTtsStop = function(id) { speech.nativeEvent('stop', id); };
 
-    /** REQ-036: submit cleaned answer text; only a real start event opens the mouth.
-     * Returns no value; unavailable voices remain an explicit, readable error state.
-     */
-    function speak(text) {
-        var clean = text
+    /** REQ-036/051: normalize displayed answer markup for device speech, without I/O. */
+    function speechText(text) {
+        return text
             .replace(/【.*?】/g, '').replace(/https?:\/\/\S+/g, '')
             .replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1')
             .replace(/__(.+?)__/g, '$1').replace(/_(.+?)_/g, '$1')
             .replace(/#{1,6}\s?/g, '').replace(/`(.+?)`/g, '$1')
             .replace(/^[-*+]\s+/gm, '').replace(/^\d+[.、]\s*/gm, '').trim();
+    }
+
+    /** REQ-036/051: submit readable text; only a real start event opens the mouth.
+     * Returns false for empty speech text before stopping an existing task.
+     * Unavailable voices remain an explicit lifecycle error. See segmented_audio_design.md.
+     */
+    function speak(text, audioCard, part) {
+        var clean = speechText(text);
+        if (!clean) return false;
         speech.setActivity('idle');
-        speech.speak(clean);
+        activeAudioCard = audioCard || null; activeAudioPart = part == null ? -1 : part;
+        return speech.speak(clean);
+    }
+
+    /** REQ-051: play an immutable answer/paragraph using current device voice settings.
+     * Returns accepted/reason. Busy/unsynced refusal preserves current speech and draft.
+     * Accepted replay cancels pending recognition sends, changes no chat/tour state.
+     * No HTTP. See docs/segmented_audio_design.md and TEST-051.
+     */
+    function replayAnswer(text, card, part) {
+        if (!contextReady || pendingChats || resettingConversation) return {accepted: false, reason: '请等当前提问或会话同步结束，再重听讲解。'};
+        if (!speechText(text)) return {accepted: false, reason: '这一段没有可播报正文，请选择其他段落或阅读全文。'};
+        speechGeneration++;
+        if (speechSendTimer !== null) { clearTimeout(speechSendTimer); speechSendTimer = null; }
+        stopListen();
+        return speak(text, card, part) ? {accepted: true} : {accepted: false, reason: '播报尚未就绪，请稍后重试或阅读全文。'};
+    }
+    function stopAnswer(card) {
+        if (activeAudioCard === card) stopTts();
     }
 
     function startMouthAnimation() {

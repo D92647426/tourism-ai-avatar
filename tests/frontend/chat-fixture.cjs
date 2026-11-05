@@ -86,7 +86,7 @@ function page(options = {}) {
         addEventListener: windowEvents.addEventListener.bind(windowEvents),
         location: {}, requestAnimationFrame: fn => time.setTimeout(fn, 16), cancelAnimationFrame: time.clearTimeout });
     context.window = context;
-    for (const name of ['voice-settings.js', 'security.js', 'chat-request.js', 'speech-lifecycle.js', 'display-config.js', 'main.js']) {
+    for (const name of ['voice-settings.js', 'security.js', 'chat-request.js', 'speech-lifecycle.js', 'display-config.js', 'chat-audio.js', 'main.js']) {
         vm.runInContext(fs.readFileSync(path.join(root, 'src/main/resources/static/js', name), 'utf8'), context, { filename: name });
     }
     return { time, nodes, requests, spoken, utterances, synthesis, context, quick, recognitions,
