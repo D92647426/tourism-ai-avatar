@@ -104,6 +104,6 @@ REQ-047内部调用参数：GuideChatRequest.create 的 requireCorrectionOn400�
 
 ## REQ-052 打包主题内容
 
-[theme-guide.json](../src/main/resources/theme-guide.json#L1) 为可信打包内容，修改后重新构建并启动。id为主题标识，默认scene-details；title/question/notice为名称、贯穿问题和来源提示，均为必填字符串。stops为固定三站数组，name为必须能匹配现有景点的正式名，focus/question/method/briefMethod/bridge/recap分别为焦点、本站问题、标准观察方法、精简观察方法、衔接和回顾词条，均必填。
+[theme-guide.json](../src/main/resources/theme-guide.json#L1) 为可信打包内容，修改后重新构建并启动。id为主题标识，默认scene-details，页面要求1–64位小写字母/数字/短横线；title/question/notice为名称、贯穿问题和来源提示，均为必填字符串。stops为固定三站数组，name为必须能匹配现有景点的正式名，focus/question/method/briefMethod/bridge/recap分别为焦点、本站问题、标准观察方法、精简观察方法、衔接和回顾词条，均必填。
 
 站点ID在运行时按 [SpotService](../src/main/java/com/guide/service/SpotService.java#L1) 目录解析。缺站/无效ID时主题不可用，普通导览继续使用原数据；打包必填字段无效会启动失败。该文件保存方法内容，景点事实来自当前简介并保留待核验说明。没有环境变量或管理员上传入口。修改风险为目录不可用或讲解依据不一致，检查 [ThemeGuideTest](../src/test/java/com/guide/service/ThemeGuideTest.java#L1)、GET /api/themes和三站HTTP路径。

@@ -24,9 +24,9 @@ Files为 [ThemeGuideService.java](../../../src/main/java/com/guide/service/Theme
 
 接口为 GET /api/themes 数组，POST /api/chat 可选themeId/themeLecture，响应themeId/themeLecture。主题DTO站点字段spotId/name/focus/question/bridge/recap。新增ChatService重载保持原有构造和不带字段的5参调用。
 
-- [ ] 写目录/本地讲解/非法请求/模型mock回归，并运行 `mvn -o -Dtest=ThemeGuideTest test`。
-- [ ] 实现服务和兼容路径。目录缺站为空，非法主题400，明确讲解缺主题或站不属于主题400，自由问题跨站使用普通逻辑。
-- [ ] 再运行目标测试，检查一次检索、候选和会话回滚，提交仅本任务文件。
+- [x] 写目录/本地讲解/非法请求/模型mock回归，并运行 `mvn -o -Dtest=ThemeGuideTest test`。
+- [x] 实现服务和兼容路径。目录缺站为空，非法主题400，明确讲解缺主题或站不属于主题400，自由问题跨站使用普通逻辑。
+- [x] 再运行目标测试，检查一次检索、候选和会话回滚，提交仅本任务文件。
 
 示例断言
 
@@ -41,9 +41,9 @@ assertTrue(response.getReply().contains("未核验"));
 
 Files为 [theme-guide.js](../../../src/main/resources/static/js/theme-guide.js#L1)、[director.js](../../../src/main/resources/static/js/director.js#L1)、[journey.js](../../../src/main/resources/static/js/journey.js#L1)、[main.js](../../../src/main/resources/static/js/main.js#L1)、[index.html](../../../src/main/resources/static/index.html#L1)、[tour-experience.css](../../../src/main/resources/static/css/tour-experience.css#L1)、[theme-guide.test.js](../../../tests/frontend/theme-guide.test.js#L1)、[harness.js](../../../tests/frontend/harness.js#L1)。GuideDirectorPage.mount 返回 showTheme(theme)，main保存为GuideDirectorView。GuideTour.snapshot新增themeId，prepare将主题信息交给GuideChatDraft。GuideThemePage提供mount/sync/success/reset，接受实际response更新回顾。
 
-- [ ] 写实际main联动测试，`node --test tests/frontend/theme-guide.test.js` 检查无自动发送与三站成功回顾。
-- [ ] 接入目录读取、showTheme和主题面板，保护草稿、输入编辑、模式和过时请求。
-- [ ] 追加部分成功/重复/失败/取消/重编/新对话/XSS测试，运行Node全套并提交。
+- [x] 写实际main联动测试，`node --test tests/frontend/theme-guide.test.js` 检查无自动发送与三站成功回顾。
+- [x] 接入目录读取、showTheme和主题面板，保护草稿、输入编辑、模式和过时请求。
+- [x] 追加部分成功/重复/失败/取消/重编/新对话/XSS测试，运行Node全套并提交。
 
 示例断言
 
@@ -58,12 +58,16 @@ assert.equal(el('themeProgress').textContent.includes('3 / 3'), true);
 
 Files为 [smoke_teacher_project.py](../../../scripts/smoke_teacher_project.py#L1)、[requirements_traceability.md](../../../docs/requirements_traceability.md#L1)、[api_reference.md](../../../docs/api_reference.md#L1)、[test_reference.md](../../../docs/test_reference.md#L1)、[program_index.md](../../../docs/program_index.md#L1)、[config_reference.md](../../../docs/config_reference.md#L1)、[issue_progress.md](../../../docs/issue_progress.md#L1)。截图和设计记录见 [规格](../specs/2026-11-05-theme-guide-design.md#L1)。
 
-- [ ] HTTP读取主题并依次发送三站，校验mode/spot/themeLecture，非法ID400后context不变。
-- [ ] 更新追踪文档和资源配置说明，运行Maven/Node/文档/数据工具/隔离HTTP全套。
-- [ ] 实际浏览器验收三站与重编守卫，截图桌面/手机/短横屏并检查。
-- [ ] Standards/Spec独立检查相对036e6cd的整个分支，修复后复验。
-- [ ] 提交PR关联议题，确认最终head CI，报告完成/待合并/后续。
+- [x] HTTP读取主题并依次发送三站，校验mode/spot/themeLecture，非法ID400后context不变。
+- [x] 更新追踪文档和资源配置说明，运行Maven/Node/文档/数据工具/隔离HTTP全套。
+- [x] 实际浏览器验收三站与重编守卫，截图桌面/手机/短横屏并检查。
+- [x] Standards/Spec独立检查相对036e6cd的整个分支，修复后复验。
+- [x] 提交PR关联议题，确认最终head CI，报告完成/待合并/后续。
 
 ## 执行裁定
 
 用户已明确授权设计落地与开工，按现有隔离工作区继续，主仓库三份未提交文档保留。执行时由Codex后端实现子任务和主代理页面整合协作，独立审查负责复核。选择请求级主题上下文，避免改变现有会话快照与刷新行为。
+
+## 执行记录
+
+2026-11-05完成。设计10c68bd、页面1c22aa7、后端43fae5d、复查修正11ca2c1。完整实际结果与Standards/Spec分别见 [验收记录](../specs/2026-11-05-theme-guide-design.md#L39)。交付PR49，当前待合并。

@@ -37,3 +37,29 @@ ThemeGuidePage记录本页当前方案revision、themeId和唯一的成功主题
 Java测试主题资源与动态ID、缺站/缺字段、三模式本地衔接、主题非法值400与状态回滚、模型原请求及故障降级、一次候选快照与旧调用兼容。Node测试真实main+director+journey全链路、三站及部分回顾、去重、编辑草稿、mode、重编/新对话、迟到/取消和纯文本。隔离JAR HTTP运行主题三站和非法请求回滚。
 
 完整命令为 mvn -o verify、node --test tests/frontend/*.test.js、python scripts/check_doc_links.py、python scripts/check_data_integrity.py、python scripts/test_data_integrity.py 与隔离HTTP。截图检查1365×900、390×844、844×390。独立Standards和Spec审查后PR交付，合并状态单独报告。
+
+## 实际验证与交付
+
+议题 [#48](https://github.com/D92647426/tourism-ai-avatar/issues/48)，实现已提交 [PR #49](https://github.com/D92647426/tourism-ai-avatar/pull/49)，待评审合并。前置PR #47已合入main（036e6cd），#46已关闭。主仓库三份未提交路径文档保持原状，开发位于既有隔离工作区。
+
+Java245/245、Node210/210、数据工具44/44、结构和文档链接通过。根代理亲自复验Maven、读取实际差异和关键输出，隔离JAR HTTP检查theme_three_stops与theme_invalid_rollback通过。在线模型成功/故障使用本机HTTP mock，实际浏览器为空Key本地讲解。真实模型文风、景区事实和Android真机仍需另验。
+
+Edge中选择主题后，三站依次成功收到讲解，途中family切brief仍维持主题，回顾为3/3并列三站，最后一站无下一站按钮。1365×900页面宽1365px、发送底部741px。390×844页面宽390px，输入底部781px、发送底部769px、消息区高228.45px，主题按钮47.59px。844×390页面宽844px，输入底部331px、发送底部319px，消息区高32.45px可内部滚动。主题面板axe检查18项通过，0违反、0未完成。
+
+![桌面主题回顾](../../screenshots/issue-48-desktop-recap.png)
+
+![手机主题讲解](../../screenshots/issue-48-mobile-chat.png)
+
+![手机三站回顾](../../screenshots/issue-48-mobile-recap.png)
+
+### Standards
+
+独立规范复查发现3项P3，接口注释不完整、计划定位纯文本、测试追踪缺函数名，及1项可选重复降级逻辑建议。已补全注释/真实行号链接/函数定位，并将主题降级归入既有localFallback。增量复查确认全部处理，剩余0项，独立主题11项测试通过。普通重编清空回顾的初步疑点经实际回归不成立，不计发现。
+
+### Spec
+
+独立需求复查发现1项P2，普通请求进行中进入主题时旧请求仍等待。进入、退出或重选主题现在统一使旧请求/语音失效，保留草稿，并拒绝旧回调。新增先失败再修复通过的回归。独立增量复查确认resolved，主题11项通过，剩余0项。AI辅助实现及审查不计为组员人工开发/评审记录。
+
+## 实现定位
+
+[主题服务](../../../src/main/java/com/guide/service/ThemeGuideService.java#L1)、[主题目录](../../../src/main/java/com/guide/controller/ThemeGuideController.java#L1)、[方法资源](../../../src/main/resources/theme-guide.json#L1)、[请求会话](../../../src/main/java/com/guide/service/ConversationService.java#L1)、[聊天生成](../../../src/main/java/com/guide/service/ChatService.java#L1)、[页面回顾](../../../src/main/resources/static/js/theme-guide.js#L1)、[主题联动测试](../../../tests/frontend/theme-guide.test.js#L1)。
