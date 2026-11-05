@@ -210,6 +210,7 @@ function loadScript(env, filename) {
         if (!env.GuideJourney) loadScript(env,'journey-core.js');
         if (!env.GuideJourneyPage) loadScript(env,'journey.js');
         if (!env.GuideChatReferences) loadScript(env,'chat-references.js');
+        if (!env.GuideChatFollowups) loadScript(env,'chat-followups.js');
         if (!env.GuideSpeech) loadScript(env,'speech-lifecycle.js');
         if (!env.GuideDisplayConfig) loadScript(env,'display-config.js');
     }

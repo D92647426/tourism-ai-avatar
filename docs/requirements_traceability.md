@@ -127,3 +127,7 @@ REQ-043（#29）情境编排、REQ-044（#30）观察辅助、REQ-045（#31）�
 ## REQ-047 / REQ-048（#38 / #39）
 
 方案接力讲解与逐条回答的参考候选，行为、接口和边界见 [设计](journey_references_design.md#L1)。[journey-core](../src/main/resources/static/js/journey-core.js#L1)保存页内选择，[journey页面适配](../src/main/resources/static/js/journey.js#L1)显式准备草稿，[参考候选渲染器](../src/main/resources/static/js/chat-references.js#L1)只渲染同次响应的有效本地候选。无新后端接口/持久化/模型依赖。
+
+## REQ-049 导游追问卡（#42）
+
+每条景点回答可准备抓重点、生活比喻、观察细节的显式草稿，保留当前模式与已有草稿。历史卡片绑定当次景点，同站保留方案接力。见 [行为与验收](followups_design.md#L1)。

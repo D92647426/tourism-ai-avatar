@@ -197,3 +197,11 @@
 .chat-references p { margin:8px 0; }
 .chat-references ul { margin:8px 0 0; padding-left:18px; }
 .chat-references li { margin:5px 0; }
+
+/* REQ-049: optional follow-ups expand inside the message scroller. */
+.chat-followups { max-width:85%; padding:10px 4px 0; color:#16352f; font-size:13px; line-height:1.6; overflow-wrap:anywhere; }
+.chat-followups summary { cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+.chat-followups p { margin:8px 0; color:#36574a; font-size:12px; }
+.chat-followup-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.chat-followup-actions button { min-height:44px; max-width:100%; padding:8px 12px; border:1px solid #8baba0; border-radius:6px; background:#f0f7f4; color:#16352f; font:inherit; cursor:pointer; white-space:normal; }
+.chat-followups summary:focus-visible,.chat-followup-actions button:focus-visible { outline:2px solid #11665b; outline-offset:2px; }
