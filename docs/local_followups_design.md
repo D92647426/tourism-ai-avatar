@@ -21,3 +21,25 @@
 [LocalFollowupReplyTest](../src/test/java/com/guide/service/LocalFollowupReplyTest.java#L1) 覆盖三种意图与模式、字段缺失和限定语、真实服务路径、外景/多实体/自定义名称、在线成功与失败、一次候选快照、前端模板契约。隔离 [HTTP 冒烟](../scripts/smoke_teacher_project.py#L1) 验证三模板回答不同且 spot/mode/fallback 一致。
 
 运行 mvn -o verify、node --test tests/frontend/*.test.js、python scripts/check_doc_links.py、python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar。PR 以前置 codex/guide-followups 为 base，先合并 PR #43，再将本轮 PR 调整到 main。文档中的已实现与已合并状态分开记录。
+
+## 实际验证
+
+修改前，隔离本地 HTTP 对三个模板得到 3 个 fallback=true 响应，唯一正文数为 1。修改后，隔离 JAR 的 local_followup_replies 检查通过，三个正文不同，景点、brief 和 fallback 字段均正确。
+
+Maven verify 的 Java 236/236、Node 185/185、文档链接、数据结构检查及工具测试 44/44 通过。模型成功/失败仅使用 mock，没有调用真实模型服务。
+
+Edge 实际点击“换个生活比喻”准备并发送，正文出现“帮助理解的比喻”与用途说明，保留 family 和灵山大佛方案选择；切 brief 再点击“带我看一个细节”发送，正文出现三步观察建议，本站接力继续保留。1365×900 页面宽 1365px、发送底部 741px。390×844 页面宽 390px、输入底部 781px、发送底部 769px。844×390 页面宽 844px、输入底部 331px、发送底部 319px。
+
+![桌面比喻讲解](screenshots/issue-44-desktop.png)
+
+![手机观察建议](screenshots/issue-44-mobile.png)
+
+## Standards
+
+以 dd3220e 为固定基点独立复查，0 项发现。文档链接与前端追问 9/9 独立通过。模块职责、字段保留和追踪索引符合项目规范。
+
+## Spec
+
+以 REQ-050 为依据独立复查，0 项发现。核对完整模板、范围判断、在线优先、故障降级和字段边界，独立运行前端追问 9/9，检查实际 Java 日志及覆盖。AI 审查不计入组员人工贡献。
+
+交付 [PR #45](https://github.com/D92647426/tourism-ai-avatar/pull/45)，关联 [#44](https://github.com/D92647426/tourism-ai-avatar/issues/44)，已提交待合并。先合并前置 [PR #43](https://github.com/D92647426/tourism-ai-avatar/pull/43)，再将本 PR base 从 codex/guide-followups 调整为 main 并复核 CI。
