@@ -233,3 +233,7 @@ API-043：复用景点GET与聊天POST，输入输出、错误码和实现位置
 ## API-050 本地追问讲解
 
 POST /api/chat 沿用既有请求 message/spotId/conversationId/narrationMode 和响应 reply/fallback/knowledgeReferences。服务函数为 [LocalFollowupReply.build](../src/main/java/com/guide/service/LocalFollowupReply.java#L20)，由 [ChatService](../src/main/java/com/guide/service/ChatService.java#L215) 的本地路径调用。固定模板完整匹配时返回分块回复，fallback=true，原错误码400/403/410/502沿用。请求与响应示例、验收命令见 [设计](local_followups_design.md#L13)。
+
+## API-051 浏览器讲解回听
+
+内部 API 为 [GuideAudioCard.append](../src/main/resources/static/js/chat-audio.js#L1)，输入 document/parent/回答正文和 play/stop 回调，输出 render(state,index) 句柄或 null。index=-1 为全文，0起为段落。play 返回 accepted/reason，queued/speaking/paused 状态由生命周期提供，拒绝保留旧内容。HTTP /api/chat 请求/响应与错误码沿用，回听不发请求。示例 `card.render({status:"speaking"},1)` 标记第2段，`card.render({status:"idle"},1)` 停止标记。程序与验收见 [设计](segmented_audio_design.md#L9)。

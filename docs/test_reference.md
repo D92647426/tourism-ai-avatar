@@ -199,3 +199,7 @@ TEST-046复查回归：[免费/特点与外景不串事实](../src/test/java/com
 ## TEST-050 本地追问讲解
 
 [LocalFollowupReplyTest](../src/test/java/com/guide/service/LocalFollowupReplyTest.java#L1) 包含三意图/模式矩阵、完整字段限定语/缺失、自定义名/非模板、当前和解析景点、外景/多实体、在线原问/历史、故障/候选快照与前端模板契约。运行 `mvn -o -Dtest=LocalFollowupReplyTest test`，预期8/8。完整验证 `mvn -o verify`、`node --test tests/frontend/*.test.js`、`python scripts/check_doc_links.py` 及 `python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar`。HTTP 预期三模板 reply 不同，spot/mode/fallback 正确。失败先核对完整模板匹配、景点解析顺序及实际构建 JAR，详见 [设计](local_followups_design.md#L19)。
+
+## TEST-051 按段听讲解
+
+[分段/安全/状态](../tests/frontend/chat-audio.test.js#L1)、[实际主聊天回听/守卫/迟到/无声线/语音待发送计时](../tests/frontend/audio-main.test.js#L1)、[实际方案保持](../tests/frontend/journey-page.test.js#L1)。运行 `node --test tests/frontend/chat-audio.test.js tests/frontend/audio-main.test.js tests/frontend/journey-page.test.js`。完整验证 `node --test tests/frontend/*.test.js`、`mvn -o verify`、`python scripts/check_doc_links.py` 和隔离 JAR HTTP 冒烟。预期只播所选段、正文无丢失、无额外请求，停止/后台后旧事件无效。失败先核对 activeAudioCard 所属及生命周期真实事件，实际计数与 mock 截图见 [设计](segmented_audio_design.md#L1)。
