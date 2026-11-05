@@ -122,8 +122,12 @@ public class ConversationService {
                 }
             }
             Spot context = candidate.spotId == null ? null : spotService.getSpotById(candidate.spotId).orElse(null);
-            ChatResponse response = chatService.chat(request.getMessage(), request.getInterest(),
-                    new ArrayList<>(candidate.turns), context, candidate.narrationMode);
+            // REQ-052. Preserve the established mock/caller path when theme fields are absent.
+            ChatResponse response = request.hasThemeFields()
+                    ? chatService.chat(request.getMessage(), request.getInterest(), new ArrayList<>(candidate.turns),
+                            context, candidate.narrationMode, request.getThemeId(), Boolean.TRUE.equals(request.getThemeLecture()))
+                    : chatService.chat(request.getMessage(), request.getInterest(),
+                            new ArrayList<>(candidate.turns), context, candidate.narrationMode);
             if (response == null || response.getReply() == null || response.getReply().trim().isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "empty guide response");
             }

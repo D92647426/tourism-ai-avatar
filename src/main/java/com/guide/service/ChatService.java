@@ -10,6 +10,7 @@ import com.guide.model.NarrationMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -51,10 +52,20 @@ public class ChatService {
     private final AnalyticsService analyticsService;
     private final AiCompletionClient aiCompletionClient;
     private final ObjectMapper objectMapper;
+    private final ThemeGuideService themeGuideService;
     private final KnowledgeRetriever scopeResolver = new KnowledgeRetriever();
 
     public ChatService(SpotService spotService, KnowledgeService knowledgeService,
                        AnalyticsService analyticsService, AiCompletionClient aiCompletionClient) {
+        this(spotService, knowledgeService, analyticsService, aiCompletionClient, new ThemeGuideService(spotService));
+    }
+
+    /** REQ-052. Injectable theme dependency, while preserving the four-dependency constructor. */
+    @Autowired
+    public ChatService(SpotService spotService, KnowledgeService knowledgeService,
+                       AnalyticsService analyticsService, AiCompletionClient aiCompletionClient,
+                       ThemeGuideService themeGuideService) {
+        this.themeGuideService = themeGuideService;
         this.spotService = spotService;
         this.knowledgeService = knowledgeService;
         this.analyticsService = analyticsService;
@@ -77,7 +88,19 @@ public class ChatService {
      * Model failure uses marked local data; existing input validation belongs to ConversationService.
      * Change narration policy with docs/narration_design.md and TEST-046. */
     public ChatResponse chat(String userMessage, String interest, List<Turn> history, Spot currentSpot, NarrationMode mode) {
+        return chat(userMessage, interest, history, currentSpot, mode, null, false);
+    }
+
+    /**
+     * REQ-052. Request-only theme context, validated before retrieval or model execution.
+     * Existing five-argument callers retain ordinary behavior. Explicit theme lectures use
+     * bundled methods on model failure. Free questions retain the ordinary local fallback.
+     * Invalid theme/action combinations raise HTTP400. See docs/api_reference.md, API-052.
+     */
+    public ChatResponse chat(String userMessage, String interest, List<Turn> history, Spot currentSpot,
+                             NarrationMode mode, String themeId, boolean themeLecture) {
         Objects.requireNonNull(mode, "mode");
+        ThemeGuideService.Context theme = themeGuideService.resolve(themeId, currentSpot, themeLecture);
         userMessage = userMessage == null ? "" : userMessage;
         KnowledgeRetrieval knowledge = knowledgeService.retrieve(userMessage);
         boolean fallback = false;
@@ -85,15 +108,17 @@ public class ChatService {
 
         if (!userMessage.trim().isEmpty() && aiCompletionClient.isEnabled()) {
             try {
-                reply = callAiApi(userMessage, interest, knowledge, history, currentSpot, mode);
+                reply = callAiApi(userMessage, interest, knowledge, history, currentSpot, mode, theme, themeLecture);
             } catch (Exception e) {
                 log.warn("AI API调用失败，降级到本地匹配: {}", e.getClass().getSimpleName());
                 fallback = true;
-                reply = localFallback(userMessage, interest, knowledge, currentSpot, mode);
+                reply = themeLecture ? themeGuideService.lecture(theme, mode) + "\n\n" + SAMPLE_BOUNDARY
+                        : localFallback(userMessage, interest, knowledge, currentSpot, mode);
             }
         } else {
             fallback = true;
-            reply = localFallback(userMessage, interest, knowledge, currentSpot, mode);
+            reply = themeLecture ? themeGuideService.lecture(theme, mode) + "\n\n" + SAMPLE_BOUNDARY
+                        : localFallback(userMessage, interest, knowledge, currentSpot, mode);
         }
 
         // 记录交互日志
@@ -104,6 +129,8 @@ public class ChatService {
         }
 
         ChatResponse response = new ChatResponse(reply, fallback);
+        response.setThemeId(theme == null ? null : theme.getThemeId());
+        response.setThemeLecture(theme != null && themeLecture);
         response.setInterest(interest);
         response.setNarrationMode(mode.getValue());
         response.setKnowledgeReferences(knowledge.getReferences());
@@ -123,7 +150,7 @@ public class ChatService {
 
     // ===== AI API 调用 =====
 
-    private String callAiApi(String userMessage, String interest, KnowledgeRetrieval knowledge, List<Turn> history, Spot currentSpot, NarrationMode mode) throws Exception {
+    private String callAiApi(String userMessage, String interest, KnowledgeRetrieval knowledge, List<Turn> history, Spot currentSpot, NarrationMode mode, ThemeGuideService.Context theme, boolean themeLecture) throws Exception {
         String spotContext = spotService.buildSpotContext();
         String knowledgeContext = knowledge.getContext();
 
@@ -131,6 +158,7 @@ public class ChatService {
         system += "\n【本次讲解方式】" + mode.getLabel() + "：" + mode.getInstruction()
                 + " 本次方式优先于历史回答的语气，历史内容仍供理解问题。不要编造故事，不省略未核验或待补充提示，不承诺实时信息。";
         if (currentSpot != null) system += "\n【当前景点】" + currentSpot.getName();
+        if (theme != null) system += theme.systemContext(themeLecture);
         return history.isEmpty() && currentSpot == null ? aiCompletionClient.complete(system,userMessage,0.7,800)
                 : aiCompletionClient.completeWithHistory(system,userMessage,history,0.7,800);
     }
