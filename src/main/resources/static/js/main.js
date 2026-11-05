@@ -916,11 +916,11 @@
         chatInput.value=b.dataset.msg;sendMessage();
     });
 
-    /** REQ-047: invalidate only itinerary-origin chat when its plan changes.
+    /** REQ-047/052: invalidate tour chat, plus any chat when entering/leaving a theme plan.
      * Preserve draft, cancel late callbacks/retries, block stale context until explicit selection/reset.
      * Server work already received cannot be undone. docs/journey_references_design.md. */
-    function invalidateTour(){
-        if(!tourChatActive)return;
+    function invalidateTour(themePlanChanged){
+        if(!tourChatActive&&!themePlanChanged)return;
         tourNeedsSelection=true;pendingSpot=null;pendingThemeDraft=null;
         chatRequest.reset();speechGeneration++;stopTts();stopListen();renderChatContext();
         requestStatus.textContent='游览方案已改变，请重新选择讲解站。草稿已保留。';

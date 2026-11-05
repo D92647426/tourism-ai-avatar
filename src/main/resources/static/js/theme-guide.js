@@ -79,7 +79,7 @@
             caption: function(spotId) {
                 if (!active()) return '';
                 var stop = theme.stops.find(function(item) { return item.spotId === spotId; });
-                return stop ? '主题线索为' + stop.focus + '。' + stop.question : '';
+                return stop ? '主题线索为' + stop.focus : '';
             }
         };
     }

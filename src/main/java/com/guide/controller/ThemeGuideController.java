@@ -17,6 +17,9 @@ public class ThemeGuideController {
         this.themeGuideService = themeGuideService;
     }
 
+    /** REQ-052 / API-052. No input; return the available bundled theme directory, possibly empty.
+     * No normal request errors. Change availability rules in ThemeGuideService.list().
+     * See docs/superpowers/specs/2026-11-05-theme-guide-design.md and TEST-052. */
     @GetMapping("/themes")
     public List<ThemeGuideService.Theme> list() {
         return themeGuideService.list();

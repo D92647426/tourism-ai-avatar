@@ -112,13 +112,11 @@ public class ChatService {
             } catch (Exception e) {
                 log.warn("AI API调用失败，降级到本地匹配: {}", e.getClass().getSimpleName());
                 fallback = true;
-                reply = themeLecture ? themeGuideService.lecture(theme, mode) + "\n\n" + SAMPLE_BOUNDARY
-                        : localFallback(userMessage, interest, knowledge, currentSpot, mode);
+                reply = localFallback(userMessage, interest, knowledge, currentSpot, mode, theme, themeLecture);
             }
         } else {
             fallback = true;
-            reply = themeLecture ? themeGuideService.lecture(theme, mode) + "\n\n" + SAMPLE_BOUNDARY
-                        : localFallback(userMessage, interest, knowledge, currentSpot, mode);
+            reply = localFallback(userMessage, interest, knowledge, currentSpot, mode, theme, themeLecture);
         }
 
         // 记录交互日志
@@ -238,9 +236,12 @@ public class ChatService {
      * REQ-037: reuse exactly the supplied retrieval snapshot; aliases resolve scenic
      * names, multiple entities share candidate context, missing knowledge stays explicit.
      * Legacy greeting/route/ticket/traffic rules remain after entity handling.
+     * REQ-052: an already validated explicit theme lecture is organized here for both
+     * no-model and failed-model paths. Change theme content in theme-guide.json.
      * Policy: docs/natural_retrieval.md; evidence boundary: docs/knowledge_integrity.md.
      */
-    private String localFallback(String userMessage, String interest, KnowledgeRetrieval knowledge, Spot currentSpot, NarrationMode mode) {
+    private String localFallback(String userMessage, String interest, KnowledgeRetrieval knowledge, Spot currentSpot, NarrationMode mode, ThemeGuideService.Context theme, boolean themeLecture) {
+        if (themeLecture) return themeGuideService.lecture(theme, mode) + "\n\n" + SAMPLE_BOUNDARY;
         String msg = userMessage.toLowerCase(Locale.ROOT);
         String knowledgeContext = knowledge.getContext();
         List<String> entities = knowledge.getEntityNames();

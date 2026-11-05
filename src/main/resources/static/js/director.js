@@ -1,8 +1,9 @@
 /* REQ-043: page adapter; inputs stay local. See docs/director_design.md. */
 (function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory();else root.GuideDirectorPage=factory();})(typeof window!=='undefined'?window:globalThis,function(){
     'use strict';
-    /** REQ-043: bind one loaded page to API spots; inputs window and spot array, output void.
-     * Preference errors become visible status; no routine exception. docs/director_design.md#L3. */
+    /** REQ-043/052: bind window and actual API spots; return showTheme(theme), or no value if unavailable.
+     * Preference errors become visible status; theme input is validated by theme-guide.js.
+     * Change shared plan rendering here. docs/superpowers/specs/2026-11-05-theme-guide-design.md. */
     function mount(win,spots){
         var doc=win.document,$=function(id){return doc.getElementById(id);};
         if(!$('directorForm')||!win.GuideDirector)return;

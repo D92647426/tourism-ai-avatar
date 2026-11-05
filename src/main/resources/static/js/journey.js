@@ -33,11 +33,11 @@
         $('journeyNextBtn').addEventListener('click',next);$('chatJourneyNext').addEventListener('click',next);render();
         return {
             replacePlan:function(plan){
-                var previous=journey.snapshot();
+                var previous=journey.snapshot(),previousThemeId=themeId;
                 if(plan&&plan.themeId!=null&&(typeof plan.themeId!=='string'||!/^[a-z0-9-]{1,64}$/.test(plan.themeId))){note('主题信息无效，请重新选择。');return false;}
                 try{journey.replace(plan&&plan.stops);}catch(error){note(error.message);return false;}
                 themeId=plan.themeId||null;
-                if(previous.revision&&callbacks.invalidate)callbacks.invalidate();
+                if(previous.revision&&callbacks.invalidate)callbacks.invalidate(!!(previousThemeId||themeId));
                 render();note(previous.revision?'方案已更新，请重新选择讲解站；未发送草稿会保留。':'方案只安排讲解顺序，不验证到访位置。');return true;
             },
             prepare:prepare,

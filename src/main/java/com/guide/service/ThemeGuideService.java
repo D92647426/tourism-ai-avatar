@@ -110,7 +110,11 @@ public class ThemeGuideService {
         return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
     }
 
-    /** REQ-052. Preserve the complete current brief and qualifiers while adapting method length. */
+    /** REQ-052. Input is a Context returned by resolve() and a validated narration mode.
+     * Return local method/transition text with the complete current brief and qualifiers.
+     * No I/O or normal errors for validated inputs; caller adds the shared sample boundary.
+     * Edit method text in theme-guide.json, formatting here. See TEST-052 and
+     * docs/superpowers/specs/2026-11-05-theme-guide-design.md. */
     public String lecture(Context context, NarrationMode mode) {
         String observation = mode == NarrationMode.BRIEF ? context.stop.briefMethod : context.stop.method;
         String reply = "【" + context.stop.name + "】主题观察 · " + context.stop.focus
@@ -180,7 +184,10 @@ public class ThemeGuideService {
         }
         public String getThemeId() { return theme.id; }
 
-        /** Keep theme advice separate from unverified current facts in the actual model prompt. */
+        /** REQ-052. Input selects lecture versus free-question intent; output is validated model context.
+         * This instance must come from resolve(). No I/O or normal errors.
+         * Edit prompt boundaries here and test actual model JSON in ThemeGuideTest.
+         * See docs/superpowers/specs/2026-11-05-theme-guide-design.md. */
         public String systemContext(boolean lecture) {
             return "\n\n【本次主题】" + theme.title + "\n主题问题\n" + theme.question
                     + "\n本站观察焦点\n" + stop.focus + "\n观察建议\n" + stop.method

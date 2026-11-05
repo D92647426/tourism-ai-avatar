@@ -104,3 +104,21 @@ test('catalog validation rejects duplicates, foreign IDs and blank content atomi
     for(const invalid of [{...theme,stops:[theme.stops[0],theme.stops[0],theme.stops[2]]},
         {...theme,stops:[{...theme.stops[0],spotId:99999},...theme.stops.slice(1)]},{...theme,title:' '}])assert.throws(()=>validate(invalid,spots));
 });
+
+
+test('entering a theme from pending ordinary chat cancels it, preserves draft and rejects late callbacks',async()=>{
+    let finish;const h=await setup(()=>new Promise(resolve=>{finish=resolve;}));
+    h.env.GuideChatDraft('普通提问',{spotId:4});await send(h);
+    h.el('chatInput').value='保留这句新草稿';start(h);
+    assert.equal(h.el('chatSendBtn').disabled,false);assert.equal(h.el('chatInput').value,'保留这句新草稿');
+    finish(response(200,{reply:'旧请求迟到回答',spotId:4,conversationId:'room'}));await flush(h.env);
+    assert.ok(h.el('chatMessages').children.every(message=>!message.innerHTML.includes('旧请求迟到回答')));
+    assert.match(h.el('themeProgress').textContent,/0 \/ 3/);
+    h.el('chatInput').value='';assert.equal(h.env.GuideTour.prepare(2).accepted,true);
+});
+
+test('leaving theme chat before ordinary replan still clears the old recap',async()=>{
+    const h=await setup();start(h);h.env.GuideTour.prepare(1);await send(h);
+    h.env.GuideChatDraft('普通问题',{spotId:4});await send(h);click(h.el('directorHalf'));
+    assert.equal(h.el('themeRecap').children.length,0);assert.equal(h.env.GuideTour.snapshot().themeId,null);
+});

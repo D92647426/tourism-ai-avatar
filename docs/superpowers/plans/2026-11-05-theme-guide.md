@@ -20,7 +20,7 @@
 
 ## Task 1 后端主题上下文
 
-Files为 ThemeGuideService.java、theme-guide.json、ThemeGuideController.java、ChatRequest/ChatResponse、ConversationService和ChatService，测试 ThemeGuideTest.java。
+Files为 [ThemeGuideService.java](../../../src/main/java/com/guide/service/ThemeGuideService.java#L1)、[theme-guide.json](../../../src/main/resources/theme-guide.json#L1)、[ThemeGuideController.java](../../../src/main/java/com/guide/controller/ThemeGuideController.java#L1)、[ChatRequest.java](../../../src/main/java/com/guide/model/ChatRequest.java#L1)、[ChatResponse.java](../../../src/main/java/com/guide/model/ChatResponse.java#L1)、[ConversationService.java](../../../src/main/java/com/guide/service/ConversationService.java#L1)、[ChatService.java](../../../src/main/java/com/guide/service/ChatService.java#L1)、[ThemeGuideTest.java](../../../src/test/java/com/guide/service/ThemeGuideTest.java#L1)。
 
 接口为 GET /api/themes 数组，POST /api/chat 可选themeId/themeLecture，响应themeId/themeLecture。主题DTO站点字段spotId/name/focus/question/bridge/recap。新增ChatService重载保持原有构造和不带字段的5参调用。
 
@@ -39,7 +39,7 @@ assertTrue(response.getReply().contains("未核验"));
 
 ## Task 2 页面主题闭环
 
-Files为 theme-guide.js、director.js、journey.js、main.js、index.html、tour-experience.css，测试 theme-guide.test.js 和现有 harness。GuideDirectorPage.mount 返回 showTheme(theme)，main保存为GuideDirectorView。GuideTour.snapshot新增themeId，prepare将主题信息交给GuideChatDraft。GuideThemePage提供mount/sync/success/reset，接受实际response更新回顾。
+Files为 [theme-guide.js](../../../src/main/resources/static/js/theme-guide.js#L1)、[director.js](../../../src/main/resources/static/js/director.js#L1)、[journey.js](../../../src/main/resources/static/js/journey.js#L1)、[main.js](../../../src/main/resources/static/js/main.js#L1)、[index.html](../../../src/main/resources/static/index.html#L1)、[tour-experience.css](../../../src/main/resources/static/css/tour-experience.css#L1)、[theme-guide.test.js](../../../tests/frontend/theme-guide.test.js#L1)、[harness.js](../../../tests/frontend/harness.js#L1)。GuideDirectorPage.mount 返回 showTheme(theme)，main保存为GuideDirectorView。GuideTour.snapshot新增themeId，prepare将主题信息交给GuideChatDraft。GuideThemePage提供mount/sync/success/reset，接受实际response更新回顾。
 
 - [ ] 写实际main联动测试，`node --test tests/frontend/theme-guide.test.js` 检查无自动发送与三站成功回顾。
 - [ ] 接入目录读取、showTheme和主题面板，保护草稿、输入编辑、模式和过时请求。
@@ -56,7 +56,7 @@ assert.equal(el('themeProgress').textContent.includes('3 / 3'), true);
 
 ## Task 3 整合与交付
 
-Files为smoke_teacher_project.py、REQ/API/TEST/程序/配置/议题追踪、设计实际验证段及截图。
+Files为 [smoke_teacher_project.py](../../../scripts/smoke_teacher_project.py#L1)、[requirements_traceability.md](../../../docs/requirements_traceability.md#L1)、[api_reference.md](../../../docs/api_reference.md#L1)、[test_reference.md](../../../docs/test_reference.md#L1)、[program_index.md](../../../docs/program_index.md#L1)、[config_reference.md](../../../docs/config_reference.md#L1)、[issue_progress.md](../../../docs/issue_progress.md#L1)。截图和设计记录见 [规格](../specs/2026-11-05-theme-guide-design.md#L1)。
 
 - [ ] HTTP读取主题并依次发送三站，校验mode/spot/themeLecture，非法ID400后context不变。
 - [ ] 更新追踪文档和资源配置说明，运行Maven/Node/文档/数据工具/隔离HTTP全套。
