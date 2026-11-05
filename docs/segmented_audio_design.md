@@ -25,3 +25,25 @@ API-051 为浏览器内部 GuideAudioCard.append(document,parent,text,callbacks)
 [模块测试](../tests/frontend/chat-audio.test.js#L1) 覆盖分段、合并余文、单段、纯文本、反馈与真实状态标记。[主聊天集成](../tests/frontend/audio-main.test.js#L1) 以可控语音事件验证仅播放所选内容、无额外请求、草稿保持、拒绝忙态、停止/切换/关闭/后台、迟到事件与无声线。
 
 运行 node --test tests/frontend/*.test.js、mvn -o verify、python scripts/check_doc_links.py、隔离 JAR HTTP 冒烟。浏览器实测布局并使用标注的无声 mock 验证 queued/start/end 状态，真实设备声线音质与 Android 真机另验收。截图、双轴复查与实际结果随后记录。
+
+## 实际验证
+
+Java 236/236、Node 199/199（本轮新增14项）、数据结构与工具测试44/44、文档链接和隔离 JAR HTTP 冒烟通过，包含 audio_asset。原有逐站/候选/本地追问契约继续通过。
+
+浏览器使用 [无声 mock](../tests/fixtures/speech-browser-init.js#L1)，补齐设备 voiceURI 并开放 lastText 只读检查。实际点击“听第2段”后，lastText 仅含第2段正文；注入 start 后为 speaking、该按钮按下，当前灵山大佛与 brief 保留。注入 end 后回 idle、按下标记清零、停止按钮禁用。重听全文后可用本条停止按钮返回 idle。此验证证明文本/事件/界面连接，音质和真实设备能力仍需试听。
+
+1365×900 与390×844截图已检查。手机页面宽390px，输入底部781px、发送底部769px，按钮高度至少44px。844×390 页面宽844px，输入底部331px、发送底部319px。操作在消息区内部滚动可达。
+
+![桌面指定段落播放，无声mock](screenshots/issue-46-desktop-mock.png)
+
+![手机指定段落播放，无声mock](screenshots/issue-46-mobile-mock.png)
+
+## Standards
+
+以9720555为固定基点独立复查。首次1项P2，纯标题段经清洗为空但仍返回接受并中断旧播报。修正为中断前检查，新增全文/段落回归，独立复查resolved，剩余0项；相关测试13/13与文档链接通过。
+
+## Spec
+
+首次独立发现同一P2，清洗后空文本与accepted/reason和失败反馈契约不符。修正后确认全文/段落均提前拒绝并保留原播报/识别/计时任务，独立测试13/13通过，剩余0项。两轴AI审查不作为组员人工评审贡献。
+
+交付 [PR #47](https://github.com/D92647426/tourism-ai-avatar/pull/47)，关联 [#46](https://github.com/D92647426/tourism-ai-avatar/issues/46)，已提交待合并。前置 #42/#44 已按本轮用户授权合并关闭。
