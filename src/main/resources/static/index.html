@@ -6,7 +6,7 @@
 <title>旅游 AI 数字人</title>
 <link rel="stylesheet" href="/css/style.css?v=speech-1">
 <link rel="stylesheet" href="/css/exploration.css?v=coach-1">
-<link rel="stylesheet" href="/css/tour-experience.css?v=audio-1">
+<link rel="stylesheet" href="/css/tour-experience.css?v=theme-1">
 </head>
 <body class="exploration-page">
 
@@ -33,6 +33,12 @@
       </div><button type="submit" id="directorGenerate" class="director-generate" disabled>编排我的旅程 <span aria-hidden="true">→</span></button></form>
       <aside class="director-note"><h3>行程，也可以临场改写。</h3><p>时间少了一半，哪些值得保留？下雨时，换一种观察方式。</p><div class="director-scenarios"><button id="directorHalf" type="button" disabled>时间减半</button><button id="directorRain" type="button" disabled>雨天备选</button><button id="directorRestore" type="button" disabled>恢复原方案</button></div><small>手动情境模拟 · 不读取实时天气</small></aside>
     </div>
+    <section class="theme-guide" aria-labelledby="themeHeading">
+      <div><h2 id="themeHeading">带着一个问题，串起三站风景。</h2><h3 id="themeTitle">正在读取主题…</h3><p id="themeQuestion"></p></div>
+      <button type="button" id="themeUseBtn" disabled>使用这条主题线</button>
+      <p id="themeStatus" role="status" aria-live="polite">主题讲解顺序按内容安排，现场行走请参考景区地图。</p>
+      <div class="theme-recap"><h3>本轮主题回顾</h3><p id="themeProgress" role="status" aria-live="polite"></p><ol id="themeRecap"></ol><small>仅记录本页成功收到的主题讲解。刷新、换方案或新对话后清空。</small></div>
+    </section>
     <div class="director-plan"><h2 id="directorSummary">正在准备可选景点…</h2><p id="directorStatus" role="status" aria-live="polite">读取景点后，你的方案会出现在这里。</p><p id="directorEmpty" hidden>这段时间没有匹配候选。可以增加预算，或恢复原方案。</p>
       <section class="journey-controls" aria-labelledby="journeyHeading"><div><h3 id="journeyHeading">从这一站，接着听。</h3><p id="journeyCurrent"></p><p id="journeyNext"></p></div><button type="button" id="journeyNextBtn" disabled>准备下一站讲解</button><p id="journeyFeedback" role="status" aria-live="polite">方案准备好后，可以从任一站开始讲解。</p></section>
       <ol id="directorStops" class="director-stops"></ol><p id="directorNotice" class="director-notice"></p></div>
@@ -188,11 +194,12 @@
 <script src="/js/display-config.js?v=display-1"></script>
 <script src="/js/director-core.js"></script>
 <script src="/js/journey-core.js?v=journey-1"></script>
-<script src="/js/journey.js?v=journey-1"></script>
+<script src="/js/journey.js?v=theme-1"></script>
 <script src="/js/chat-references.js?v=journey-1"></script>
 <script src="/js/chat-followups.js?v=local-followups-1"></script>
 <script src="/js/chat-audio.js?v=audio-1"></script>
-<script src="/js/director.js?v=journey-1"></script>
-<script src="/js/main.js?v=audio-1"></script>
+<script src="/js/director.js?v=theme-1"></script>
+<script src="/js/theme-guide.js?v=theme-1"></script>
+<script src="/js/main.js?v=theme-1"></script>
 </body>
 </html>

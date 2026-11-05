@@ -217,3 +217,17 @@
 .chat-audio li { padding:4px 0; }
 .chat-audio p { margin:8px 0; color:#36574a; font-size:12px; }
 .chat-audio summary:focus-visible,.chat-audio button:focus-visible { outline:2px solid #11665b; outline-offset:2px; }
+
+/* REQ-052: one thematic question, shared itinerary, receipt-based recap. */
+.theme-guide { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:12px 28px; padding:26px 0; border-top:1px solid #d1ddcf; }
+.theme-guide h2 { margin:0 0 14px; font-family:Songti SC,SimSun,serif; font-size:25px; font-weight:500; color:#16352f; }
+.theme-guide h3 { margin:0 0 8px; font-size:17px; color:#16352f; }
+.theme-guide p { margin:6px 0; font-size:14px; color:#36574a; line-height:1.7; overflow-wrap:anywhere; }
+.theme-guide>button { min-height:44px; padding:10px 16px; border:1px solid #11665b; border-radius:6px; background:#11665b; color:#fff; font:inherit; cursor:pointer; }
+.theme-guide>button:disabled { background:#edf1ee; color:#53665d; cursor:default; }
+.theme-guide>p,.theme-recap { grid-column:1/-1; }
+.theme-recap { border-left:3px solid #8baba0; padding-left:16px; }
+.theme-recap ol { margin:8px 0; padding-left:22px; color:#16352f; line-height:1.8; overflow-wrap:anywhere; }
+.theme-recap small { color:#36574a; line-height:1.6; }
+.theme-guide button:focus-visible { outline:2px solid #16352f; outline-offset:3px; }
+@media(max-width:768px) { .theme-guide { grid-template-columns:minmax(0,1fr); gap:14px; } .theme-guide h2 { font-size:22px; } .theme-guide>button { justify-self:start; } }

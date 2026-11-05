@@ -13,6 +13,8 @@ public class ChatResponse {
     private String interest;                 // 回显兴趣标签
     private String conversationId;
     private Integer spotId;
+    private String themeId;
+    private boolean themeLecture;
     private String narrationMode = "standard";
     private List<KnowledgeReference> knowledgeReferences = Collections.emptyList();
 
@@ -33,6 +35,11 @@ public class ChatResponse {
     public void setConversationId(String conversationId) { this.conversationId = conversationId; }
     public Integer getSpotId() { return spotId; }
     public void setSpotId(Integer spotId) { this.spotId = spotId; }
+    /** REQ-052. Applied request theme, null when ordinary chat was used. */
+    public String getThemeId() { return themeId; }
+    public void setThemeId(String themeId) { this.themeId = themeId; }
+    public boolean isThemeLecture() { return themeLecture; }
+    public void setThemeLecture(boolean themeLecture) { this.themeLecture = themeLecture; }
     public String getNarrationMode() { return narrationMode; }
     public void setNarrationMode(String narrationMode) { this.narrationMode = narrationMode; }
     /** REQ-037/API-037: supplied local candidates, not verified or model-used citations. */

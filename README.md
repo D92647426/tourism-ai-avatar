@@ -139,3 +139,5 @@ Python 只用于可选检查脚本与 CI，网页项目运行不依赖 Python、
 方案可以逐站准备数字人讲解，回答旁可展开本次检索提供的参考候选；不代表到访或逐句事实核验。交互、边界与验收见 [游览讲解衔接与候选](docs/journey_references_design.md#L1)。
 
 导游追问卡在每次景点讲解后提供抓重点、生活比喻和观察细节的问题草稿。交互和验收见 [设计](docs/followups_design.md#L1)。
+
+跨景点主题讲解以一个问题串起三站，离线可运行，联网增强表达与追问，本页回顾以成功收到的主题讲解为依据。见 [REQ-052设计](docs/superpowers/specs/2026-11-05-theme-guide-design.md#L1)。

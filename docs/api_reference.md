@@ -237,3 +237,9 @@ POST /api/chat 沿用既有请求 message/spotId/conversationId/narrationMode �
 ## API-051 浏览器讲解回听
 
 内部 API 为 [GuideAudioCard.append](../src/main/resources/static/js/chat-audio.js#L1)，输入 document/parent/回答正文和 play/stop 回调，输出 render(state,index) 句柄或 null。index=-1 为全文，0起为段落。play 返回 accepted/reason，queued/speaking/paused 状态由生命周期提供，拒绝保留旧内容。HTTP /api/chat 请求/响应与错误码沿用，回听不发请求。示例 `card.render({status:"speaking"},1)` 标记第2段，`card.render({status:"idle"},1)` 停止标记。程序与验收见 [设计](segmented_audio_design.md#L9)。
+
+## API-052 主题目录与请求级讲解
+
+GET /api/themes 公开返回数组，元素含 id/title/question/notice/stops，站点字段spotId/name/focus/question/bridge/recap；缺主题所需景点时返回空数组。POST /api/chat 沿用原字段，增加可选themeId字符串和themeLecture布尔。例 `{"message":"请围绕主题介绍灵山大佛。","spotId":11,"themeId":"scene-details","themeLecture":true,"narrationMode":"family"}`，实际ID取目录。响应增加themeId和themeLecture，例如 `{"reply":"本站主题讲解","fallback":true,"spotId":11,"themeId":"scene-details","themeLecture":true}`。
+
+未知主题、字段类型错误、讲解动作缺主题或不属于主题的景点400，原403/410/502/CSRF沿用。非法请求不提交候选状态。主题仅本次请求有效，旧调用不带字段继续普通路径，普通离线问题沿用现有能力。服务位置为 [ThemeGuideService](../src/main/java/com/guide/service/ThemeGuideService.java#L1)、[ConversationService](../src/main/java/com/guide/service/ConversationService.java#L1) 和 [ChatService](../src/main/java/com/guide/service/ChatService.java#L1)。验证 `mvn -o -Dtest=ThemeGuideTest test` 与隔离 [HTTP检查](../scripts/smoke_teacher_project.py#L1)。

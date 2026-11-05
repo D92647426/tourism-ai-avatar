@@ -101,3 +101,9 @@ Spring Boot 参数可通过命令行覆盖，例如 java -jar target/ai-guide-1.
 REQ-042：volume 数值0–1（默认1）、speechRate数值0.5–2（默认1）、voiceType非空字符串最多200字符（历史默认female，兼容male/female，新增auto或设备voiceURI）。省略字段保留当前值。使用位置、修改风险与验证见 [语音设置](voice_settings.md#L11)。
 
 REQ-047内部调用参数：GuideChatRequest.create 的 requireCorrectionOn400（boolean，默认false）仅主导览聊天传true，将400映射为需修改问题/重新选站且不可原样重放；观察搭档沿用默认旧契约。不是管理后台或环境变量配置。位置 [chat-request.js](../src/main/resources/static/js/chat-request.js#L1)，验证 [HTTP400回归](../tests/frontend/chat-request.test.js#L73)。
+
+## REQ-052 打包主题内容
+
+[theme-guide.json](../src/main/resources/theme-guide.json#L1) 为可信打包内容，修改后重新构建并启动。id为主题标识，默认scene-details，页面要求1–64位小写字母/数字/短横线；title/question/notice为名称、贯穿问题和来源提示，均为必填字符串。stops为固定三站数组，name为必须能匹配现有景点的正式名，focus/question/method/briefMethod/bridge/recap分别为焦点、本站问题、标准观察方法、精简观察方法、衔接和回顾词条，均必填。
+
+站点ID在运行时按 [SpotService](../src/main/java/com/guide/service/SpotService.java#L1) 目录解析。缺站/无效ID时主题不可用，普通导览继续使用原数据；打包必填字段无效会启动失败。该文件保存方法内容，景点事实来自当前简介并保留待核验说明。没有环境变量或管理员上传入口。修改风险为目录不可用或讲解依据不一致，检查 [ThemeGuideTest](../src/test/java/com/guide/service/ThemeGuideTest.java#L1)、GET /api/themes和三站HTTP路径。

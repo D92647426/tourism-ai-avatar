@@ -177,7 +177,7 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                 assert json.loads(fetch(base + "/api/chat/context", opener=opener))["narrationMode"] == "brief"
                 # REQ-047/048: packaged assets and real sequential station/candidate contracts.
                 assert b"chatJourneyNext" in home
-                for asset in ("journey-core.js", "journey.js", "chat-references.js", "chat-followups.js", "chat-audio.js"):
+                for asset in ("journey-core.js", "journey.js", "chat-references.js", "chat-followups.js", "chat-audio.js", "theme-guide.js"):
                     assert fetch(base + "/js/" + asset), asset
                 for name in ("灵山大佛", "灵山梵宫"):
                     stop = next(spot for spot in spots if spot["name"] == name)
@@ -208,6 +208,34 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                 assert len(set(followup_replies)) == 3
                 assert "不作为景点史实" in followup_replies[1]
                 assert "现场观察建议" in followup_replies[2]
+                # REQ-052: request-only theme context and complete offline three-stop path.
+                themes = json.loads(fetch(base + "/api/themes"))
+                assert len(themes) == 1 and themes[0]["id"] == "scene-details"
+                theme = themes[0]
+                assert len(theme["stops"]) == 3 and len({stop["spotId"] for stop in theme["stops"]}) == 3
+                snapshot_before_theme = json.loads(fetch(base + "/api/chat/context", opener=opener))
+                invalid_theme, _ = status_of(base + "/api/chat",
+                    {"message":"主题讲解", "themeId":"missing", "themeLecture":True,
+                     "spotId":theme["stops"][0]["spotId"], "narrationMode":"family",
+                     "conversationId":chat["conversationId"]}, {csrf_header:token}, opener)
+                assert invalid_theme == 400
+                assert json.loads(fetch(base + "/api/chat/context", opener=opener)) == snapshot_before_theme
+                for index, stop in enumerate(theme["stops"]):
+                    spot = next(item for item in spots if item["id"] == stop["spotId"])
+                    assert spot["name"] == stop["name"]
+                    themed = json.loads(fetch(base + "/api/chat",
+                        {"message":"请围绕主题介绍【" + stop["name"] + "】。", "themeId":theme["id"],
+                         "themeLecture":True, "spotId":stop["spotId"], "narrationMode":"brief" if index else "family",
+                         "conversationId":chat["conversationId"]}, {csrf_header:token}, opener))
+                    assert themed["themeId"] == theme["id"] and themed["themeLecture"] is True
+                    assert themed["spotId"] == stop["spotId"] and themed["fallback"] is True
+                    assert spot["brief"] in themed["reply"] and stop["bridge"] in themed["reply"] and "未核验" in themed["reply"]
+                    assert themed["narrationMode"] == ("brief" if index else "family")
+                themed_question = json.loads(fetch(base + "/api/chat",
+                    {"message":"它的门票", "themeId":theme["id"], "conversationId":chat["conversationId"]},
+                    {csrf_header:token}, opener))
+                assert themed_question["themeId"] == theme["id"] and themed_question["themeLecture"] is False
+                assert themed_question["narrationMode"] == "brief"
                 other = make_opener()
                 other_csrf = json.loads(fetch(base + "/api/auth/csrf", opener=other))
                 assert json.loads(fetch(base + "/api/chat/context", opener=other))["conversationId"] is None
@@ -260,7 +288,7 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                 return {"status": "passed", "spot_count": len(spots),
                         "checks": ["homepage", "spots", "csrf_token", "public_config",
                                    "narration_modes", "narration_session_restore", "narration_invalid_rollback", "narration_reset",
-                                   "journey_assets", "followup_asset", "audio_asset", "local_followup_replies", "journey_station_handoff", "knowledge_candidate_contract",
+                                   "journey_assets", "followup_asset", "audio_asset", "theme_three_stops", "theme_invalid_rollback", "local_followup_replies", "journey_station_handoff", "knowledge_candidate_contract",
                                    "admin_anonymous_401", "csrf_missing_rejected",
                                    "offline_chat", "live2d_definition",
                                    "live2d_model_file", "live2d_helper", "admin_display_partial_save",

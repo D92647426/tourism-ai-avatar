@@ -5,7 +5,8 @@
      * Invalid plans/IDs and busy/draft refusal become visible feedback, not state changes.
      * No fetch/storage/auto-send. Validation: journey-core, TEST-047 and design doc. */
     function mount(win,callbacks){
-        var $=function(id){return win.document.getElementById(id);},journey=win.GuideJourney.create();
+        var $=function(id){return win.document.getElementById(id);},journey=win.GuideJourney.create(),themeId=null;
+        function snapshot(){var state=journey.snapshot();state.themeId=themeId;return state;}
         function note(text){$('journeyFeedback').textContent=text;}
         function render(){
             var state=journey.snapshot();
@@ -17,7 +18,10 @@
         function prepare(id){
             var stop=journey.snapshot().stops.find(function(item){return item.id===id;});
             if(!stop){note('该站不在当前方案中，请重新选站。');return {accepted:false,reason:'该站不在当前方案中，请重新选站。'};}
-            var result=typeof win.GuideChatDraft==='function'?win.GuideChatDraft('请介绍【'+stop.name+'】，先讲最值得了解的一点。',{spotId:stop.id,tour:true}):{accepted:false,reason:'导游还未就绪，请稍后重试。'};
+            var context={spotId:stop.id,tour:true};
+            if(themeId){context.themeId=themeId;context.themeLecture=true;}
+            var question=themeId?'请围绕主题介绍【'+stop.name+'】，带我看一个具体的观察角度。':'请介绍【'+stop.name+'】，先讲最值得了解的一点。';
+            var result=typeof win.GuideChatDraft==='function'?win.GuideChatDraft(question,context):{accepted:false,reason:'导游还未就绪，请稍后重试。'};
             if(result.accepted){journey.select(id);render();note('已准备 '+stop.name+' 的讲解草稿，请确认后发送；不代表已经到访。');}
             else note(result.reason);
             return result;
@@ -29,14 +33,16 @@
         $('journeyNextBtn').addEventListener('click',next);$('chatJourneyNext').addEventListener('click',next);render();
         return {
             replacePlan:function(plan){
-                var previous=journey.snapshot();
+                var previous=journey.snapshot(),previousThemeId=themeId;
+                if(plan&&plan.themeId!=null&&(typeof plan.themeId!=='string'||!/^[a-z0-9-]{1,64}$/.test(plan.themeId))){note('主题信息无效，请重新选择。');return false;}
                 try{journey.replace(plan&&plan.stops);}catch(error){note(error.message);return false;}
-                if(previous.revision&&callbacks.invalidate)callbacks.invalidate();
+                themeId=plan.themeId||null;
+                if(previous.revision&&callbacks.invalidate)callbacks.invalidate(!!(previousThemeId||themeId));
                 render();note(previous.revision?'方案已更新，请重新选择讲解站；未发送草稿会保留。':'方案只安排讲解顺序，不验证到访位置。');return true;
             },
             prepare:prepare,
             syncSpot:function(id){var current=journey.snapshot().current;if(current&&current.id!==id){journey.clear();render();note('当前聊天已切换景点，需回方案重新选择讲解站。');}},
-            clearSelection:function(){journey.clear();render();},snapshot:journey.snapshot
+            clearSelection:function(){journey.clear();render();},snapshot:snapshot
         };
     }
     return {mount:mount};

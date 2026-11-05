@@ -203,3 +203,21 @@ TEST-046复查回归：[免费/特点与外景不串事实](../src/test/java/com
 ## TEST-051 按段听讲解
 
 [分段/安全/状态](../tests/frontend/chat-audio.test.js#L1)、[实际主聊天回听/守卫/迟到/无声线/语音待发送计时](../tests/frontend/audio-main.test.js#L1)、[实际方案保持](../tests/frontend/journey-page.test.js#L1)。运行 `node --test tests/frontend/chat-audio.test.js tests/frontend/audio-main.test.js tests/frontend/journey-page.test.js`。完整验证 `node --test tests/frontend/*.test.js`、`mvn -o verify`、`python scripts/check_doc_links.py` 和隔离 JAR HTTP 冒烟。预期只播所选段、正文无丢失、无额外请求，停止/后台后旧事件无效。失败先核对 activeAudioCard 所属及生命周期真实事件，实际计数与 mock 截图见 [设计](segmented_audio_design.md#L1)。
+
+## TEST-052 跨景点主题讲解
+
+[ThemeGuideTest](../src/test/java/com/guide/service/ThemeGuideTest.java#L1) 检查实际ID、缺站/字段、三模式、模型请求及故障、严格JSON类型和会话原子性。运行 `mvn -o -Dtest=ThemeGuideTest test`。[theme-guide.test.js](../tests/frontend/theme-guide.test.js#L1) 检查实际主页面十一项主题闭环/草稿/计数/取消/重编/新对话/目录与文本安全，运行 `node --test tests/frontend/theme-guide.test.js`。
+
+完整验收 `mvn -o verify`、`node --test tests/frontend/*.test.js`、`python scripts/check_doc_links.py`、数据工具及隔离 [HTTP](../scripts/smoke_teacher_project.py#L1)。预期三站离线讲解成功、匹配meta才计入回顾、编辑草稿不发送lecture动作、非法请求状态不提交。失败先核对目录正式名称与实际ID、请求是否仍为准备原文、方案revision及当前请求代际。实际结果与截图写入 [设计验收](superpowers/specs/2026-11-05-theme-guide-design.md#L1)。
+
+
+TEST-052 关键用例定位
+
+| 测试函数或名称 | 行为 |
+|---|---|
+| [explicitLectureAndFreeQuestionStayRequestScopedAndInvalidRequestsRollBack](../src/test/java/com/guide/service/ThemeGuideTest.java#L151) | 主题作用域与候选回滚 |
+| [actualModelRequestKeepsRawQuestionHistoryModeAndValidatedTheme](../src/test/java/com/guide/service/ThemeGuideTest.java#L234) | 实际模型JSON、原问题和来源上下文 |
+| [strictJsonRejectsMalformedTypesAndKeepsOldMockPath](../src/test/java/com/guide/service/ThemeGuideTest.java#L211) | 严格类型与旧调用路径 |
+| [selecting a theme reuses itinerary without automatic requests](../tests/frontend/theme-guide.test.js#L34) | 三站闭环与成功回顾 |
+| [failed and cancelled responses do not count](../tests/frontend/theme-guide.test.js#L55) | 取消和重编迟到 |
+| [entering a theme from pending ordinary chat](../tests/frontend/theme-guide.test.js#L109) | 普通问答切主题时取消旧请求 |
