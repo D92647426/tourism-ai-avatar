@@ -120,3 +120,7 @@
 ## REQ-049 追问模块
 
 [chat-followups.append](../src/main/resources/static/js/chat-followups.js#L21) 验证并复制站点、渲染纯文本折叠卡与局部反馈。主聊天 [prepareFollowup](../src/main/resources/static/js/main.js#L424) 将显式站点交给既有草稿守卫，同一当前方案站保持接力。模板和扩展位置见 [设计](followups_design.md#L15)。
+
+## REQ-050 本地追问组织
+
+[LocalFollowupReply.build](../src/main/java/com/guide/service/LocalFollowupReply.java#L20) 完整匹配本站固定模板并组织既有字段，返回文本或 null；[ChatService.localFallback](../src/main/java/com/guide/service/ChatService.java#L215) 在外景/多实体判断后复用并追加统一提示。模板与前端契约见 [设计](local_followups_design.md#L13)。

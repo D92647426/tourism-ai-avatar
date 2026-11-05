@@ -189,6 +189,25 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                     assert candidates and len(candidates) <= 3
                     assert all(ref["source"] == "local-knowledge:" + str(ref["id"])
                                and isinstance(ref["title"], str) for ref in candidates)
+                # REQ-050: actual card prompts produce distinct marked local replies.
+                followup_stop = next(spot for spot in spots if spot["name"] == "灵山大佛")
+                prompts = ["请把核心看点压缩为三句，方便我边走边听。",
+                           "请用一个生活中的比喻解释最有代表性的看点，并区分比喻与史实。",
+                           "请给出一个可在现场留意的细节，并说明怎样观察；资料不足时请说明。"]
+                followup_replies = []
+                for prompt in prompts:
+                    answer = json.loads(fetch(base + "/api/chat",
+                        {"message":"关于【" + followup_stop["name"] + "】，" + prompt,
+                         "spotId":followup_stop["id"], "conversationId":chat["conversationId"]},
+                        {csrf_header:token}, opener))
+                    assert answer["fallback"] and answer["narrationMode"] == "brief"
+                    assert answer["spotId"] == followup_stop["id"]
+                    assert followup_stop["brief"] in answer["reply"] and "未核验" in answer["reply"]
+                    assert "本地追问讲解" in answer["reply"]
+                    followup_replies.append(answer["reply"])
+                assert len(set(followup_replies)) == 3
+                assert "不作为景点史实" in followup_replies[1]
+                assert "现场观察建议" in followup_replies[2]
                 other = make_opener()
                 other_csrf = json.loads(fetch(base + "/api/auth/csrf", opener=other))
                 assert json.loads(fetch(base + "/api/chat/context", opener=other))["conversationId"] is None
@@ -241,7 +260,7 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                 return {"status": "passed", "spot_count": len(spots),
                         "checks": ["homepage", "spots", "csrf_token", "public_config",
                                    "narration_modes", "narration_session_restore", "narration_invalid_rollback", "narration_reset",
-                                   "journey_assets", "followup_asset", "journey_station_handoff", "knowledge_candidate_contract",
+                                   "journey_assets", "followup_asset", "local_followup_replies", "journey_station_handoff", "knowledge_candidate_contract",
                                    "admin_anonymous_401", "csrf_missing_rejected",
                                    "offline_chat", "live2d_definition",
                                    "live2d_model_file", "live2d_helper", "admin_display_partial_save",
