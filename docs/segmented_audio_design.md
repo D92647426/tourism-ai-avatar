@@ -10,7 +10,7 @@
 
 API-051 为浏览器内部 GuideAudioCard.append(document,parent,text,callbacks)，返回卡片控制句柄或 null。callbacks.play(text,card,index) 返回 accepted/reason，callbacks.stop(card) 停止对应播报。index=-1 表示全文，其余为从0开始的段落。句柄 render(state,index) 更新真实状态、按下标记与停止按钮。模块只负责安全 DOM 和段落快照。
 
-主聊天只持有当前播报卡片及段落下标。切换时先停止旧任务并重置旧卡片，新的 queued/speaking/paused/idle/error 跟随既有 GuideSpeech。新请求、草稿交接、模式切换、重编、关面板和后台均沿用原停止入口。旧引擎事件仍由生命周期识别，失败保留文字并可再次点击重听。既有声线、语速和0音量设置继续使用。
+主聊天只持有当前播报卡片及段落下标。切换时先停止旧任务并重置旧卡片，新的 queued/speaking/paused/idle/error 跟随既有 GuideSpeech。新请求、草稿交接、模式切换、重编、关面板和后台均沿用原停止入口。旧引擎事件仍由生命周期识别，失败保留文字并可再次点击重听。纯标题或链接经播报清洗后为空时，在停止旧播报前拒绝并给出局部原因。既有声线、语速和0音量设置继续使用。
 
 [chat-audio.js](../src/main/resources/static/js/chat-audio.js#L1) 负责分段与卡片，[main.js](../src/main/resources/static/js/main.js#L1) 负责守卫与播放归属，[speech-lifecycle.js](../src/main/resources/static/js/speech-lifecycle.js#L1) 负责真实引擎事件。HTTP API 和存储配置沿用。
 

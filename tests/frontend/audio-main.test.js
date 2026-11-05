@@ -63,3 +63,20 @@ test('replay cancels scheduled voice submission but keeps recognized text', asyn
     full(card); p.time.tick(300);
     assert.equal(p.requests.length, 1); assert.equal(p.nodes.get('chatInput').value, '识别到的问题');
 });
+
+
+test('a title-only paragraph is refused before interrupting current speech', async () => {
+    const p = page(), card = await answer(p, '【灵山大佛】\n\n第二段介绍');
+    p.utterances[0].onstart(); const count = p.spoken.length, stops = p.stops;
+    playPart(card, 0);
+    assert.equal(p.spoken.length, count); assert.equal(p.stops, stops); assert.equal(state(p), 'speaking');
+    assert.match(card.children[3].textContent, /没有可播报正文/);
+    assert.equal(card.children[1].children[0].attributes['aria-pressed'], 'true');
+});
+
+test('a whole reply cleaned to empty has a visible replay refusal', async () => {
+    const p = page(), card = await answer(p, '【灵山大佛】');
+    assert.equal(p.spoken.length, 0); full(card);
+    assert.equal(p.spoken.length, 0); assert.match(card.children[2].textContent, /没有可播报正文/);
+    assert.equal(card.children[1].children[1].disabled, true); assert.equal(state(p), 'idle');
+});

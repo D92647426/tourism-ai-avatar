@@ -496,19 +496,26 @@
     window.onTtsError = function(error, id) { speech.nativeEvent('error', id, error); };
     window.onTtsStop = function(id) { speech.nativeEvent('stop', id); };
 
-    /** REQ-036: submit cleaned answer text; only a real start event opens the mouth.
-     * Returns no value; unavailable voices remain an explicit, readable error state.
-     */
-    function speak(text, audioCard, part) {
-        var clean = text
+    /** REQ-036/051: normalize displayed answer markup for device speech, without I/O. */
+    function speechText(text) {
+        return text
             .replace(/【.*?】/g, '').replace(/https?:\/\/\S+/g, '')
             .replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1')
             .replace(/__(.+?)__/g, '$1').replace(/_(.+?)_/g, '$1')
             .replace(/#{1,6}\s?/g, '').replace(/`(.+?)`/g, '$1')
             .replace(/^[-*+]\s+/gm, '').replace(/^\d+[.、]\s*/gm, '').trim();
+    }
+
+    /** REQ-036/051: submit readable text; only a real start event opens the mouth.
+     * Returns false for empty speech text before stopping an existing task.
+     * Unavailable voices remain an explicit lifecycle error. See segmented_audio_design.md.
+     */
+    function speak(text, audioCard, part) {
+        var clean = speechText(text);
+        if (!clean) return false;
         speech.setActivity('idle');
         activeAudioCard = audioCard || null; activeAudioPart = part == null ? -1 : part;
-        speech.speak(clean);
+        return speech.speak(clean);
     }
 
     /** REQ-051: play an immutable answer/paragraph using current device voice settings.
@@ -518,11 +525,11 @@
      */
     function replayAnswer(text, card, part) {
         if (!contextReady || pendingChats || resettingConversation) return {accepted: false, reason: '请等当前提问或会话同步结束，再重听讲解。'};
+        if (!speechText(text)) return {accepted: false, reason: '这一段没有可播报正文，请选择其他段落或阅读全文。'};
         speechGeneration++;
         if (speechSendTimer !== null) { clearTimeout(speechSendTimer); speechSendTimer = null; }
         stopListen();
-        speak(text, card, part);
-        return {accepted: true};
+        return speak(text, card, part) ? {accepted: true} : {accepted: false, reason: '播报尚未就绪，请稍后重试或阅读全文。'};
     }
     function stopAnswer(card) {
         if (activeAudioCard === card) stopTts();
