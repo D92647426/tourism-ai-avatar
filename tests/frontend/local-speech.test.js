@@ -7,7 +7,7 @@ function fixture(){
  class Audio{constructor(){audios.push(this);}play(){return Promise.resolve();}pause(){this.paused=true;}load(){}}
  const engine=local.create({Audio,AbortController,URL:{createObjectURL:()=>`blob:${audios.length}`,revokeObjectURL:u=>revoked.push(u)},
   fetch:(url,options)=>{const d=deferred();requests.push({...d,url,options});return d.promise;}});
- const hooks={start:()=>events.push('start'),wait:()=>events.push('wait'),end:()=>events.push('end'),fallback:t=>events.push(t),error:e=>events.push(e)};
+ const hooks={start:()=>events.push('start'),pause:()=>events.push('pause'),wait:()=>events.push('wait'),end:()=>events.push('end'),fallback:t=>events.push(t),error:e=>events.push(e)};
  const resolve=i=>requests[i].resolve({ok:true,blob:async()=>new Blob(['wav'],{type:'audio/wav'})});
  return {engine,requests,audios,revoked,events,hooks,resolve};
 }
@@ -41,9 +41,15 @@ test('local engine shares lifecycle, keeps mouth closed while queued and rejects
   localEngine:{speak:(text,settings,h)=>{hooks=h;return ()=>cancels++;}},
   synthesis:{getVoices:()=>[{lang:'zh-CN'}],speak:u=>web=u,cancel(){}},Utterance:function(t){this.text=t;},onMouth:m=>mouths.push(m)});
  controller.speak('一句。二句。');assert.equal(controller.getState().status,'queued');assert.deepEqual(mouths,[]);
- hooks.start();assert.equal(mouths.at(-1),true);hooks.wait();assert.equal(mouths.at(-1),false);
+ hooks.start();assert.equal(mouths.at(-1),true);hooks.pause();assert.equal(controller.getState().status,'paused');assert.equal(mouths.at(-1),false);
+ hooks.start();assert.equal(controller.getState().status,'speaking');assert.equal(mouths.at(-1),true);hooks.wait();assert.equal(mouths.at(-1),false);
  hooks.fallback('二句。');assert.equal(web.text,'二句。');web.onstart();assert.equal(mouths.at(-1),true);
  const old=hooks;controller.stop();old.start();old.end();assert.equal(controller.getState().status,'idle');assert.equal(mouths.at(-1),false);assert.ok(cancels>=1);
+});
+test('native media pause reaches lifecycle and cleanup silences old pause callbacks',async()=>{
+ const f=fixture();const cancel=f.engine.speak('一句。',{},f.hooks);await flush();f.resolve(0);await flush();
+ const audio=f.audios[0];audio.onplaying();const oldPause=audio.onpause;audio.onpause();audio.onplaying();
+ assert.deepEqual(f.events,['start','pause','start']);cancel();assert.equal(audio.onpause,null);oldPause();assert.deepEqual(f.events,['start','pause','start']);
 });
 test('real page shows text before audio, uses configured voice and aborts on close',async()=>{
  const {page,response}=require('./chat-fixture.cjs');const audios=[];

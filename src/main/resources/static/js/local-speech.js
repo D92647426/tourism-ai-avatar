@@ -11,7 +11,7 @@
         if(buffer.trim())parts.push(buffer);return parts;
     }
     /** Create an injectable media engine. speak(text,settings,hooks)->idempotent cancel.
-     * hooks start/wait/end/fallback(unfinished text)/error(code) use genuine events.
+     * hooks start/pause/wait/end/fallback(unfinished text)/error(code) use genuine events.
      * Errors never expose HTTP bodies. Change queue policy here; docs/local_voice_design.md. */
     function create(options){
         options=options||{};
@@ -21,7 +21,7 @@
             var url=null,AudioCtor=options.Audio,urls=options.URL;
             function valid(audio){return !stopped&&current===audio;}
             function release(){
-                if(current){current.onplaying=current.onended=current.onerror=current.onwaiting=null;try{current.pause();if(current.removeAttribute)current.removeAttribute('src');else current.src='';current.load();}catch(e){}current=null;}
+                if(current){current.onplaying=current.onpause=current.onended=current.onerror=current.onwaiting=null;try{current.pause();if(current.removeAttribute)current.removeAttribute('src');else current.src='';current.load();}catch(e){}current=null;}
                 if(url){try{urls.revokeObjectURL(url);}catch(e){}url=null;}
             }
             function cancel(){if(stopped)return;stopped=true;if(controller)controller.abort();release();}
@@ -49,6 +49,7 @@
                     url=urls.createObjectURL(result.blob);audio=new AudioCtor();current=audio;audio.src=url;
                     audio.volume=Number.isFinite(settings.volume)?settings.volume:1;audio.preload='auto';
                     audio.onplaying=function(){if(valid(audio)&&hooks.start)hooks.start();};
+                    audio.onpause=function(){if(valid(audio)&&hooks.pause)hooks.pause();};
                     audio.onwaiting=function(){if(valid(audio)&&hooks.wait)hooks.wait();};
                     audio.onerror=function(event){if(valid(audio))fail(index,event&&event.error);};
                     audio.onended=function(){

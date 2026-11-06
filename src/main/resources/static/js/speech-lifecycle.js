@@ -353,7 +353,8 @@
             function owned(){return active===task&&task.engine==='local';}
             try {
                 task.cancelLocal = options.localEngine.speak(task.text, task.settings, {
-                    start:function(){if(!owned())return;if(!task.started)handleStart(task);else{task.paused=false;setMouth(true);notify('speaking','');}},
+                    start:function(){if(!owned())return;if(!task.started)handleStart(task);else if(task.paused)handleResume(task);else{setMouth(true);notify('speaking','');}},
+                    pause:function(){if(owned())handlePause(task);},
                     wait:function(){if(owned()){setMouth(false);notify('queued','正在准备下一句…');}},
                     end:function(){if(owned())handleEnd(task);},
                     fallback:function(remaining){if(owned())localFallback(task,remaining);},
