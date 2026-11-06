@@ -107,3 +107,15 @@ REQ-047内部调用参数：GuideChatRequest.create 的 requireCorrectionOn400�
 [theme-guide.json](../src/main/resources/theme-guide.json#L1) 为可信打包内容，修改后重新构建并启动。id为主题标识，默认scene-details，页面要求1–64位小写字母/数字/短横线；title/question/notice为名称、贯穿问题和来源提示，均为必填字符串。stops为固定三站数组，name为必须能匹配现有景点的正式名，focus/question/method/briefMethod/bridge/recap分别为焦点、本站问题、标准观察方法、精简观察方法、衔接和回顾词条，均必填。
 
 站点ID在运行时按 [SpotService](../src/main/java/com/guide/service/SpotService.java#L1) 目录解析。缺站/无效ID时主题不可用，普通导览继续使用原数据；打包必填字段无效会启动失败。该文件保存方法内容，景点事实来自当前简介并保留待核验说明。没有环境变量或管理员上传入口。修改风险为目录不可用或讲解依据不一致，检查 [ThemeGuideTest](../src/test/java/com/guide/service/ThemeGuideTest.java#L1)、GET /api/themes和三站HTTP路径。
+
+## REQ-053 本地语音配置
+
+| 字段 | 类型/默认/必填 | 用途与风险 | 位置和验证 |
+|---|---|---|---|
+| speech.local.enabled / LOCAL_SPEECH_ENABLED | 布尔/false/否 | 开启Java本地代理；禁用则503，网页回退系统声音 | [LocalSpeechService.synthesize](../src/main/java/com/guide/service/LocalSpeechService.java#L41)，[Java代理测试](../src/test/java/com/guide/service/LocalSpeechServiceTest.java#L11) |
+| speech.local.base-url / LOCAL_SPEECH_BASE_URL | URL/http://127.0.0.1:9880/否 | 只允许HTTP IPv4 loopback、显式端口，无凭据/路径/查询/片段，不跟随重定向；其他值拒绝启动 | [LocalSpeechService.synthesize](../src/main/java/com/guide/service/LocalSpeechService.java#L41)，[Java代理测试](../src/test/java/com/guide/service/LocalSpeechServiceTest.java#L11) |
+| DigitalHumanConfig.voiceType | 字符串/local:character/已有字段 | 新模板默认角色声线；auto/设备URI和旧男女值仍兼容。服务关闭不强制修改已保存值 | [默认配置](../src/main/java/com/guide/model/DigitalHumanConfig.java#L1)、[前端队列测试](../tests/frontend/local-speech.test.js#L14) |
+| --engine-dir / --assets-dir | 本地目录/无/是 | Python外置引擎与声线文件，模型不入Git；无CUDA/文件缺失启动失败 | [load_engine](../scripts/local_voice_server.py#L94)，[Python工作进程测试](../tests/test_local_voice_server.py#L17) |
+| --port | 整数/9880/否 | Python固定127.0.0.1，只改端口；与Javabase-url对应 | [load_engine](../scripts/local_voice_server.py#L94)，[Python工作进程测试](../tests/test_local_voice_server.py#L17) |
+
+固定限额：工作进程2个请求、1个推理；Java并发2，连接800ms/单次读取12秒/响应4MiB。网页按32字符或标点切句，初始等待8秒后回退，播放故障上限沿用120秒。不保证硬取消GPU或总请求严格12秒。运行与素材条件见 [手册](local_voice_runbook.md#L1)。

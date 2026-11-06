@@ -18,6 +18,12 @@ ai:
   base-url: https://api.deepseek.com/v1
   model: deepseek-chat
 
+# REQ-053: optional local worker; unavailable -> browser system speech.
+speech:
+  local:
+    enabled: ${LOCAL_SPEECH_ENABLED:false}
+    base-url: ${LOCAL_SPEECH_BASE_URL:http://127.0.0.1:9880}
+
 # 数据文件存储路径（data.users-file 可用测试临时文件或本地私有路径覆盖）
 data:
   knowledge-file: data/knowledge.json

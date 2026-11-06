@@ -492,6 +492,10 @@
     }
 
     speech = window.GuideSpeech.create({
+        localEngine: window.GuideLocalSpeech ? window.GuideLocalSpeech.create({
+            Audio:window.Audio, URL:window.URL, AbortController:window.AbortController,
+            fetch:function(url,options){return (window.AuthGuard ? window.AuthGuard.apiFetch : window.fetch.bind(window))(url,options);}
+        }) : null,
         getSettings: function() { return Object.assign({},voiceSettings); },
         selectVoice: function(voices, settings) {
             var choice = window.GuideVoiceSettings.choose(settings || voiceSettings, voices);
@@ -630,7 +634,8 @@
     var displayConfig = window.GuideDisplayConfig.load({ document: document,
         fetch: window.fetch.bind(window), onConfig: function(raw) {
             voiceSettings = window.GuideVoiceSettings.normalize(raw);
-            S('speechSettingsStatus').textContent = '语音设置已加载：语速 '+voiceSettings.speechRate+'，音量 '+voiceSettings.volume+'。'+(window.AndroidSpeech ? ' Android 原生桥接不支持这些参数，使用浏览器语音。' : '');
+            S('speechSettingsStatus').textContent = '语音设置已加载：语速 '+voiceSettings.speechRate+'，音量 '+voiceSettings.volume+'。'+
+                (voiceSettings.voiceType==='local:character'?'使用本地角色声线，暂不可用时回退系统声音。':(window.AndroidSpeech ? ' Android 原生桥接不支持这些参数，使用浏览器语音。' : ''));
         }, canUpdateWelcome: function() { return !hasStartedChat; } });
     window.addEventListener('pagehide', function() { displayConfig.stop(); });
 

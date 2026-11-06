@@ -29,3 +29,7 @@
 ## Q-0031 现在的主题是什么，如何继续？
 
 用户明确确认继续景区导览服务 AI 数字人。主线是景点讲解、游客问答与个性化游览，观察记录是自愿补充；#33/#34/#35和PR #36退回备选，未实现、不计作完成。当前实施#37讲解方式，见 [产品上下文](../PRODUCT.md#L3)、[REQ-046](narration_design.md#L1)。实现定位：[模式定义](../src/main/java/com/guide/model/NarrationMode.java#L1)、[会话处理](../src/main/java/com/guide/service/ConversationService.java#L78)、[页面同步](../src/main/resources/static/js/main.js#L240)。无新引擎依赖。
+
+## REQ-053：能否换新声线并及时回复？
+
+可以使用常驻、预热和分句预取降低等待；文字回复不等待配音。不能把独立引擎2.4秒基准当作完整LLM问答延迟；当前文字接口仍整包返回。正式接入和限制见 [设计](local_voice_design.md#L1)、[运行](local_voice_runbook.md#L1)。

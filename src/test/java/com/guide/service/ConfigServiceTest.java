@@ -91,7 +91,7 @@ class ConfigServiceTest {
     private static void assertDefaults(DigitalHumanConfig config) {
         assertEquals(DEFAULT_NAME, config.getName());
         assertEquals(DEFAULT_WELCOME, config.getWelcomeMessage());
-        assertEquals("female", config.getVoiceType());
+        assertEquals("local:character", config.getVoiceType());
         assertEquals("haru", config.getModelName());
         assertEquals(DEFAULT_COLOR, config.getPrimaryColor());
         assertEquals(1.0, config.getVolume(), 0.0);
@@ -131,7 +131,7 @@ class ConfigServiceTest {
 
         assertEquals("只改名字", updated.getName());
         assertEquals(DEFAULT_WELCOME, updated.getWelcomeMessage());
-        assertEquals("female", updated.getVoiceType());
+        assertEquals("local:character", updated.getVoiceType());
         assertEquals("haru", updated.getModelName());
         assertEquals(DEFAULT_COLOR, updated.getPrimaryColor());
         assertEquals(1.0, updated.getVolume(), 0.0);
@@ -355,7 +355,7 @@ class ConfigServiceTest {
 
         assertEquals("仅名称", config.getName());
         assertEquals(DEFAULT_WELCOME, config.getWelcomeMessage());
-        assertEquals("female", config.getVoiceType());
+        assertEquals("local:character", config.getVoiceType());
         assertEquals("haru", config.getModelName());
         assertEquals(DEFAULT_COLOR, config.getPrimaryColor());
         assertEquals(1.0, config.getVolume(), 0.0);

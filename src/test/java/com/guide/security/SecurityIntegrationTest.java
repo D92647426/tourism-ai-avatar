@@ -196,6 +196,22 @@ class SecurityIntegrationTest {
 
     // ===== 匿名 / 游客 / 管理员边界 =====
 
+    /** TEST-053: audio is authenticated and CSRF-protected; disabled worker is a sanitized 503. */
+    @Test void localSpeechUsesSessionCsrfAndPreservesChat() throws Exception {
+        String body="{\"text\":\"你好\",\"speed\":1}";
+        mockMvc.perform(csrf().apply(post("/api/speech/synthesize")).contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isUnauthorized());
+        MockHttpSession guest=register(randomGuestName(),"pass1234");
+        mockMvc.perform(post("/api/speech/synthesize").session(guest).contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isForbidden());
+        Csrf token=csrf(guest);
+        mockMvc.perform(token.apply(post("/api/speech/synthesize")).session(guest).contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isServiceUnavailable()).andExpect(jsonPath("$.code").value("SPEECH_UNAVAILABLE"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.header().string("Cache-Control","no-store"));
+        mockMvc.perform(token.apply(post("/api/speech/synthesize")).session(guest).contentType(MediaType.APPLICATION_JSON).content("{\"text\":\" \"}"))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("INVALID_SPEECH"));
+    }
+
     @Test
     void anonymousAdminGetReturns401() throws Exception {
         mockMvc.perform(get("/api/admin/dashboard"))

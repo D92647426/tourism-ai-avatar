@@ -132,3 +132,7 @@
 ## REQ-052 主题服务与页面
 
 [ThemeGuideService](../src/main/java/com/guide/service/ThemeGuideService.java#L1) 读取可信方法内容并绑定实际景点，校验请求和生成本地讲解；[ThemeGuideController](../src/main/java/com/guide/controller/ThemeGuideController.java#L1) 提供目录。[theme-guide.js](../src/main/resources/static/js/theme-guide.js#L1) 校验目录、管理本页响应回顾，复用 [director](../src/main/resources/static/js/director.js#L1)/[journey](../src/main/resources/static/js/journey.js#L1)/[main](../src/main/resources/static/js/main.js#L1) 的方案、草稿和生命周期。接口与验收见 [设计](superpowers/specs/2026-11-05-theme-guide-design.md#L9)。
+
+## REQ-053 语音引擎接入
+
+[LocalSpeechController.synthesize](../src/main/java/com/guide/controller/LocalSpeechController.java#L21) 提供同源音频；[LocalSpeechService.synthesize](../src/main/java/com/guide/service/LocalSpeechService.java#L41) 验证输入并有界请求loopback服务；[load_engine](../scripts/local_voice_server.py#L94) 读取外置模型、预热、限制并发且禁止联网。[GuideLocalSpeech.create](../src/main/resources/static/js/local-speech.js#L16) 分句、预取、播放及释放资源；[beginLocal](../src/main/resources/static/js/speech-lifecycle.js#L350) 管真实播放事件、旧任务隔离和未完成句回退。见 [运行](local_voice_runbook.md#L1)。
