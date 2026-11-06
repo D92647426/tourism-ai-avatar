@@ -51,6 +51,11 @@ test('native media pause reaches lifecycle and cleanup silences old pause callba
  const audio=f.audios[0];audio.onplaying();const oldPause=audio.onpause;audio.onpause();audio.onplaying();
  assert.deepEqual(f.events,['start','pause','start']);cancel();assert.equal(audio.onpause,null);oldPause();assert.deepEqual(f.events,['start','pause','start']);
 });
+test('natural-end pause does not freeze the speech failure cap',async()=>{
+ const f=fixture();f.engine.speak('一句。',{},f.hooks);await flush();f.resolve(0);await flush();
+ const audio=f.audios[0];audio.onplaying();audio.ended=true;audio.onpause();audio.onended();
+ assert.deepEqual(f.events,['start','end']);
+});
 test('real page shows text before audio, uses configured voice and aborts on close',async()=>{
  const {page,response}=require('./chat-fixture.cjs');const audios=[];
  class Audio{constructor(){audios.push(this);}play(){return Promise.resolve();}pause(){}load(){}}
