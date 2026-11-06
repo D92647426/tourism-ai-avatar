@@ -115,7 +115,7 @@ REQ-047内部调用参数：GuideChatRequest.create 的 requireCorrectionOn400�
 | speech.local.enabled / LOCAL_SPEECH_ENABLED | 布尔/false/否 | 开启Java本地代理；禁用则503，网页回退系统声音 | [LocalSpeechService.synthesize](../src/main/java/com/guide/service/LocalSpeechService.java#L41)，[Java代理测试](../src/test/java/com/guide/service/LocalSpeechServiceTest.java#L11) |
 | speech.local.base-url / LOCAL_SPEECH_BASE_URL | URL/http://127.0.0.1:9880/否 | 只允许HTTP IPv4 loopback、显式端口，无凭据/路径/查询/片段，不跟随重定向；其他值拒绝启动 | [LocalSpeechService.synthesize](../src/main/java/com/guide/service/LocalSpeechService.java#L41)，[Java代理测试](../src/test/java/com/guide/service/LocalSpeechServiceTest.java#L11) |
 | DigitalHumanConfig.voiceType | 字符串/local:character/已有字段 | 新模板默认角色声线；auto/设备URI和旧男女值仍兼容。服务关闭不强制修改已保存值 | [默认配置](../src/main/java/com/guide/model/DigitalHumanConfig.java#L1)、[前端队列测试](../tests/frontend/local-speech.test.js#L14) |
-| --engine-dir / --assets-dir | 本地目录/无/是 | Python外置引擎与声线文件，模型不入Git；无CUDA/文件缺失启动失败 | [load_engine](../scripts/local_voice_server.py#L92)，[Python工作进程测试](../tests/test_local_voice_server.py#L17) |
-| --port | 整数/9880/否 | Python固定127.0.0.1，只改端口；与Javabase-url对应 | [load_engine](../scripts/local_voice_server.py#L92)，[Python工作进程测试](../tests/test_local_voice_server.py#L17) |
+| --engine-dir / --assets-dir | 本地目录/无/是 | Python外置引擎与声线文件，模型不入Git；无CUDA/文件缺失启动失败 | [load_engine](../scripts/local_voice_server.py#L94)，[Python工作进程测试](../tests/test_local_voice_server.py#L17) |
+| --port | 整数/9880/否 | Python固定127.0.0.1，只改端口；与Javabase-url对应 | [load_engine](../scripts/local_voice_server.py#L94)，[Python工作进程测试](../tests/test_local_voice_server.py#L17) |
 
 固定限额：工作进程2个请求、1个推理；Java并发2，连接800ms/单次读取12秒/响应4MiB。网页按32字符或标点切句，初始等待8秒后回退，播放故障上限沿用120秒。不保证硬取消GPU或总请求严格12秒。运行与素材条件见 [手册](local_voice_runbook.md#L1)。

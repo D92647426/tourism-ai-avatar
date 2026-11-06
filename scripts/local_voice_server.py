@@ -16,12 +16,14 @@ import shutil
 import sys
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from typing import Callable, NoReturn
 
 MAX_TEXT=80
 MAX_AUDIO=4*1024*1024
+Synthesizer = Callable[[str, float], bytes]
 
 
-def spoken_text(text):
+def spoken_text(text: str) -> str:
     """Chinese-only pronunciation: AI -> 人工智能, other ASCII letters spelled in Chinese.
 
     Avoid upstream mixed-language detection/downloads (including Unicode-path
@@ -35,7 +37,7 @@ def spoken_text(text):
     return text
 
 
-def validate(raw):
+def validate(raw: object) -> tuple[str, float]:
     """Validate untrusted JSON; return (trimmed text, finite speed), else ValueError."""
     if not isinstance(raw,dict) or set(raw)-{'text','speed'}:
         raise ValueError('Invalid request')
@@ -51,27 +53,27 @@ def validate(raw):
 
 class State:
     """Own one model: at most one inference and one queued request; no history."""
-    def __init__(self,synthesize):
+    def __init__(self, synthesize: Synthesizer) -> None:
         self.synthesize=synthesize
         self.slots=threading.BoundedSemaphore(2)
         self.lock=threading.Lock()
 
 
-def make_server(port,state):
+def make_server(port: int, state: State) -> ThreadingHTTPServer:
     """Bind only IPv4 loopback; HTTP errors never expose model paths or prompts."""
     class Handler(BaseHTTPRequestHandler):
-        def log_message(self,*args): pass
-        def setup(self):
+        def log_message(self, format: str, *args: object) -> None: pass
+        def setup(self) -> None:
             super().setup();self.connection.settimeout(5)
-        def send_body(self,status,data,kind='application/json'):
+        def send_body(self, status: int, data: bytes, kind: str = 'application/json') -> None:
             self.send_response(status)
             self.send_header('Content-Type',kind);self.send_header('Content-Length',str(len(data)))
             self.send_header('Cache-Control','no-store');self.end_headers()
             try:self.wfile.write(data)
             except (BrokenPipeError,ConnectionResetError,TimeoutError):pass
-        def do_GET(self):
+        def do_GET(self) -> None:
             self.send_body(200,b'{"ready":true}') if self.path=='/health' else self.send_body(404,b'{"error":"not-found"}')
-        def do_POST(self):
+        def do_POST(self) -> None:
             if self.path!='/synthesize':return self.send_body(404,b'{"error":"not-found"}')
             try:
                 length=int(self.headers.get('Content-Length','0'))
@@ -89,7 +91,7 @@ def make_server(port,state):
     return ThreadingHTTPServer(('127.0.0.1',port),Handler)
 
 
-def load_engine(engine,assets):
+def load_engine(engine: Path, assets: Path) -> Synthesizer:
     """Load external CUDA weights with restricted pickle and warm once; no downloads.
 
     Returns callable(text,speed)->WAV bytes; raises on invalid install/CUDA/model.
@@ -102,7 +104,7 @@ def load_engine(engine,assets):
     os.chdir(engine);sys.path[:0]=[str(engine),str(engine/'GPT_SoVITS')]
     os.environ.update(HF_HUB_OFFLINE='1',TOKENIZERS_PARALLELISM='false',TORCH_FORCE_WEIGHTS_ONLY_LOAD='1')
     import socket
-    def offline(*args,**kwargs):raise RuntimeError('Outbound network disabled for local voice')
+    def offline(*args: object, **kwargs: object) -> NoReturn:raise RuntimeError('Outbound network disabled for local voice')
     socket.socket.connect=offline;socket.socket.connect_ex=offline
     import imageio_ffmpeg
     binary=assets/'bin/ffmpeg.exe' if os.name=='nt' else Path(imageio_ffmpeg.get_ffmpeg_exe())
@@ -126,7 +128,7 @@ def load_engine(engine,assets):
             'bert_base_path':str(engine/'GPT_SoVITS/pretrained_models/chinese-roberta-wwm-ext-large'),
             'cnhuhbert_base_path':str(engine/'GPT_SoVITS/pretrained_models/chinese-hubert-base')}})
 
-    def synthesize(text,speed):
+    def synthesize(text: str, speed: float) -> bytes:
         text=spoken_text(text)
         # Upstream prints normalized prompts/progress; suppress per-request logs.
         with open(os.devnull,'w') as quiet,contextlib.redirect_stdout(quiet),contextlib.redirect_stderr(quiet):
@@ -142,7 +144,7 @@ def load_engine(engine,assets):
     return synthesize
 
 
-def main():
+def main() -> None:
     """CLI: required install paths, optional loopback port9880; Ctrl-C shuts down."""
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--engine-dir',type=Path,required=True)

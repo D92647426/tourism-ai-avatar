@@ -29,7 +29,7 @@ java -jar target/ai-guide-1.0.0.jar --speech.local.enabled=true --speech.local.b
 - 声线：[原作者演示](https://www.bilibili.com/video/BV1DddiYiEna/)、[此次权重镜像](https://huggingface.co/WLWolf56/gpt-sovits-model/tree/8ca20dd1f84feda57396531ef5413130a5d9cc60/动漫/mygo)。尚未核实镜像与原网盘文件相同。
 - 参考短句：[公开语音数据集](https://huggingface.co/datasets/GuangChen233/Takamatsu_Tomori_Voices_0.46_Hours)。
 
-引擎MIT不代表声线/音频也按MIT授权。正式再分发前分别核对素材条件。组员按引擎官方文档准备同版本环境，再使用 [CLI依赖](../scripts/requirements-local-voice.txt#L1)。[加载入口](../scripts/local_voice_server.py#L92) 定义本地文件布局和兼容方式。本机外置引擎的 `tools/my_utils.py` 已允许缺少Gradio时转为标准warnings；新机器须做同样调整或安装兼容Gradio。此流程不宣称已在全新GPU机器自动安装成功。
+引擎MIT不代表声线/音频也按MIT授权。正式再分发前分别核对素材条件。组员按引擎官方文档准备同版本环境，再使用 [CLI依赖](../scripts/requirements-local-voice.txt#L1)。[加载入口](../scripts/local_voice_server.py#L94) 定义本地文件布局和兼容方式。本机外置引擎的 `tools/my_utils.py` 已允许缺少Gradio时转为标准warnings；新机器须做同样调整或安装兼容Gradio。此流程不宣称已在全新GPU机器自动安装成功。
 
 ## 故障与边界
 

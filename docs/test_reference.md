@@ -228,3 +228,5 @@ TEST-052 关键用例定位
 - [前端队列测试](../tests/frontend/local-speech.test.js#L14)：Unicode分句、预取一段、静音/语速、真实main接线、停止/迟到事件、8秒回退、播放拒绝和部分失败不重读已完成句。命令 `node --test tests/frontend/*.test.js`。
 - [Python工作进程测试](../tests/test_local_voice_server.py#L17)：输入校验、AI中文读法、HTTP WAV/health和满额503；`python -m unittest discover -s tests -p test_local_voice_server.py`，不需要GPU。不把fake合成器当作真实推理。
 - 真实GPU和浏览器另验：按 [运行手册](local_voice_runbook.md#L1) 启动，登录后提问，核对文字先显示、真实playing时嘴型、停止清理、分段回听；停语音服务验证系统声音回退。Android真机与多人吞吐未验证。
+
+TEST-053补充：`LocalSpeechServiceTest.readTimeoutReturns504AndReleasesItsSlot` 通过真实延迟响应验证12秒读取超时映射504，再同时成功处理两个请求，证明超时释放并发额度。

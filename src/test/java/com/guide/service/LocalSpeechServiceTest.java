@@ -51,5 +51,33 @@ class LocalSpeechServiceTest {
             release.countDown();assertArrayEquals(wav,first.get(3,java.util.concurrent.TimeUnit.SECONDS));assertArrayEquals(wav,second.get(3,java.util.concurrent.TimeUnit.SECONDS));
         }finally{release.countDown();server.stop(0);handlers.shutdownNow();callers.shutdownNow();}
     }
+    /** A timed-out request must map to 504 and release capacity for two subsequent callers. */
+    @Test void readTimeoutReturns504AndReleasesItsSlot() throws Exception {
+        HttpServer server=HttpServer.create(new InetSocketAddress("127.0.0.1",0),0);
+        java.util.concurrent.ExecutorService handlers=java.util.concurrent.Executors.newFixedThreadPool(3);
+        java.util.concurrent.ExecutorService callers=java.util.concurrent.Executors.newFixedThreadPool(2);
+        java.util.concurrent.atomic.AtomicInteger requests=new java.util.concurrent.atomic.AtomicInteger();
+        java.util.concurrent.CountDownLatch timedOut=new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.CountDownLatch entered=new java.util.concurrent.CountDownLatch(2),release=new java.util.concurrent.CountDownLatch(1);
+        byte[] wav=new byte[44];System.arraycopy("RIFF".getBytes("US-ASCII"),0,wav,0,4);System.arraycopy("WAVE".getBytes("US-ASCII"),0,wav,8,4);
+        server.setExecutor(handlers);
+        server.createContext("/synthesize",exchange->{
+            try {
+                exchange.getRequestBody().close();exchange.sendResponseHeaders(200,wav.length);
+                if(requests.getAndIncrement()==0)timedOut.await(20,java.util.concurrent.TimeUnit.SECONDS);
+                else {entered.countDown();release.await(5,java.util.concurrent.TimeUnit.SECONDS);}
+                exchange.getResponseBody().write(wav);
+            }catch(Exception ignored){}finally{exchange.close();}
+        });server.start();
+        try {
+            LocalSpeechService service=new LocalSpeechService(true,"http://127.0.0.1:"+server.getAddress().getPort(),mapper);
+            JsonTask task=()->service.synthesize(mapper.readTree("{\"text\":\"你好\"}"));
+            assertEquals(504,assertThrows(LocalSpeechService.Failure.class,task::run).status);
+            timedOut.countDown();
+            java.util.concurrent.Future<byte[]> first=callers.submit(task::run),second=callers.submit(task::run);
+            assertTrue(entered.await(3,java.util.concurrent.TimeUnit.SECONDS),"Timeout must release its concurrency slot");
+            release.countDown();assertArrayEquals(wav,first.get(3,java.util.concurrent.TimeUnit.SECONDS));assertArrayEquals(wav,second.get(3,java.util.concurrent.TimeUnit.SECONDS));
+        }finally{timedOut.countDown();release.countDown();server.stop(0);handlers.shutdownNow();callers.shutdownNow();}
+    }
     interface JsonTask {byte[] run() throws Exception;}
 }
