@@ -67,11 +67,13 @@ function page(options = {}) {
     nodes.get('quickActions').buttons = [quick];
     class Recognition { constructor() { recognitions.push(this); } start() { if (!options.manualRecognition && this.onstart) this.onstart(); } stop() {} }
     const utterances = [], voiceEvents = new Element();
+    const audioRequests = [];
     let voices = options.voices || [{ lang: 'zh-CN' }];
     const synthesis = { getVoices: () => voices.map((v,i)=>({...v,voiceURI:v.voiceURI || "device-"+i})), speak: u => { spoken.push(u.text); utterances.push(u); }, cancel: () => { stops++; },
         addEventListener: voiceEvents.addEventListener.bind(voiceEvents),
         removeEventListener: (type, fn) => { voiceEvents.events[type] = (voiceEvents.events[type] || []).filter(x => x !== fn); } };
     function fetch(url, requestOptions) {
+        if(url === '/api/speech/synthesize'){const job=deferred();audioRequests.push({...job,options:requestOptions});return job.promise;}
         if(url === '/api/auth/me') return Promise.resolve(response({userId:'test',username:'test'}));
         if(url === '/api/auth/csrf') return Promise.resolve(response({headerName:'X-XSRF-TOKEN',token:'test'}));
         if(url === '/api/digital-human-config') return Promise.resolve(response(options.config || {}));
@@ -83,13 +85,14 @@ function page(options = {}) {
         setTimeout: time.setTimeout, clearTimeout: time.clearTimeout, SpeechRecognition: Recognition,
         speechSynthesis: synthesis, SpeechSynthesisUtterance: function(text) { this.text = text; },
         AndroidSpeech: options.bridge,
+        Audio: options.Audio, URL: options.URL,
         addEventListener: windowEvents.addEventListener.bind(windowEvents),
         location: {}, requestAnimationFrame: fn => time.setTimeout(fn, 16), cancelAnimationFrame: time.clearTimeout });
     context.window = context;
-    for (const name of ['voice-settings.js', 'security.js', 'chat-request.js', 'speech-lifecycle.js', 'display-config.js', 'chat-audio.js', 'main.js']) {
+    for (const name of ['voice-settings.js', 'security.js', 'chat-request.js', 'local-speech.js', 'speech-lifecycle.js', 'display-config.js', 'chat-audio.js', 'main.js']) {
         vm.runInContext(fs.readFileSync(path.join(root, 'src/main/resources/static/js', name), 'utf8'), context, { filename: name });
     }
-    return { time, nodes, requests, spoken, utterances, synthesis, context, quick, recognitions,
+    return { time, nodes, requests, audioRequests, spoken, utterances, synthesis, context, quick, recognitions,
         voicesChanged(next) { voices = next; voiceEvents.fire('voiceschanged'); },
         hide() { document.hidden = true; documentEvents.fire('visibilitychange'); },
         pagehide() { windowEvents.fire('pagehide'); },

@@ -221,3 +221,10 @@ TEST-052 关键用例定位
 | [selecting a theme reuses itinerary without automatic requests](../tests/frontend/theme-guide.test.js#L34) | 三站闭环与成功回顾 |
 | [failed and cancelled responses do not count](../tests/frontend/theme-guide.test.js#L55) | 取消和重编迟到 |
 | [entering a theme from pending ordinary chat](../tests/frontend/theme-guide.test.js#L109) | 普通问答切主题时取消旧请求 |
+
+## TEST-053 本地角色声线
+
+- [Java代理测试](../src/test/java/com/guide/service/LocalSpeechServiceTest.java#L11)：真实loopback HTTP验证WAV、重定向、损坏/超限响应、非法输入和2请求并发；[身份/CSRF测试](../src/test/java/com/guide/security/SecurityIntegrationTest.java#L200)：真实会话/CSRF和禁用时503；[控制器契约](../src/test/java/com/guide/controller/LocalSpeechControllerTest.java#L1) 验证二进制类型和安全错误。命令 `mvn -o verify`，失败查Java代理输入、超时与SecurityConfig。
+- [前端队列测试](../tests/frontend/local-speech.test.js#L14)：Unicode分句、预取一段、静音/语速、真实main接线、停止/迟到事件、8秒回退、播放拒绝和部分失败不重读已完成句。命令 `node --test tests/frontend/*.test.js`。
+- [Python工作进程测试](../tests/test_local_voice_server.py#L17)：输入校验、AI中文读法、HTTP WAV/health和满额503；`python -m unittest discover -s tests -p test_local_voice_server.py`，不需要GPU。不把fake合成器当作真实推理。
+- 真实GPU和浏览器另验：按 [运行手册](local_voice_runbook.md#L1) 启动，登录后提问，核对文字先显示、真实playing时嘴型、停止清理、分段回听；停语音服务验证系统声音回退。Android真机与多人吞吐未验证。

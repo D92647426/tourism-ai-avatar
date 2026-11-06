@@ -143,3 +143,7 @@ REQ-043（#29）情境编排、REQ-044（#30）观察辅助、REQ-045（#31）�
 ## REQ-052 跨景点主题讲解（#48）
 
 一个问题串联灵山大佛、九龙灌浴、灵山梵宫，复用方案与讲解；本页回顾依据成功收到的唯一主题讲解响应。离线方法与简介、联网上下文、草稿编辑/取消和来源边界见 [已确认设计](superpowers/specs/2026-11-05-theme-guide-design.md#L1)。
+
+## REQ-053 本地角色声线（#50）
+
+已确认新声线接入：先显示文字、逐句取音频并预取下一句，沿用停止/打断/嘴型/回听，故障从未完成句回退系统声音。范围、限制与API-053/TEST-053见 [设计](local_voice_design.md#L1) 和 [运行手册](local_voice_runbook.md#L1)。入口：[LocalSpeechController.synthesize](../src/main/java/com/guide/controller/LocalSpeechController.java#L21)、[GuideLocalSpeech.create](../src/main/resources/static/js/local-speech.js#L16)。

@@ -26,3 +26,7 @@ voiceType 为非空纯文本、最多200字符；除旧值外支持 `auto` 与�
 Edge 实际设备列表验证：选择中文声线，保存音量0/语速0.75后重新加载，零值和速度保持；截图如下。该操作未播放扬声器音频。
 
 ![后台声线设置](screenshots/issue-14-voice-admin.png)
+
+## REQ-053 新增本地角色声线
+
+新增local:character选项和新模板默认值，原设备声线仍可选。角色配音在服务端逐句生成；音量0由HTMLAudio保留，语速传给模型，不通过改变音高实现。不存在服务时从未完成句回退浏览器中文声音。API和真机边界见 [设计](local_voice_design.md#L1)，启动/切换见 [手册](local_voice_runbook.md#L1)。

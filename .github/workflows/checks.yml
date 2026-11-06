@@ -31,6 +31,7 @@ jobs:
       # REQ-035：知识库/景点数据的结构检查与检查工具自测，见 docs/knowledge_integrity.md
       - run: python scripts/check_data_integrity.py
       - run: python scripts/test_data_integrity.py
+      - run: python -m unittest discover -s tests -p 'test_local_voice_server.py'
       - run: python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar
       - uses: actions/setup-node@v4
         with:

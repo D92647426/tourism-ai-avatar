@@ -138,6 +138,7 @@ public class SecurityConfig {
                 .antMatchers("/api/admin/**").hasRole("ADMIN")
                 .antMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
                 .antMatchers(HttpMethod.POST, "/api/auth/interest").authenticated()
+                .antMatchers(HttpMethod.POST, "/api/speech/synthesize").authenticated()
                 .anyRequest().permitAll();
 
         return http.build();
