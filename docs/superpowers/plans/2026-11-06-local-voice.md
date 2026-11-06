@@ -24,19 +24,21 @@
 
 ### Task 1: 本地服务和Java代理
 
-- [ ] 写工作进程校验/并发单测与Java代理HTTP/身份边界测试，先运行并确认失败。
-- [ ] 实现 scripts/local_voice_server.py（--help，外置模型/预热/有界推理）和 LocalSpeechService/Controller。
-- [ ] 跑对应Python/Java测试；记录本机启动方式与配置。
+- [x] 写工作进程校验/并发单测与Java代理HTTP/身份边界测试，先运行并确认失败。
+- [x] 实现 scripts/local_voice_server.py（--help，外置模型/预热/有界推理）和 LocalSpeechService/Controller。
+- [x] 跑对应Python/Java测试；记录本机启动方式与配置。
 
 ### Task 2: 网页逐句播报与回退
 
-- [ ] 写分句/预取/取消/旧事件/播放拒绝/中途故障回退和真实main配置接线测试。
-- [ ] 实现 local-speech.js 的 create(options).speak(text,settings,hooks) 返回取消函数，hooks=start/resume/wait/end/fallback/error。
-- [ ] 接入 speech-lifecycle/main/index/admin/default config，保留原系统声线路径。
-- [ ] 跑目标前端测试，修复后完整Node测试。
+- [x] 写分句/预取/取消/旧事件/播放拒绝/中途故障回退和真实main配置接线测试。
+- [x] 实现 local-speech.js 的 create(options).speak(text,settings,hooks) 返回取消函数，hooks=start/resume/wait/end/fallback/error。
+- [x] 接入 speech-lifecycle/main/index/admin/default config，保留原系统声线路径。
+- [x] 跑目标前端测试，修复后完整Node测试。
 
 ### Task 3: 集成与交付
 
-- [ ] 补齐REQ/API/TEST/配置/程序/运行文档和真实代码行号。
-- [ ] 完整Maven/Node/Python/文档检查、隔离HTTP和真实浏览器播放/停止/服务关闭回退。
-- [ ] code-review双审，修复实际发现；提交并创建PR，等用户后续要求合并。
+- [x] 补齐REQ/API/TEST/配置/程序/运行文档和真实代码行号。
+- [x] 完整Maven/Node/Python/文档检查、隔离HTTP和真实浏览器播放/停止/服务关闭回退。
+- [x] code-review双审，修复实际发现；提交并创建PR，等用户后续要求合并。
+
+执行结果：已提交PR #51，问题#50待合并；实际验证与复查记录见[设计](../../local_voice_design.md#L1)。
