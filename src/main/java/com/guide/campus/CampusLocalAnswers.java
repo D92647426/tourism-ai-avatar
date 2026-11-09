@@ -71,7 +71,7 @@ final class CampusLocalAnswers {
             context.remove("taskId");
             context.putNull("placeId");
             context.remove("routePending");
-            reply(turn, "健身房具体位置和入口尚未核验。体育馆公开介绍可供咨询，但不能把体育馆视为已核验的健身房入口。");
+            reply(turn, "健身房具体位置和入口待核验，可查看学校体育设施介绍并咨询。");
             finishChoices(turn);
             return turn;
         }
@@ -87,11 +87,11 @@ final class CampusLocalAnswers {
             ObjectNode destination = catalog.place(target);
             if (destination != null) {
                 if (!context.path("position").hasNonNull("placeId")) {
-                    reply(turn, "目的地仍是" + destination.path("name").asText() + "。请告诉我你当前的起点，例如：我在四教。");
+                    reply(turn, "目的地仍是" + destination.path("name").asText() + "。请告诉我当前起点，可以说“我在四教”。");
                 } else {
                     reply(turn, "从" + catalog.place(context.path("position").path("placeId").asText()).path("name").asText()
-                            + "前往" + destination.path("name").asText() + "：" + destination.path("address").asText()
-                            + "。这是地点与地址预览，坐标尚未核验，暂不提供距离和逐步路线。");
+                            + "前往" + destination.path("name").asText() + "。目的地地址为" + destination.path("address").asText()
+                            + "。当前预览包含地点和地址，入口坐标与步行路线待核验。");
                     ((ObjectNode) turn.path("sceneAction")).put("type", "SHOW_ROUTE");
                     ((ArrayNode) turn.path("sceneAction").path("placeIds")).add(target);
                     context.remove("routePending");
@@ -176,7 +176,7 @@ final class CampusLocalAnswers {
             if (choices.size() < 4) choice(choices, place.path("name").asText(), "看看" + place.path("name").asText(), "ask");
         }
         reply(turn, names.length() == 0 ? "这个校区的餐饮地点尚未核实，可以先查看校区资料。"
-                : "可以先看看校内目录：" + names + "。营业时段、价格和实时供应尚待核实；这里没有采集真实评分，暂不作评分排行。");
+                : "可以先看看" + names + "。营业时段、价格和当前供应待核实。评分资料待补充。");
         finishChoices(turn);
         return turn;
     }

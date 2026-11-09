@@ -74,7 +74,7 @@ class CampusAssistantTest {
         assertTrue(sports.path("sceneAction").path("placeIds").isEmpty());
         assertTrue(sports.path("choices").toString().contains("校园跑"));
         ObjectNode gym = ask("健身房在哪");
-        assertTrue(gym.path("reply").asText().contains("未核验"));
+        assertTrue(gym.path("reply").asText().contains("待核验"));
         assertFalse(gym.path("sceneAction").path("placeIds").toString().contains("swimming-207"));
     }
 
