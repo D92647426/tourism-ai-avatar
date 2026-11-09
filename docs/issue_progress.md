@@ -109,12 +109,12 @@ PR #51已合并，#50已完成关闭。用户已确认改为面向新生和访�
 
 | 议题 | 本轮内容 | 当前阶段 |
 |---|---|---|
-| [#52](https://github.com/D92647426/tourism-ai-avatar/issues/52) | 校区、地点和办事知识目录 | 已实现并验收，待PR合并 |
-| [#53](https://github.com/D92647426/tourism-ai-avatar/issues/53) | DS对话驱动场景与连续办事 | 已实现并验收，待PR合并 |
-| [#54](https://github.com/D92647426/tourism-ai-avatar/issues/54) | 位置、时间、天气、地图与导航衔接 | 已实现并验收，待PR合并 |
+| [#52](https://github.com/D92647426/tourism-ai-avatar/issues/52) | 校区、地点和办事知识目录 | 已实现并验收，待PR #64合并 |
+| [#53](https://github.com/D92647426/tourism-ai-avatar/issues/53) | DS对话驱动场景与连续办事 | 已实现并验收，待PR #64合并 |
+| [#54](https://github.com/D92647426/tourism-ai-avatar/issues/54) | 位置、时间、天气、地图与导航衔接 | 已实现并验收，待PR #64合并 |
 | [#55](https://github.com/D92647426/tourism-ai-avatar/issues/55) | 前台陪伴与主动气泡 | 饭点与到馆首版已实现，后续触发见#61 |
-| [#56](https://github.com/D92647426/tourism-ai-avatar/issues/56) | 燕小北人物舞台及实景转场 | 已实现并验收，待PR合并 |
-| [#57](https://github.com/D92647426/tourism-ai-avatar/issues/57) | 三场景演示与集成验收 | 三场景、集成与手册已完成，待PR合并 |
+| [#56](https://github.com/D92647426/tourism-ai-avatar/issues/56) | 燕小北人物舞台及实景转场 | 已实现并验收，待PR #64合并 |
+| [#57](https://github.com/D92647426/tourism-ai-avatar/issues/57) | 三场景演示与集成验收 | 三场景、集成与手册已完成，待PR #64合并 |
 | [#58](https://github.com/D92647426/tourism-ai-avatar/issues/58) | 校外真实评分与近期菜品资料 | 后续开发 |
 | [#59](https://github.com/D92647426/tourism-ai-avatar/issues/59) | 建筑入口及可通行路线实地核验 | 后续开发 |
 | [#60](https://github.com/D92647426/tourism-ai-avatar/issues/60) | 其他校区内部地点与事务扩充 | 后续开发 |
@@ -124,4 +124,6 @@ PR #51已合并，#50已完成关闭。用户已确认改为面向新生和访�
 
 当前实现处于独立功能分支，尚未合并。首版范围、接口、顺序及验收见[设计](superpowers/specs/2026-11-09-campus-assistant-design.md#L1)和[计划](superpowers/plans/2026-11-09-campus-demo.md#L1)，事实与来源见[校园核验](bjut_campus_research.md#L1)。#1、#2、#3仍为团队真实协作、互审和来源贡献记录事项。
 
-最终阻断问题已通过独立复核，根代理完整复验Java312、Node285、数据44、Python语音3和旧景区加校园HTTP冒烟。普通模式人工位置复核、真实时间等候邀约以及照片切换后的新导航目标均已实际浏览器验证。当前分支准备提交PR，#55后续触发和#58～#63继续保持open。
+最终阻断问题已通过独立复核，根代理完整复验Java312、Node285、数据44、Python语音3和旧景区加校园HTTP冒烟。普通模式人工位置复核、真实时间等候邀约以及照片切换后的新导航目标均已实际浏览器验证。当前分支已提交[PR #64](https://github.com/D92647426/tourism-ai-avatar/pull/64)，#55后续触发和#58～#63继续保持open。
+
+本轮新建后续议题 #61、#62、#63。优先完成 #62 校园默认入口和内容管理迁移、#59 实地坐标核验，随后按依赖推进 #61 主动情境、#58 餐饮评分和 #60 跨校区资料。自动检查结果可直接查看PR。
