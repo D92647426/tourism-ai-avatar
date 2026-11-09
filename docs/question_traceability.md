@@ -33,3 +33,11 @@
 ## REQ-053：能否换新声线并及时回复？
 
 可以使用常驻、预热和分句预取降低等待；文字回复不等待配音。不能把独立引擎2.4秒基准当作完整LLM问答延迟；当前文字接口仍整包返回。正式接入和限制见 [设计](local_voice_design.md#L1)、[运行](local_voice_runbook.md#L1)。
+
+## Q-0032 校园改版与持续主动互动怎样推进
+
+2026年11月9日用户确认调整为北工大校园助手，服务新生及访客。开场人物居中问好，底部对话自动出现，DS按需调出内容，人物让到侧边。建议共4～6项且包含继续追问、自定义。位置、时间和天气作为上下文，选定后从助手内预览进入外部导航。
+
+持续陪伴先覆盖页面可见阶段，主动气泡获得用户回应后再展开。课堂轨迹模拟明确标注。事务知识区分校区、人群和办理目标，实景图绑定具体地点。用户已确认以补卡、图书馆、饭点邀约三组场景形成首个Demo。需求REQ-054至REQ-059、数据、状态、分阶段实施与验收见[首版设计](superpowers/specs/2026-11-09-campus-assistant-design.md#L1)，校园事实与缺口见[核验记录](bjut_campus_research.md#L1)。
+
+实际代码当前仍为景区实现，迁移入口依据[会话服务](../src/main/java/com/guide/service/ConversationService.java#L78)、[模型客户端](../src/main/java/com/guide/service/AiCompletionClient.java#L157)和[语音生命周期](../src/main/resources/static/js/speech-lifecycle.js#L447)展开。书面设计复核后编写实施计划，当前验证范围为文档和来源核验。
