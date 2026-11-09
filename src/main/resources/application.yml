@@ -16,7 +16,7 @@ spring:
 ai:
   api-key: ${DEEPSEEK_API_KEY:}
   base-url: https://api.deepseek.com/v1
-  model: deepseek-chat
+  model: ${DEEPSEEK_MODEL:deepseek-flash}
 
 # REQ-053: optional local worker; unavailable -> browser system speech.
 speech:
