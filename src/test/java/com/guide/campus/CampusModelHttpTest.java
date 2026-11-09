@@ -10,6 +10,7 @@ import org.springframework.mock.web.MockHttpSession;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.IntFunction;
 import static org.junit.jupiter.api.Assertions.*;
@@ -127,6 +128,94 @@ class CampusModelHttpTest {
     private ObjectNode finalMessage(String content) { return mapper.createObjectNode().put("role", "assistant").put("content", content); }
 
     private ObjectNode runProvider(IntFunction<ObjectNode> responseFor, List<JsonNode> requests, boolean simulated) throws Exception {
+        return runProvider(responseFor, requests, (service, session) -> {
+            ObjectNode input = service.current(session).put("requestId", "wire").put("message", "平乐园图书馆在哪");
+            if (simulated) input.putObject("context").put("simulated", true).putObject("weather").put("temperatureC", 20).put("weatherCode", 0);
+            return service.chat(session, input);
+        });
+    }
+
+    @Test void modelDiningRedirectReplacesCardChoicesAndDestinationThroughActualChoice() throws Exception {
+        runProvider(n -> n == 2 ? toolMessage("get_dining_candidates", "{}", n)
+                : n == 3 ? finalMessage("{\"reply\":\"可以看看这两家餐厅。\",\"sceneAction\":{\"type\":\"SHOW_DINING\",\"placeIds\":[\"pingleyuan-north-dining\",\"pingleyuan-tiantian-dining\"],\"taskId\":null}}")
+                : toolMessage("unknown_tool", "{}", n), new ArrayList<>(), (service, session) -> {
+            chat(service, session, "平乐园补卡");
+            ObjectNode dining = chat(service, session, "肚子饿了");
+            assertEquals("deepseek", dining.path("mode").asText());
+            assertFalse(dining.path("context").hasNonNull("taskId"));
+            assertFalse(dining.path("context").hasNonNull("placeId"));
+            assertEquals(4, dining.path("choices").size());
+            assertEquals("followup", dining.path("choices").path(2).path("kind").asText());
+            assertEquals("custom", dining.path("choices").path(3).path("kind").asText());
+            assertFalse(dining.path("context").hasNonNull("position"));
+            ObjectNode chosen = chat(service, session, dining.path("choices").path(0).path("message").asText());
+            assertEquals("SHOW_PLACE", chosen.path("sceneAction").path("type").asText());
+            assertEquals("pingleyuan-north-dining", chosen.path("context").path("placeId").asText());
+            chat(service, session, "我在四教");
+            ObjectNode route = chat(service, session, "带我过去");
+            assertEquals("pingleyuan-north-dining", route.path("sceneAction").path("placeIds").path(0).asText());
+            return route;
+        });
+    }
+
+    private ObjectNode chat(CampusAssistantService service, MockHttpSession session, String message) {
+        return service.chat(session, service.current(session).put("requestId", java.util.UUID.randomUUID().toString()).put("message", message));
+    }
+
+    @Test void modelNewPlaceAndUnknownPlaceTaskReplaceOnlyBusinessContext() throws Exception {
+        runProvider(n -> n == 2 ? toolMessage("get_place", "{\"placeId\":\"pingleyuan-library\"}", n)
+                : n == 3 ? finalMessage("{\"reply\":\"这里是图书馆。\",\"sceneAction\":{\"type\":\"SHOW_PLACE\",\"placeIds\":[\"pingleyuan-library\"],\"taskId\":null}}")
+                : n == 4 ? toolMessage("find_tasks", "{\"query\":\"体育签到\"}", n)
+                : n == 5 ? finalMessage("{\"reply\":\"请先确认体育事项。\",\"sceneAction\":{\"type\":\"SHOW_SERVICE_TASK\",\"placeIds\":[],\"taskId\":\"sports-sign-in\"}}")
+                : toolMessage("unknown_tool", "{}", n), new ArrayList<>(), (service, session) -> {
+            chat(service, session, "平乐园补卡");
+            ObjectNode library = chat(service, session, "想找个地方坐坐");
+            assertEquals("deepseek", library.path("mode").asText());
+            assertEquals("pingleyuan-library", library.path("context").path("placeId").asText());
+            assertFalse(library.path("context").hasNonNull("taskId"));
+            assertEquals("想在图书馆安静学习", library.path("choices").path(0).path("message").asText());
+            ObjectNode task = chat(service, session, "我有件体育相关的事");
+            assertEquals("deepseek", task.path("mode").asText());
+            assertEquals("sports-sign-in", task.path("context").path("taskId").asText());
+            assertFalse(task.path("context").hasNonNull("placeId"));
+            assertTrue(task.path("choices").toString().contains("校园跑"));
+            assertFalse(task.path("context").hasNonNull("position"));
+            return task;
+        });
+    }
+
+    @Test void modelUtilityAndSameBusinessPhotoPreserveTheOngoingTask() throws Exception {
+        for (String type : Arrays.asList("KEEP_SCENE", "RETURN_STAGE", "SHOW_WEATHER", "SHOW_PLACE")) {
+            String places = "SHOW_PLACE".equals(type) ? "[\"pingleyuan-card-service\"]" : "[]";
+            runProvider(n -> n == 2 ? toolMessage("get_place", "{\"placeId\":\"pingleyuan-card-service\"}", n)
+                    : n == 3 ? finalMessage("{\"reply\":\"继续为你提供校园信息。\",\"sceneAction\":{\"type\":\""+type+"\",\"placeIds\":"+places+",\"taskId\":null}}")
+                    : toolMessage("unknown_tool", "{}", n), new ArrayList<>(), (service, session) -> {
+                chat(service, session, "平乐园补卡");
+                ObjectNode enhanced = chat(service, session, "还要注意什么");
+                assertEquals("deepseek", enhanced.path("mode").asText());
+                assertEquals("campus-card", enhanced.path("context").path("taskId").asText());
+                assertEquals("pingleyuan-card-service", enhanced.path("context").path("placeId").asText());
+                return enhanced;
+            });
+        }
+    }
+
+    @Test void modelPhotoOfLibraryAreaPreservesItsServiceDestination() throws Exception {
+        runProvider(n -> n == 2 ? toolMessage("get_place", "{\"placeId\":\"pingleyuan-library\"}", n)
+                : n == 3 ? finalMessage("{\"reply\":\"这里是图书馆外观。\",\"sceneAction\":{\"type\":\"SHOW_PLACE\",\"placeIds\":[\"pingleyuan-library\"],\"taskId\":null}}")
+                : toolMessage("unknown_tool", "{}", n), new ArrayList<>(), (service, session) -> {
+            chat(service, session, "平乐园想用公共电脑查资料");
+            ObjectNode photo = chat(service, session, "看看这个地点的实景");
+            assertEquals("deepseek", photo.path("mode").asText());
+            assertEquals("pingleyuan-library", photo.path("sceneAction").path("placeIds").path(0).asText());
+            assertEquals("library-computer", photo.path("context").path("taskId").asText());
+            assertEquals("pingleyuan-library-computer-area", photo.path("context").path("placeId").asText());
+            return photo;
+        });
+    }
+
+    private ObjectNode runProvider(IntFunction<ObjectNode> responseFor, List<JsonNode> requests,
+                                   java.util.function.BiFunction<CampusAssistantService, MockHttpSession, ObjectNode> conversation) throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/chat/completions", exchange -> {
             requests.add(mapper.readTree(exchange.getRequestBody()));
@@ -143,9 +232,7 @@ class CampusModelHttpTest {
             CampusAssistantService service = new CampusAssistantService(new CampusCatalog(), new AiCompletionClient("test-only",
                     "http://127.0.0.1:" + server.getAddress().getPort(), "test"), new CampusWeatherService());
             MockHttpSession session = new MockHttpSession();
-            ObjectNode input = service.current(session).put("requestId", "wire").put("message", "平乐园图书馆在哪");
-            if (simulated) input.putObject("context").put("simulated", true).putObject("weather").put("temperatureC", 20).put("weatherCode", 0);
-            return service.chat(session, input);
+            return conversation.apply(service, session);
         } finally { server.stop(0); }
     }
 }

@@ -146,15 +146,18 @@
 | CampusAssistantController | 五个目录/上下文/聊天/新对话/取消端点及400/409适配 | [controller](../src/main/java/com/guide/campus/CampusAssistantController.java#L14) |
 | CampusAssistantService.current/start/cancel/chat | Cookie会话、revision、32请求幂等、锁外调用及原子提交 | [current](../src/main/java/com/guide/campus/CampusAssistantService.java#L37)、[start](../src/main/java/com/guide/campus/CampusAssistantService.java#L42)、[cancel](../src/main/java/com/guide/campus/CampusAssistantService.java#L51)、[chat](../src/main/java/com/guide/campus/CampusAssistantService.java#L74) |
 | CampusRequestValidation.chat/mergeContext | 类型与目录ID白名单，模拟退出、显式位置null和有限环境快照 | [chat](../src/main/java/com/guide/campus/CampusRequestValidation.java#L22)、[mergeContext](../src/main/java/com/guide/campus/CampusRequestValidation.java#L51) |
-| CampusLocalAnswers.answer/confirmedArrival/confirmedDeparture | 本地事项消歧、用途、餐饮、路线，明确到馆和离馆物理证据 | [answer](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L16)、[confirmedArrival](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L191)、[confirmedDeparture](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L202) |
+| CampusLocalAnswers.answer/confirmedArrival/confirmedDeparture | 本地事项消歧、用途、餐饮、路线，明确到馆和离馆物理证据 | [answer](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L16)、[confirmedArrival](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L242)、[confirmedDeparture](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L253) |
 | CampusModelOrchestrator.answer/finalTurn | 受控工具、总期限、动作与证据校验、模型失败回退 | [answer](../src/main/java/com/guide/campus/CampusModelOrchestrator.java#L40)、[finalTurn](../src/main/java/com/guide/campus/CampusModelOrchestrator.java#L121) |
 | CampusModelTools.execute | 六工具执行并绑定当前目录、环境和路线起点 | [工具](../src/main/java/com/guide/campus/CampusModelTools.java#L1) |
 | CampusWeatherController.current / CampusWeatherService.current | 天气第六端点、WGS84校验、Open-Meteo缓存与资料状态 | [HTTP](../src/main/java/com/guide/campus/CampusWeatherController.java#L27)、[service](../src/main/java/com/guide/campus/CampusWeatherService.java#L57) |
 | campus.html / campus.js.submit/render | 人物开场、持续对话、取消重试和统一轮次提交 | [页面](../src/main/resources/static/campus.html#L1)、[submit](../src/main/resources/static/js/campus.js#L118)、[render](../src/main/resources/static/js/campus.js#L71) |
 | CampusScene.create/render | 地点/事项/校区范围预览、天气正文与来源入口、返回舞台清理、资源版本及外部高德搜索 | [create](../src/main/resources/static/js/campus-scene.js#L55)、[render](../src/main/resources/static/js/campus-scene.js#L104) |
-| CampusEnvironment.create/setContext/exitDemo | confirmed/device/simulated证据分离、安静环境、前台定位与模拟退出 | [create](../src/main/resources/static/js/campus-environment.js#L4)、[setContext](../src/main/resources/static/js/campus-environment.js#L130)、[exitDemo](../src/main/resources/static/js/campus-environment.js#L119) |
+| CampusEnvironment.create/setContext/exitDemo | confirmed/device/simulated证据分离、安静环境、前台定位与模拟退出 | [create](../src/main/resources/static/js/campus-environment.js#L4)、[setContext](../src/main/resources/static/js/campus-environment.js#L147)、[exitDemo](../src/main/resources/static/js/campus-environment.js#L136) |
 | CampusCompanion.create | 纯邀约状态、停留、冷却、接受复核 | [create](../src/main/resources/static/js/campus-companion.js#L16) |
 | CampusVoice.create | 既有语音生命周期、公开声音设置、识别和静音 | [create](../src/main/resources/static/js/campus-voice.js#L4) |
 | verify_campus(base) | 运行中空Key服务的真实HTTP校园契约和三业务闭环 | [smoke helper](../scripts/smoke_teacher_project.py#L76) |
 
 API、配置与使用步骤见 [校园API](api_reference.md#L252)、[运行手册](campus_demo_runbook.md#L1)，旧景区模块索引继续适用各自入口。
+
+
+`CampusLocalAnswers.reconcile` 在模型动作验证完成后统一业务条件与当前建议，复用本地事项变体和图书馆用途选项。`CampusEnvironment.syncEnvironment` 维护物理证据版本，位置复核按钮仅把真实点击作为新确认。[最终协调](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L132)、[环境版本](../src/main/resources/static/js/campus-environment.js#L22)、[显式复核](../src/main/resources/static/js/campus-environment.js#L167)

@@ -151,6 +151,13 @@ def verify_campus(base: str) -> dict:
     assert state["placeId"] == "pingleyuan-card-service"
     assert state["position"]["placeId"] == "pingleyuan-fourth-teaching"
     assert "坐标" in route["reply"]
+    library_route = ask("图书馆怎么走")
+    assert library_route["sceneAction"]["placeIds"] == ["pingleyuan-library"]
+    assert state["placeId"] == "pingleyuan-library" and not state.get("taskId")
+    assert state["position"]["placeId"] == "pingleyuan-fourth-teaching"
+    card_route = ask("补卡怎么走")
+    assert card_route["sceneAction"]["type"] == "SHOW_ROUTE"
+    assert state["placeId"] == "pingleyuan-card-service" and state["taskId"] == "campus-card"
     gym = ask("健身房在哪")
     assert gym["context"]["placeId"] is None and "routePending" not in state, "Unknown gym must clear the old card destination."
     assert ask("带我过去")["sceneAction"]["type"] != "SHOW_ROUTE"
@@ -180,6 +187,11 @@ def verify_campus(base: str) -> dict:
         assert outside["context"]["position"] is None and state["placeId"] == topic
     for text in ("我在图书馆门口", "我在图书馆附近", "我想去图书馆", "如果我在图书馆"):
         assert not ask(text)["context"].get("position"), text
+    ask("我在多媒体阅览区")
+    assert state["position"]["placeId"] == "pingleyuan-library-computer-area"
+    area_topic = state["placeId"]
+    ask("我已经出馆了")
+    assert state["position"] is None and state["placeId"] == area_topic
 
     new()
     dining = ask("通州午饭吃什么")

@@ -49,7 +49,8 @@
             <section id="demoPanel" class="demo-panel" aria-label="情境演示" hidden>
                 <span>模拟校园中的一小段时间</span><button id="demoDining" type="button">午间来到北区餐厅</button><button id="demoLibrary" type="button">来到图书馆</button><button id="exitDemo" class="text-button" type="button">退出模拟</button>
             </section>
-            <div class="environment"><span id="environmentStatus">真实时间与位置</span><span id="positionStatus">当前位置未确认</span><span id="weatherStatus">天气暂未获取</span></div>
+            <div class="environment"><span id="environmentStatus">真实时间与位置</span><span id="positionStatus">当前位置未确认</span><button id="recheckPosition" class="text-button" type="button" aria-describedby="recheckHelp" hidden>我仍在这里</button><span id="weatherStatus">天气暂未获取</span></div>
+            <p id="recheckHelp" class="environment" hidden>确认当前仍在此处，帮助陪伴提供合适建议。每隔20秒可再次确认。</p>
             <details id="weatherDetails" class="weather-details"><summary>天气资料</summary><div id="weatherEvidence">天气资料暂未获取</div></details>
         </div>
     </section>

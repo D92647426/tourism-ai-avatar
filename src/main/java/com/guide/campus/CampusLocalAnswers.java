@@ -86,6 +86,11 @@ final class CampusLocalAnswers {
             return dining(context, turn);
         }
         if (message.contains("带我过去") || message.contains("怎么走") || message.contains("导航")) {
+            if (!taskId.isEmpty()) serviceTask(context, base());
+            else if (mentioned != null && !arrival && !departure) {
+                context.put("placeId", mentioned.path("id").asText());
+                context.remove("taskId");
+            }
             context.put("routePending", true);
         }
         if (context.path("routePending").asBoolean()) {
@@ -115,16 +120,61 @@ final class CampusLocalAnswers {
             reference(turn, mentioned.path("name").asText(), mentioned.path("sourceUrl").asText());
             if ("library".equals(mentioned.path("category").asText())) {
                 reply(turn, turn.path("reply").asText() + " 你想安静学习、小组研讨、找书借还，还是用公共电脑查资料？");
-                ArrayNode choices = (ArrayNode) turn.path("choices");
-                choice(choices, "安静学习", "想在图书馆安静学习", "ask");
-                choice(choices, "小组研讨", "想预约小组研讨", "ask");
-                choice(choices, "找书借还", "想找书借还", "ask");
-                choice(choices, "公共电脑", "想用公共电脑查资料", "ask");
+                libraryChoices((ArrayNode) turn.path("choices"));
             }
             finishChoices(turn);
             return turn;
         }
         return serviceTask(context, turn);
+    }
+
+    /** REQ-055: commit only the validated final resource intent. Utility scenes preserve ongoing business. */
+    void reconcile(ObjectNode turn, ObjectNode context, JsonNode localAction) {
+        JsonNode action = turn.path("sceneAction");
+        String type = action.path("type").asText();
+        if ("KEEP_SCENE".equals(type) || "RETURN_STAGE".equals(type) || "SHOW_WEATHER".equals(type)) return;
+        JsonNode places = action.path("placeIds");
+        if ("SHOW_MAP".equals(type) && places.isEmpty()) return;
+        boolean sameResource = places.equals(localAction.path("placeIds"))
+                && action.path("taskId").equals(localAction.path("taskId"));
+        boolean sameTarget = places.size() == 1 && places.path(0).asText().equals(context.path("placeId").asText());
+        if (action.hasNonNull("taskId")) context.put("taskId", action.path("taskId").asText());
+        else if ("SHOW_DINING".equals(type) || (!sameResource && !sameTarget)) context.remove("taskId");
+        if (action.hasNonNull("taskId") || !context.hasNonNull("taskId")) {
+            if (places.size() == 1) context.put("placeId", places.path(0).asText());
+            else context.putNull("placeId");
+        }
+        if ("SHOW_DINING".equals(type)) context.put("intent", "dining");
+        else context.remove("intent");
+        if (!sameResource) context.remove("routePending");
+        if (!"deepseek".equals(turn.path("mode").asText()) || sameResource) return;
+        ObjectNode choicesTurn = base();
+        if ("SHOW_DINING".equals(type)) {
+            for (JsonNode id : places) {
+                ObjectNode place = catalog.place(id.asText());
+                ArrayNode choices = (ArrayNode) choicesTurn.path("choices");
+                if (choices.size() < 4) choice(choices, place.path("name").asText(), "看看" + place.path("name").asText(), "ask");
+            }
+        } else {
+            if (action.hasNonNull("taskId")) {
+                ObjectNode choiceContext = context.deepCopy();
+                serviceTask(choiceContext, choicesTurn);
+                turn.set("choices", choicesTurn.path("choices"));
+                return;
+            }
+            if (places.size() == 1 && "library".equals(catalog.place(places.path(0).asText()).path("category").asText())) {
+                libraryChoices((ArrayNode) choicesTurn.path("choices"));
+            }
+        }
+        finishChoices(choicesTurn);
+        turn.set("choices", choicesTurn.path("choices"));
+    }
+
+    private void libraryChoices(ArrayNode choices) {
+        choice(choices, "安静学习", "想在图书馆安静学习", "ask");
+        choice(choices, "小组研讨", "想预约小组研讨", "ask");
+        choice(choices, "找书借还", "想找书借还", "ask");
+        choice(choices, "公共电脑", "想用公共电脑查资料", "ask");
     }
 
     private ObjectNode serviceTask(ObjectNode context, ObjectNode turn) {
@@ -168,6 +218,7 @@ final class CampusLocalAnswers {
 
     private ObjectNode dining(ObjectNode context, ObjectNode turn) {
         context.remove("taskId");
+        context.putNull("placeId");
         context.put("intent", "dining");
         ObjectNode action = (ObjectNode) turn.path("sceneAction");
         action.put("type", "SHOW_DINING").put("title", "校内餐饮目录");
@@ -210,7 +261,8 @@ final class CampusLocalAnswers {
             }
         }
         ObjectNode previous = catalog.place(context.path("position").path("placeId").asText());
-        return previous != null && "library".equals(previous.path("category").asText())
+        return previous != null && ("library".equals(previous.path("category").asText())
+                || "library-area".equals(previous.path("category").asText()))
                 && message.matches(CURRENT_DECLARATION + "(?:已经|现在)?(?:出馆|离馆)(?:了|啦)?[。！!\\s]*");
     }
 

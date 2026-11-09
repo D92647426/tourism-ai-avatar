@@ -148,12 +148,19 @@
                 clearEvidence();
                 return;
             }
-            if (snapshot && next.contextRevision < snapshot.contextRevision) {
+            var hasEnvironmentRevision = Number.isSafeInteger(next.environmentRevision) && next.environmentRevision >= 0;
+            if (snapshot && hasEnvironmentRevision && Number.isSafeInteger(snapshot.environmentRevision)) {
+                if (next.environmentRevision < snapshot.environmentRevision) return;
+                if (next.environmentRevision === snapshot.environmentRevision && next.contextRevision < snapshot.contextRevision) return;
+            } else if (snapshot && next.contextRevision < snapshot.contextRevision) {
                 return;
             }
-            if (snapshot && (next.contextRevision !== snapshot.contextRevision
+            if (snapshot && ((!hasEnvironmentRevision && next.contextRevision !== snapshot.contextRevision)
+                    || next.environmentRevision !== snapshot.environmentRevision
                     || next.campusId !== snapshot.campusId || next.simulated !== snapshot.simulated)) {
                 clearEvidence();
+            } else if (snapshot && next.contextRevision !== snapshot.contextRevision) {
+                pending = null;
             }
             snapshot = Object.assign({}, next, {position: copy(next.position)});
             if (!enabled || snapshot.visible !== true) {

@@ -4,6 +4,89 @@ const {page,turn,response,flush,deferred} = require('./campus-fixture.cjs');
 const fs = require('node:fs');
 const path = require('node:path');
 
+test('real confirmed presence can be explicitly rechecked and only acceptance sends a message',async()=>{
+    const p=page();await flush();p.click('companionToggle');p.tick(1000);
+    p.send('我在平乐园北区餐厅');await flush();
+    const confirmed={placeId:'pingleyuan-north-dining',source:'confirmed',timestamp:p.context.Date.now()};
+    p.chats()[0].resolve(response(turn(1,'pingleyuan-north-dining',{context:{campusId:'pingleyuan',position:confirmed}})));await flush();
+    assert.equal(p.nodes.get('recheckPosition').hidden,true);p.tick(20000);
+    assert.equal(p.nodes.get('recheckPosition').hidden,false);assert.equal(p.nodes.get('proactiveOffer').hidden,true);
+    const count=p.chats().length;p.click('recheckPosition');assert.equal(p.chats().length,count);
+    p.tick(10000);assert.equal(p.nodes.get('proactiveOffer').hidden,false);assert.equal(p.chats().length,count);
+    p.click('acceptOffer');await flush();assert.equal(p.chats().at(-1).body.origin,'proactive_accept');
+    assert.ok(p.chats().at(-1).body.context.position.timestamp>confirmed.timestamp);
+});
+
+test('confirmation between UI pulses enables recheck within twenty one seconds',async()=>{
+    const p=page({config:{volume:0}});await flush();p.click('companionToggle');p.tick(300);
+    p.send('我在平乐园北区餐厅');await flush();
+    p.chats()[0].resolve(response(turn(1,'pingleyuan-north-dining',{context:{campusId:'pingleyuan',position:{placeId:'pingleyuan-north-dining',source:'confirmed',timestamp:p.context.Date.now()}}})));await flush();
+    p.tick(19700);assert.equal(p.nodes.get('recheckPosition').hidden,true);
+    p.tick(1000);assert.equal(p.nodes.get('recheckPosition').hidden,false);
+    p.click('recheckPosition');p.tick(9300);
+    assert.equal(p.nodes.get('proactiveOffer').hidden,false);assert.equal(p.chats().length,1);
+});
+
+test('declaring before enabling companion supports repeated honest rechecks after the enable boundary',async()=>{
+    const confirmed={placeId:'pingleyuan-north-dining',source:'confirmed',timestamp:Date.parse('2026-11-09T04:00:00Z')};
+    const p=page({context:{conversationId:'conversation-1',contextRevision:0,campusId:'pingleyuan',position:confirmed}});await flush();
+    p.tick(1000);p.click('companionToggle');p.tick(19000);p.click('recheckPosition');
+    assert.equal(p.nodes.get('proactiveOffer').hidden,true);p.tick(20000);p.click('recheckPosition');p.tick(10000);
+    assert.equal(p.nodes.get('proactiveOffer').hidden,false);assert.equal(p.chats().length,0);
+});
+
+test('two real declarations across ordinary server revisions preserve presence evidence',async()=>{
+    const p=page();await flush();p.click('companionToggle');p.tick(1000);
+    for (let i=0;i<2;i++) {
+        p.send('我在平乐园北区餐厅');await flush();
+        p.chats()[i].resolve(response(turn(i+1,'pingleyuan-north-dining',{context:{campusId:'pingleyuan',position:{placeId:'pingleyuan-north-dining',source:'confirmed',timestamp:p.context.Date.now()}}})));await flush();
+        p.tick(i===0?20000:10000);
+    }
+    assert.equal(p.nodes.get('proactiveOffer').hidden,false);assert.equal(p.chats().length,2);
+});
+
+test('recheck rejects busy drafts and stale actions across real environment boundaries',async()=>{
+    for (const boundary of ['new','demo','hide','disable','campus','place']) {
+        const confirmed={placeId:'pingleyuan-north-dining',source:'confirmed',timestamp:Date.parse('2026-11-09T04:00:00Z')};
+        const p=page({context:{conversationId:'conversation-1',contextRevision:0,campusId:'pingleyuan',position:confirmed}});await flush();
+        p.click('companionToggle');p.tick(20000);assert.equal(p.nodes.get('recheckPosition').hidden,false);
+        const staleClick=p.nodes.get('recheckPosition').events.click[0];
+        p.nodes.get('campusInput').value='未完成草稿';p.nodes.get('campusInput').fire('input');staleClick();
+        assert.equal(p.nodes.get('recheckPosition').hidden,true);assert.equal(p.chats().length,0);
+        p.nodes.get('campusInput').value='';p.nodes.get('campusInput').fire('input');
+        if(boundary==='new') {p.click('newConversation');await flush();p.requests.find(r=>r.url==='/api/campus/new').resolve(response({conversationId:'conversation-2',contextRevision:0}));await flush();}
+        if(boundary==='demo') {p.click('demoLibrary');await flush();}
+        if(boundary==='hide') p.hide();
+        if(boundary==='disable') p.click('companionToggle');
+        if(boundary==='campus'||boundary==='place') {
+            p.send('换个地方');await flush();p.chats()[0].resolve(response(turn(1,undefined,{context:{campusId:boundary==='campus'?'tongzhou':'pingleyuan',position:boundary==='campus'?null:{placeId:'pingleyuan-fourth-teaching',source:'confirmed',timestamp:p.context.Date.now()}}})));await flush();
+        }
+        staleClick();assert.equal(p.nodes.get('recheckPosition').hidden,true);
+        assert.equal(p.nodes.get('proactiveOffer').hidden,true);
+    }
+});
+
+test('polling never renews confirmation and library rechecks remain quiet without automatic chat',async()=>{
+    const confirmed={placeId:'pingleyuan-library',source:'confirmed',timestamp:Date.parse('2026-11-09T04:00:00Z')};
+    const p=page({context:{conversationId:'conversation-1',contextRevision:0,campusId:'pingleyuan',position:confirmed}});await flush();p.click('companionToggle');
+    p.tick(31000);assert.equal(p.nodes.get('proactiveOffer').hidden,true);const voices=p.utterances.length;
+    p.click('recheckPosition');p.tick(20000);p.click('recheckPosition');p.tick(10000);
+    assert.equal(p.nodes.get('proactiveOffer').hidden,false);assert.equal(p.chats().length,0);
+    assert.equal(p.utterances.length,voices);assert.equal(p.nodes.get('soundToggle').textContent,'安静环境已静音');
+});
+
+test('confirmed library areas stay quiet from library entry or direct declaration and leave cleanly',async()=>{
+    for (const initial of [null,'pingleyuan-library']) {
+        const position=initial?{placeId:initial,source:'confirmed',timestamp:Date.parse('2026-11-09T04:00:00Z')}:null;
+        const p=page({context:{conversationId:'conversation-1',contextRevision:0,campusId:'pingleyuan',position}});await flush();
+        p.send('我在多媒体阅览区');await flush();const before=p.utterances.length;
+        p.chats()[0].resolve(response(turn(1,'pingleyuan-library-computer-area',{context:{campusId:'pingleyuan',position:{placeId:'pingleyuan-library-computer-area',source:'confirmed',timestamp:p.context.Date.now()}}})));await flush();
+        assert.equal(p.nodes.get('soundToggle').textContent,'安静环境已静音');assert.equal(p.utterances.length,before);
+        p.send('我已经出馆了');await flush();p.chats()[1].resolve(response(turn(2,'pingleyuan-library-computer-area',{context:{campusId:'pingleyuan',position:null}})));await flush();
+        assert.equal(p.nodes.get('soundToggle').textContent,'声音已开');
+    }
+});
+
 test('real entry styles retain responsive stage, composer and reduced-motion rules',()=>{
     const root=path.resolve(__dirname,'../../src/main/resources/static');
     const html=fs.readFileSync(path.join(root,'campus.html'),'utf8');

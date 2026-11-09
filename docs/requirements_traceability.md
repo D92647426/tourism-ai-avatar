@@ -156,10 +156,13 @@ REQ-043（#29）情境编排、REQ-044（#30）观察辅助、REQ-045（#31）�
 | 需求与议题 | 本轮实现与范围 | 程序和验证 |
 |---|---|---|
 | REQ-054 / #52 | 五现行校区、26地点、7事项19变体、8素材，学综楼现行窗口与访客用途来源 | [目录](../src/main/java/com/guide/campus/CampusCatalog.java#L55)、[来源回归](../src/test/java/com/guide/campus/CampusCatalogTest.java#L95) |
-| REQ-055 / #53 | 统一AssistantTurn、离线业务与六模型工具、受控场景、4～6建议、幂等取消和版本提交 | [chat](../src/main/java/com/guide/campus/CampusAssistantService.java#L74)、[模型往返](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L21) |
+| REQ-055 / #53 | 统一AssistantTurn、离线业务与六模型工具、受控场景、4～6建议、幂等取消和版本提交 | [chat](../src/main/java/com/guide/campus/CampusAssistantService.java#L74)、[模型往返](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L22) |
 | REQ-056 / #54 | 按需设备定位、校时、天气时点、本部范围和地址预览、显式外部地图搜索 | [环境](../src/main/resources/static/js/campus-environment.js#L4)、[天气](../src/main/java/com/guide/campus/CampusWeatherService.java#L57)、[场景](../src/main/resources/static/js/campus-scene.js#L55) |
-| REQ-057 / #55 | 前台饭点/图书馆轻邀约、忙态冷却、馆内静音、馆外清物理确认。教学区离开和校门事件由#61跟进，#55保持open追踪后续 | [陪伴](../src/main/resources/static/js/campus-companion.js#L16)、[馆内外](../src/test/java/com/guide/campus/CampusAssistantTest.java#L192) |
+| REQ-057 / #55 | 前台饭点/图书馆轻邀约、忙态冷却、馆内静音、馆外清物理确认。教学区离开和校门事件由#61跟进，#55保持open追踪后续 | [陪伴](../src/main/resources/static/js/campus-companion.js#L16)、[馆内外](../src/test/java/com/guide/campus/CampusAssistantTest.java#L215) |
 | REQ-058 / #56 | 燕小北二维人物舞台、实景、侧边陪伴、图片版本隔离，来源保留许可状态 | [页面](../src/main/resources/static/campus.html#L1)、[素材](../src/main/resources/static/media/campus/SOURCES.md#L1)、[前端测试](../tests/frontend/campus-page.test.js#L1) |
-| REQ-059 / #57 | 午间与到馆模拟、持续标识、30秒停留加速、退出清除并重新定位 | [模拟](../src/main/resources/static/js/campus-environment.js#L103)、[退出回归](../src/test/java/com/guide/campus/CampusAssistantTest.java#L279) |
+| REQ-059 / #57 | 午间与到馆模拟、持续标识、30秒停留加速、退出清除并重新定位 | [模拟](../src/main/resources/static/js/campus-environment.js#L120)、[退出回归](../src/test/java/com/guide/campus/CampusAssistantTest.java#L302) |
 
 课堂操作、来源、模型/声音与手机待验边界见 [运行手册](campus_demo_runbook.md#L1)，六API见 [API-054a～f](api_reference.md#L252)，验证命令与本轮实际结果见 [TEST-054～059](test_reference.md#L1)。旧景区入口与数据继续独立保留，校园目录随JAR发布。
+
+
+REQ-055最终复审补齐显式导航换目标和模型最终意图协调，餐厅实际选项可继续地点与导航。REQ-057覆盖library-area馆内分区静音、简短出馆清除物理位置，以及真实已确认地点的显式复核邀约。物理版本和普通轮次分别维护，保留旧调用方兼容规则。[换目标回归](../src/test/java/com/guide/campus/CampusAssistantTest.java#L75)、[模型实际选项](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L138)、[真实复核入口](../tests/frontend/campus-page.test.js#L7)

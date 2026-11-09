@@ -51,6 +51,15 @@ class CampusAssistantTest {
         assertEquals("pingleyuan-fourth-teaching", library.path("context").path("position").path("placeId").asText());
     }
 
+    @Test void leavingLibraryAreaClearsPhysicalEvidenceAndKeepsTheTopic() {
+        ask("平乐园图书馆");
+        ObjectNode inside = ask("我在多媒体阅览区");
+        assertEquals("pingleyuan-library-computer-area", inside.path("context").path("position").path("placeId").asText());
+        ObjectNode outside = ask("我已经出馆了");
+        assertTrue(outside.path("context").path("position").isNull());
+        assertEquals(inside.path("context").path("placeId"), outside.path("context").path("placeId"));
+    }
+
     @Test void libraryPurposeAndVisitorRulesStayInConversation() {
         ask("我在平乐园，图书馆能做什么");
         ObjectNode answer = ask("我是访客，想用公共电脑查资料");
@@ -61,6 +70,20 @@ class CampusAssistantTest {
         ObjectNode followup = ask("还要注意什么");
         assertEquals("visitor", followup.path("context").path("audience").asText());
         assertEquals("library-computer", followup.path("sceneAction").path("taskId").asText());
+    }
+
+    @Test void explicitNavigationResolvesNewDestinationAndTaskBeforeRouting() {
+        ask("平乐园补卡");
+        ask("我在四教");
+        ObjectNode library = ask("图书馆怎么走");
+        assertEquals("SHOW_ROUTE", library.path("sceneAction").path("type").asText());
+        assertEquals("pingleyuan-library", library.path("context").path("placeId").asText());
+        assertFalse(library.path("context").hasNonNull("taskId"));
+        ObjectNode card = ask("补卡怎么走");
+        assertEquals("SHOW_ROUTE", card.path("sceneAction").path("type").asText());
+        assertEquals("pingleyuan-card-service", card.path("context").path("placeId").asText());
+        assertEquals("campus-card", card.path("context").path("taskId").asText());
+        assertEquals("pingleyuan-fourth-teaching", card.path("context").path("position").path("placeId").asText());
     }
 
     @Test void diningAndSportsUseOnlyVerifiedDirectoryFacts() {

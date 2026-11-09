@@ -100,14 +100,13 @@ public class CampusAssistantService {
         try {
             validation.mergeContext(input, context);
             turn = local.answer(input, context);
+            JsonNode localAction = turn.path("sceneAction").deepCopy();
             turn = model.answer(turn, context, history, input.path("message").asText(), () -> {
                 synchronized (session) {
                     return session.getAttribute(ATTRIBUTE) == state && state.active == attempt && !attempt.canceled;
                 }
             });
-            JsonNode action = turn.path("sceneAction");
-            if (action.path("placeIds").size() == 1) context.put("placeId", action.path("placeIds").path(0).asText());
-            if (action.hasNonNull("taskId")) context.put("taskId", action.path("taskId").asText());
+            local.reconcile(turn, context, localAction);
         } catch (RuntimeException failure) {
             synchronized (session) {
                 if (state.active == attempt) state.active = null;

@@ -16,6 +16,27 @@ function fixture(options = {}) {
     return {state, sample, advance: at => {time = at;}};
 }
 
+test('optional physical revision keeps evidence across turns but revokes stale invitations',()=>{
+    const f=fixture();f.sample(0,{environmentRevision:1});f.sample(20000,{environmentRevision:1,contextRevision:2});
+    f.advance(30000);const offer=f.state.offer();assert.ok(offer);
+    f.sample(30000,{environmentRevision:1,contextRevision:3});assert.equal(f.state.accept(offer.id),null);
+    const changed=fixture();changed.sample(0,{environmentRevision:1});changed.sample(20000,{environmentRevision:2,contextRevision:2});
+    changed.advance(30000);assert.equal(changed.state.offer(),null);
+});
+
+test('new physical epoch accepts a reset turn revision and rejects late old epochs',()=>{
+    const f=fixture();
+    f.sample(0,{environmentRevision:1,contextRevision:5});
+    f.sample(20000,{environmentRevision:1,contextRevision:5});
+    f.sample(21000,{environmentRevision:2,contextRevision:0,position:{placeId:'pingleyuan-library',source:'confirmed',timestamp:21000}});
+    f.sample(31000,{environmentRevision:1,contextRevision:99});
+    f.sample(41000,{environmentRevision:2,contextRevision:1,position:{placeId:'pingleyuan-library',source:'confirmed',timestamp:41000}});
+    f.advance(51000);
+    const offer=f.state.offer();assert.ok(offer);assert.equal(offer.placeId,'pingleyuan-library');
+    f.sample(52000,{environmentRevision:1,contextRevision:100});
+    assert.ok(f.state.accept(offer.id));
+});
+
 test('confirmed dining invitation requires two fresh observations and thirty seconds dwell', () => {
     const f = fixture();
     f.sample(0);

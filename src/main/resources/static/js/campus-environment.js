@@ -7,6 +7,7 @@
         var generation = 0, actionGeneration = 0, demoTimer = null, pulseTimer = null, currentOffer = null, weather = null;
         var context = {}, disposed = false, serverOffset = null, watchId = null, pollTimer = null;
         var weatherGeneration = 0, lastWeatherAt = -Infinity;
+        var environmentRevision = 0, environmentIdentity = null, recheck = null;
         var companion = CampusCompanion.create({now:now, places:options.catalog.places, regions:[]});
         var byId = function (id) { return document.getElementById(id); };
         function now() { return simulated ? demoTime + Date.now() - demoAnchor : Date.now(); }
@@ -15,12 +16,22 @@
         function hour() { return new Date(displayTime() + 8 * 3600000).getUTCHours(); }
         // One request position keeps a single truthful source. GPS never supplies a building claim.
         function physicalPosition() { return simulated ? simulatedPosition : confirmedPosition || devicePosition; }
-        function quiet() { var position = physicalPosition(), p = place(position && position.placeId); return !!p && p.category === 'library'; }
+        function quiet() { var position = physicalPosition(), p = place(position && position.placeId); return !!p && (p.category === 'library' || p.category === 'library-area'); }
         function clearOffer() { currentOffer = null; byId('proactiveOffer').hidden = true; }
+        // Timestamps are observations. Only identity/lifecycle boundaries begin a new physical epoch.
+        function syncEnvironment(position) {
+            var identity = JSON.stringify([context.conversationId,context.campusId,simulated,enabled,document.hidden,
+                position && position.placeId,position && position.source]);
+            if (identity !== environmentIdentity) {
+                environmentIdentity = identity; environmentRevision++; recheck = null;
+            }
+        }
         function update() {
             if (disposed) return;
             var busy = options.isBusy(), position = physicalPosition();
+            syncEnvironment(position);
             companion.update({visible:!document.hidden, busy:busy, contextRevision:context.contextRevision || 0,
+                environmentRevision:environmentRevision,
                 campusId:simulated ? 'pingleyuan' : context.campusId, placeId:position && position.placeId,
                 position:position, hour:hour(), simulated:simulated, quiet:quiet()});
             currentOffer = companion.offer();
@@ -34,9 +45,14 @@
             byId('positionStatus').textContent = p ? (simulated ? '模拟位置 ' : '已确认在 ') + p.name : position ? '已获取设备位置，具体建筑未确认' : '当前位置未确认';
             byId('companionToggle').textContent = enabled ? '陪伴已开' : '开启陪伴';
             byId('companionToggle').setAttribute('aria-pressed', String(enabled));
+            var canRecheck = enabled && !simulated && !document.hidden && confirmedPosition && !busy
+                && Number.isFinite(confirmedPosition.timestamp) && now() - confirmedPosition.timestamp >= 20000;
+            byId('recheckPosition').hidden = !canRecheck;
+            byId('recheckHelp').hidden = !enabled || simulated || !confirmedPosition || document.hidden;
+            recheck = canRecheck ? {revision:environmentRevision,placeId:confirmedPosition.placeId,timestamp:confirmedPosition.timestamp} : null;
             options.onQuiet(quiet());
         }
-        function pulse() { update(); pulseTimer = setTimeout(pulse, 10000); }
+        function pulse() { update(); pulseTimer = setTimeout(pulse, 1000); }
         function weatherEvidence(result) {
             var area = byId('weatherEvidence'); area.replaceChildren();
             if (simulated) { area.textContent = '模拟天气，仅用于课堂情境演示。'; return; }
@@ -98,6 +114,7 @@
         }
         function resetEvidence() {
             generation++; stopWatch(); clearTimeout(demoTimer); demoTimer = null; clearOffer(); companion.reset();
+            environmentRevision++; recheck = null;
             confirmedPosition = null; devicePosition = null; simulatedPosition = null;
         }
         async function startDemo(id) {
@@ -147,6 +164,15 @@
             var accepted = companion.accept(currentOffer.id); clearOffer();
             if (accepted) options.onAccept(accepted.messageToSend);
         }
+        byId('recheckPosition').addEventListener('click', function () {
+            var offered = recheck;
+            syncEnvironment(physicalPosition());
+            if (!offered || offered.revision !== environmentRevision || disposed || document.hidden || simulated || !enabled
+                    || options.isBusy() || !confirmedPosition || offered.placeId !== confirmedPosition.placeId
+                    || offered.timestamp !== confirmedPosition.timestamp || now() - offered.timestamp < 20000) return;
+            confirmedPosition = {placeId:offered.placeId,source:'confirmed',timestamp:now()};
+            update();
+        });
         byId('acceptOffer').addEventListener('click', accept);
         byId('dismissOffer').addEventListener('click', function () { companion.dismiss(); clearOffer(); });
         byId('companionToggle').addEventListener('click', function () {
