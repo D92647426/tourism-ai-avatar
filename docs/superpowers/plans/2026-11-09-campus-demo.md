@@ -139,7 +139,7 @@ Task1～4已实现并经根代理分阶段复审。Task5 worker补充到馆与�
 | 扩展隔离JAR HTTP | 旧景区保留检查与校园13组检查通过，5校区/26地点/8素材 |
 | 旧JAR负向检查 | 在未知健身房清目的地断言退出1，素材检查尚未运行 |
 
-本机使用JDK19、绝对Maven、`-o -DforkCount=0`，socket/atomic-file测试使用已授权提升环境。新增语言规则支持“我已经在图书馆内”，排除馆外、门口、附近和假设句，明确离馆清 `position:null` 并保留主题与导航目的地。[回归测试](../../../src/test/java/com/guide/campus/CampusAssistantTest.java#L215)
+本机使用JDK19、绝对Maven、`-o -DforkCount=0`，socket/atomic-file测试使用已授权提升环境。新增语言规则支持“我已经在图书馆内”，排除馆外、门口、附近和假设句，明确离馆清 `position:null` 并保留主题与导航目的地。[回归测试](../../../src/test/java/com/guide/campus/CampusAssistantTest.java#L231)
 
 本轮采用独立校园入口与打包目录，旧景区和管理端继续保留。前台事件首版覆盖饭点和图书馆用途，教学区离开与校门由后续#61推进。入口坐标、真实评分、更多跨校区资料、真手机GPS与真实模型Key继续单独验收。[实施差异](../specs/2026-11-09-campus-assistant-design.md#L1)
 

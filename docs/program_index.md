@@ -146,7 +146,7 @@
 | CampusAssistantController | 五个目录/上下文/聊天/新对话/取消端点及400/409适配 | [controller](../src/main/java/com/guide/campus/CampusAssistantController.java#L14) |
 | CampusAssistantService.current/start/cancel/chat | Cookie会话、revision、32请求幂等、锁外调用及原子提交 | [current](../src/main/java/com/guide/campus/CampusAssistantService.java#L37)、[start](../src/main/java/com/guide/campus/CampusAssistantService.java#L42)、[cancel](../src/main/java/com/guide/campus/CampusAssistantService.java#L51)、[chat](../src/main/java/com/guide/campus/CampusAssistantService.java#L74) |
 | CampusRequestValidation.chat/mergeContext | 类型与目录ID白名单，模拟退出、显式位置null和有限环境快照 | [chat](../src/main/java/com/guide/campus/CampusRequestValidation.java#L22)、[mergeContext](../src/main/java/com/guide/campus/CampusRequestValidation.java#L51) |
-| CampusLocalAnswers.answer/confirmedArrival/confirmedDeparture | 本地事项消歧、用途、餐饮、路线，明确到馆和离馆物理证据 | [answer](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L16)、[confirmedArrival](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L242)、[confirmedDeparture](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L253) |
+| CampusLocalAnswers.answer/confirmedArrival/confirmedDeparture | 本地事项消歧、用途、餐饮、路线，明确到馆和离馆物理证据 | [answer](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L16)、[confirmedArrival](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L259)、[confirmedDeparture](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L270) |
 | CampusModelOrchestrator.answer/finalTurn | 受控工具、总期限、动作与证据校验、模型失败回退 | [answer](../src/main/java/com/guide/campus/CampusModelOrchestrator.java#L40)、[finalTurn](../src/main/java/com/guide/campus/CampusModelOrchestrator.java#L121) |
 | CampusModelTools.execute | 六工具执行并绑定当前目录、环境和路线起点 | [工具](../src/main/java/com/guide/campus/CampusModelTools.java#L1) |
 | CampusWeatherController.current / CampusWeatherService.current | 天气第六端点、WGS84校验、Open-Meteo缓存与资料状态 | [HTTP](../src/main/java/com/guide/campus/CampusWeatherController.java#L27)、[service](../src/main/java/com/guide/campus/CampusWeatherService.java#L57) |
@@ -160,4 +160,7 @@
 API、配置与使用步骤见 [校园API](api_reference.md#L252)、[运行手册](campus_demo_runbook.md#L1)，旧景区模块索引继续适用各自入口。
 
 
-`CampusLocalAnswers.reconcile` 在模型动作验证完成后统一业务条件与当前建议，复用本地事项变体和图书馆用途选项。`CampusEnvironment.syncEnvironment` 维护物理证据版本，位置复核按钮仅把真实点击作为新确认。[最终协调](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L132)、[环境版本](../src/main/resources/static/js/campus-environment.js#L22)、[显式复核](../src/main/resources/static/js/campus-environment.js#L167)
+`CampusLocalAnswers.reconcile` 在模型动作验证完成后统一业务条件与当前建议，复用本地事项变体和图书馆用途选项。`CampusEnvironment.syncEnvironment` 维护物理证据版本，位置复核按钮仅把真实点击作为新确认。[最终协调](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L137)、[环境版本](../src/main/resources/static/js/campus-environment.js#L22)、[显式复核](../src/main/resources/static/js/campus-environment.js#L167)
+
+
+`CampusLocalAnswers.photoPlace` 共用当前地点照片及已知本部library-area父馆外观映射。照片意图在模型增强前更新浏览目标，最终协调按实际地点关联判定业务连续性。[照片映射](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L189)、[照片入口](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L59)

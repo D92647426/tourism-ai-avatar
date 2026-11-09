@@ -146,6 +146,22 @@ class CampusAssistantTest {
         assertEquals(0, service.current(session).path("contextRevision").asInt());
     }
 
+    @Test void unrelatedPhotoChangesCardDestinationBeforeRouting() {
+        ask("平乐园补卡");
+        ObjectNode photo = ask("看看图书馆实景");
+        assertEquals("pingleyuan-library", photo.path("sceneAction").path("placeIds").path(0).asText());
+        assertEquals("pingleyuan-library", photo.path("context").path("placeId").asText());
+        assertFalse(photo.path("context").hasNonNull("taskId"));
+        assertFalse(photo.path("context").hasNonNull("position"));
+        ObjectNode missingOrigin = ask("带我过去");
+        assertEquals("pingleyuan-library", missingOrigin.path("context").path("placeId").asText());
+        assertTrue(missingOrigin.path("reply").asText().contains("起点"));
+        ObjectNode route = ask("我在四教");
+        assertEquals("SHOW_ROUTE", route.path("sceneAction").path("type").asText());
+        assertEquals("pingleyuan-library", route.path("sceneAction").path("placeIds").path(0).asText());
+        assertEquals("pingleyuan-fourth-teaching", route.path("context").path("position").path("placeId").asText());
+    }
+
     @Test void photoPreviewPreservesPurposeAndNeverClaimsArrival() {
         ask("平乐园图书馆公共电脑在哪");
         ObjectNode photo = ask("看看这个地点的实景");

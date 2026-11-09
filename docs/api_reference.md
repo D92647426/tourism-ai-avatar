@@ -259,7 +259,7 @@ POST `/api/speech/synthesize`，登录+CSRF，JSON对象只允许text/speed，te
 
 `GET /api/campus/context`，服务函数 `CampusAssistantService.current`，Cookie拥有独立校园会话。无请求参数，首次访问建立会话。响应示例 `{"conversationId":"session-uuid","contextRevision":0,"campusId":null,"placeId":null,"serverTime":"2026-11-09T11:00:00Z","timezone":"Asia/Shanghai"}`。后续可带 `taskId/audience/position/simulated/hour/time/weather/routePending` 等本次条件，字段是否存在以已提交状态为准。[快照读取](../src/main/java/com/guide/campus/CampusAssistantService.java#L37)
 
-`context.placeId` 表示浏览主题或导航目的地。`context.position.placeId` 表示物理位置声明，位置携带 `source/timestamp`，可选WGS84 `latitude/longitude/accuracy`。用户说“我已经在图书馆内”时记录 `confirmed`、地点ID和确认时点。馆外、门口、附近或明确离馆清除旧物理证据为 `position:null`，保留主题和目的地。离线规则限定句首或标点子句起始的当前声明，馆外后缀支持可选“的”和空白。“等我进入图书馆再静音”等未来条件、假设与意向语句保持原物理证据时点。模型增强回答沿用同一应用位置边界。[位置语义](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L242)
+`context.placeId` 表示浏览主题或导航目的地。`context.position.placeId` 表示物理位置声明，位置携带 `source/timestamp`，可选WGS84 `latitude/longitude/accuracy`。用户说“我已经在图书馆内”时记录 `confirmed`、地点ID和确认时点。馆外、门口、附近或明确离馆清除旧物理证据为 `position:null`，保留主题和目的地。离线规则限定句首或标点子句起始的当前声明，馆外后缀支持可选“的”和空白。“等我进入图书馆再静音”等未来条件、假设与意向语句保持原物理证据时点。模型增强回答沿用同一应用位置边界。[位置语义](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L259)
 
 ## API-054c 校园聊天
 
@@ -314,4 +314,4 @@ time/dataTime按请求供应商Asia/Shanghai参数解释，fetchedAt为UTC。sta
 
 真实模式开启陪伴且已有用户确认地点时，20秒后出现“我仍在这里”，UI每秒刷新保证按钮在20～21秒内可用。点击复核页面身份、地点、模式与忙态，并记录新的 `source=confirmed` 时点。定时刷新与GPS保持原确认时间。首次有效确认后至少20秒的再次确认与30秒停留可产生邀约，开启前的确认或过期证据需要重新建立两份有效确认。[按钮入口](../src/main/resources/static/js/campus-environment.js#L167)、[真实页面顺序回归](../tests/frontend/campus-page.test.js#L7)
 
-最终通过工具与目录验证的资源场景统一写入业务上下文和建议。新地点或新事项替换旧业务，多餐厅候选清除唯一目的地，选中实际返回的 `choices[].message` 后建立新目的地。地点照片或相同业务的模型增强继续当前事项，KEEP_SCENE、SHOW_WEATHER和RETURN_STAGE保留业务条件。物理位置只由明确声明或终端证据更新。[最终协调](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L132)、[实际HTTP模型回归](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L138)
+最终通过工具与目录验证的资源场景统一写入业务上下文和建议。新地点或新事项替换旧业务，多餐厅候选清除唯一目的地，选中实际返回的 `choices[].message` 后建立新目的地。明确查看无关地点照片时切换浏览与导航目标并清除旧事项。当前业务地点照片，或已知library-area借用父馆外观时保留事项和具体服务区目标。相同业务的模型增强继续当前事项，KEEP_SCENE、SHOW_WEATHER和RETURN_STAGE保留业务条件。物理位置只由明确声明或终端证据更新。[最终协调](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L137)、[实际HTTP模型回归](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L138)

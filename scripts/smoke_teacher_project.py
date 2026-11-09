@@ -163,6 +163,18 @@ def verify_campus(base: str) -> dict:
     assert ask("带我过去")["sceneAction"]["type"] != "SHOW_ROUTE"
 
     new()
+    ask("平乐园补卡")
+    library_photo = ask("看看图书馆实景")
+    assert library_photo["sceneAction"]["placeIds"] == ["pingleyuan-library"]
+    assert state["placeId"] == "pingleyuan-library" and not state.get("taskId")
+    assert not state.get("position"), "Browsing an unrelated photo must not establish physical arrival."
+    library_origin = ask("带我过去")
+    assert "起点" in library_origin["reply"] and state["placeId"] == "pingleyuan-library"
+    library_route = ask("我在四教")
+    assert library_route["sceneAction"]["type"] == "SHOW_ROUTE"
+    assert library_route["sceneAction"]["placeIds"] == ["pingleyuan-library"]
+
+    new()
     visitor = ask("平乐园，我是访客，图书馆能做什么")
     assert visitor["sceneAction"]["type"] == "SHOW_PLACE"
     study = ask("想在图书馆安静学习")

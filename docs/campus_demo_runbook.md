@@ -45,7 +45,7 @@ $env:JAVA_HOME = 'C:/Program Files/Java/jdk-19'
 4. 地图显示本部校区边界与地点资料。点击“在高德搜索这个地点”后再核对目标，建筑入口坐标、路网与步行耗时仍需现场核验。
 5. 输入“健身房在哪”，原办卡目的地清除。再次“带我过去”会要求补充目标。
 
-验证入口为 [事项回答](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L180)和[路线回归](../src/test/java/com/guide/campus/CampusAssistantTest.java#L39)。
+验证入口为 [事项回答](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L197)和[路线回归](../src/test/java/com/guide/campus/CampusAssistantTest.java#L39)。
 
 ## 教师演示二　图书馆有什么可做
 
@@ -55,7 +55,7 @@ $env:JAVA_HOME = 'C:/Program Files/Java/jdk-19'
 4. 输入“我已经在图书馆内”，状态显示已确认在逸夫图书馆，按钮显示“安静环境已静音”，当前外放停止。
 5. 输入“我在图书馆外面”，位置恢复未确认，声音按用户原设置恢复。图书馆主题和导航目的地继续保留。输入“如果我在图书馆”或“我想去图书馆”仅更新对话内容。
 
-离线位置规则识别句首或标点子句起始的明确当前声明，如“我在”“我到了”“我已经进入”。规则复用目录别名，支持“图书馆的外面/门口”清除馆内确认，“等我进入图书馆再静音”等未来条件保持原物理证据及时间戳。确认只记录地点ID、来源和确认时点。模型可增强意图与回答，物理位置仍由应用规则和显式终端快照处理。[馆内外识别](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L242)、[状态接入](../src/main/resources/static/js/campus-environment.js#L147)
+离线位置规则识别句首或标点子句起始的明确当前声明，如“我在”“我到了”“我已经进入”。规则复用目录别名，支持“图书馆的外面/门口”清除馆内确认，“等我进入图书馆再静音”等未来条件保持原物理证据及时间戳。确认只记录地点ID、来源和确认时点。模型可增强意图与回答，物理位置仍由应用规则和显式终端快照处理。[馆内外识别](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L259)、[状态接入](../src/main/resources/static/js/campus-environment.js#L147)
 
 ## 教师演示三　午间轻声邀约
 
@@ -130,6 +130,9 @@ HTTP脚本接收 `--jar`、`--java`、`--port`、`--timeout`，默认Java命令j
 
 在补卡路线中直接问“图书馆怎么走”切换到图书馆，随后“补卡怎么走”重新按当前校区及人群选择办卡窗口。“我在四教”继续只作为实际起点。模型推荐餐厅后直接点击实际返回的餐厅选项，后续“带我过去”使用选中的餐厅。[导航顺序](../src/test/java/com/guide/campus/CampusAssistantTest.java#L75)、[HTTP模型闭环](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L138)
 
-“我在多媒体阅览区”等馆内分区确认与图书馆一样进入静音。输入“我已经出馆了”清除实际地点，保留正在浏览的主题与目标。[离馆规则](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L253)、[页面静音](../tests/frontend/campus-page.test.js#L78)
+“我在多媒体阅览区”等馆内分区确认与图书馆一样进入静音。输入“我已经出馆了”清除实际地点，保留正在浏览的主题与目标。[离馆规则](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L270)、[页面静音](../tests/frontend/campus-page.test.js#L78)
 
 真实陪伴可先开启再声明“我在平乐园北区餐厅”，等待20秒，在位置状态旁点击“我仍在这里”。继续停留到首次有效确认满30秒，饭点出现气泡，点击接受后才发送正式问答。先声明后开启、后台恢复或证据过期时，请重新点击两次真实确认，两次相隔至少20秒，再满足30秒停留。每次点击都应符合当前实际位置，界面定时器仅刷新状态。草稿、请求、识别和播报期间复核与邀约暂缓。图书馆采用相同复核流程并保持静音。[显式复核和边界回归](../tests/frontend/campus-page.test.js#L7)、[证据时效规则](../src/main/resources/static/js/campus-companion.js#L78)
+
+
+补卡之后输入“看看图书馆实景”，浏览主题和后续导航目标切换为图书馆，旧补卡事项清除。再说“带我过去”先确认起点，输入“我在四教”后预览到图书馆的路线。当前业务地点照片，以及公共电脑等具体服务区借用父馆外观时，仍保留原服务区目标。[离线照片切换回归](../src/test/java/com/guide/campus/CampusAssistantTest.java#L149)、[模型原样增强回归](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L217)

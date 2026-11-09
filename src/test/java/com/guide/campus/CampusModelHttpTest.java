@@ -214,6 +214,32 @@ class CampusModelHttpTest {
         });
     }
 
+    @Test void modelEnhancingUnrelatedPhotoSeesTheNewDestinationAndClearedTask() throws Exception {
+        List<JsonNode> requests = new ArrayList<>();
+        runProvider(n -> n == 2 ? toolMessage("get_place", "{\"placeId\":\"pingleyuan-library\"}", n)
+                : n == 3 ? finalMessage("{\"reply\":\"这里是图书馆外观。\",\"sceneAction\":{\"type\":\"SHOW_PLACE\",\"placeIds\":[\"pingleyuan-library\"],\"taskId\":null}}")
+                : toolMessage("unknown_tool", "{}", n), requests, (service, session) -> {
+            chat(service, session, "平乐园补卡");
+            ObjectNode photo = chat(service, session, "看看图书馆实景");
+            assertEquals("deepseek", photo.path("mode").asText());
+            assertEquals("pingleyuan-library", photo.path("sceneAction").path("placeIds").path(0).asText());
+            assertEquals("pingleyuan-library", photo.path("context").path("placeId").asText());
+            assertFalse(photo.path("context").hasNonNull("taskId"));
+            assertFalse(photo.path("context").hasNonNull("position"));
+            String prompt = requests.get(1).path("messages").path(0).path("content").asText();
+            String modelContext = prompt.substring(prompt.lastIndexOf('\n') + 1);
+            assertTrue(modelContext.contains("\"placeId\":\"pingleyuan-library\""));
+            assertFalse(modelContext.contains("\"taskId\""));
+            ObjectNode missingOrigin = chat(service, session, "带我过去");
+            assertTrue(missingOrigin.path("reply").asText().contains("起点"));
+            assertEquals("pingleyuan-library", missingOrigin.path("context").path("placeId").asText());
+            ObjectNode route = chat(service, session, "我在四教");
+            assertEquals("SHOW_ROUTE", route.path("sceneAction").path("type").asText());
+            assertEquals("pingleyuan-library", route.path("sceneAction").path("placeIds").path(0).asText());
+            return route;
+        });
+    }
+
     private ObjectNode runProvider(IntFunction<ObjectNode> responseFor, List<JsonNode> requests,
                                    java.util.function.BiFunction<CampusAssistantService, MockHttpSession, ObjectNode> conversation) throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);

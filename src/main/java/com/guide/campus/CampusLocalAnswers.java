@@ -57,11 +57,16 @@ final class CampusLocalAnswers {
         }
         if ((!taskId.isEmpty() || mentioned != null) && !arrival && !departure) context.remove("routePending");
         if (message.contains("实景") || message.contains("照片") || message.contains("外观")) {
-            ObjectNode preview = mentioned == null ? catalog.place(context.path("placeId").asText()) : mentioned;
-            if (preview != null && preview.path("assetIds").isEmpty() && preview.path("id").asText().startsWith("pingleyuan-library-")) {
-                preview = catalog.place("pingleyuan-library");
-            }
+            ObjectNode currentPlace = catalog.place(context.path("placeId").asText());
+            ObjectNode requestedPlace = mentioned == null ? currentPlace : mentioned;
+            ObjectNode preview = photoPlace(requestedPlace);
+            ObjectNode currentPhoto = photoPlace(currentPlace);
             if (preview != null) {
+                if (currentPlace == null || (!requestedPlace.path("id").equals(currentPlace.path("id"))
+                        && !requestedPlace.path("id").equals(currentPhoto.path("id")))) {
+                    context.remove("taskId");
+                    context.put("placeId", requestedPlace.path("id").asText());
+                }
                 ((ObjectNode) turn.path("sceneAction")).put("type", "SHOW_PLACE").put("title", "地点预览");
                 ((ArrayNode) turn.path("sceneAction").path("placeIds")).add(preview.path("id").asText());
                 reply(turn, preview.path("assetIds").isEmpty() ? "这个地点尚无核验实景照片，可以先查看地点资料。"
@@ -138,9 +143,12 @@ final class CampusLocalAnswers {
         boolean sameResource = places.equals(localAction.path("placeIds"))
                 && action.path("taskId").equals(localAction.path("taskId"));
         boolean sameTarget = places.size() == 1 && places.path(0).asText().equals(context.path("placeId").asText());
+        ObjectNode currentPhoto = photoPlace(catalog.place(context.path("placeId").asText()));
+        boolean sameBusinessPhoto = "SHOW_PLACE".equals(type) && places.size() == 1 && currentPhoto != null
+                && places.path(0).equals(currentPhoto.path("id"));
         if (action.hasNonNull("taskId")) context.put("taskId", action.path("taskId").asText());
-        else if ("SHOW_DINING".equals(type) || (!sameResource && !sameTarget)) context.remove("taskId");
-        if (action.hasNonNull("taskId") || !context.hasNonNull("taskId")) {
+        else if ("SHOW_DINING".equals(type) || (!sameBusinessPhoto && !sameTarget)) context.remove("taskId");
+        if (action.hasNonNull("taskId") || !sameBusinessPhoto) {
             if (places.size() == 1) context.put("placeId", places.path(0).asText());
             else context.putNull("placeId");
         }
@@ -175,6 +183,15 @@ final class CampusLocalAnswers {
         choice(choices, "小组研讨", "想预约小组研讨", "ask");
         choice(choices, "找书借还", "想找书借还", "ask");
         choice(choices, "公共电脑", "想用公共电脑查资料", "ask");
+    }
+
+    /** REQ-055: use the existing verified library exterior for its areas without their own photos. */
+    private ObjectNode photoPlace(ObjectNode place) {
+        if (place != null && "library-area".equals(place.path("category").asText())
+                && place.path("assetIds").isEmpty() && place.path("id").asText().startsWith("pingleyuan-library-")) {
+            return catalog.place("pingleyuan-library");
+        }
+        return place;
     }
 
     private ObjectNode serviceTask(ObjectNode context, ObjectNode turn) {
