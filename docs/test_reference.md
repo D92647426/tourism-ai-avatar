@@ -234,7 +234,7 @@ TEST-053补充：`LocalSpeechServiceTest.readTimeoutReturns504AndReleasesItsSlot
 
 ## TEST-054～059 校园首版
 
-2026年11月9日Task5 worker亲自运行全量Maven verify，301项Java通过，Node276项通过，Python数据44项和本地voice3项通过，结构检查与隔离JAR HTTP通过。命令使用本机JDK19、绝对Maven、`-o -DforkCount=0`，socket与atomic file测试在授权提升环境执行。[本机命令](campus_demo_runbook.md#L24)
+2026年11月9日Task5 worker亲自运行全量Maven verify，304项Java通过，Node276项通过，Python数据44项和本地voice3项通过，结构检查与隔离JAR HTTP通过。命令使用本机JDK19、绝对Maven、`-o -DforkCount=0`，socket与atomic file测试在授权提升环境执行。[本机命令](campus_demo_runbook.md#L24)
 
 | 测试编号与需求 | 测试函数或文件 | 预期与失败定位 |
 |---|---|---|
@@ -244,9 +244,9 @@ TEST-053补充：`LocalSpeechServiceTest.readTimeoutReturns504AndReleasesItsSlot
 | TEST-055C / REQ-055 | [RETURN_STAGE](../tests/frontend/campus-page.test.js#L262)、[SHOW_MAP](../tests/frontend/campus-page.test.js#L278)、[SHOW_WEATHER](../tests/frontend/campus-page.test.js#L294) | 实际API入口返回舞台清旧图、空地点校区地图与资料不足、天气正文及已有来源入口，三项分别RED/GREEN |
 | TEST-056 / REQ-056 | [CampusWeatherServiceTest](../src/test/java/com/guide/campus/CampusWeatherServiceTest.java#L1)、[校园页面](../tests/frontend/campus-page.test.js#L1) | 缓存时点、超时、无GPS与地图降级，失败查source/timestamp与坐标系 |
 | TEST-057A / REQ-057 | [confirmed dining invitation](../tests/frontend/campus-companion.test.js#L19)、[busy defers](../tests/frontend/campus-companion.test.js#L34)、[foreground samples](../tests/frontend/campus-companion.test.js#L87) | 气泡暂缓、30秒停留/20秒采样、前台恢复与过期，失败查时间与可见性 |
-| TEST-057B / REQ-057 | [explicitLibraryInteriorUsesCatalogAliasAndConfirmsOnlyPhysicalPlace](../src/test/java/com/guide/campus/CampusAssistantTest.java#L192)、[outsideAndHypotheticalLibraryStatementsNeverConfirmInterior](../src/test/java/com/guide/campus/CampusAssistantTest.java#L201)、[explicitLibraryDepartureClearsPhysicalEvidenceAndPreservesDestination](../src/test/java/com/guide/campus/CampusAssistantTest.java#L210)、[libraryQuestionsAndHypotheticalDepartureDoNotRefreshOrClearPhysicalEvidence](../src/test/java/com/guide/campus/CampusAssistantTest.java#L224) | 馆内确认成立，馆外/门口/附近/离馆清旧位置，主题保留，假设意向不刷新时间 |
+| TEST-057B / REQ-057 | [explicitLibraryInteriorUsesCatalogAliasAndConfirmsOnlyPhysicalPlace](../src/test/java/com/guide/campus/CampusAssistantTest.java#L192)、[outsideAndHypotheticalLibraryStatementsNeverConfirmInterior](../src/test/java/com/guide/campus/CampusAssistantTest.java#L204)、[explicitLibraryDepartureClearsPhysicalEvidenceAndPreservesDestination](../src/test/java/com/guide/campus/CampusAssistantTest.java#L213)、[libraryQuestionsAndHypotheticalDepartureDoNotRefreshOrClearPhysicalEvidence](../src/test/java/com/guide/campus/CampusAssistantTest.java#L227) | 馆内确认成立，馆外/门口/附近/离馆清旧位置，主题保留，假设意向不刷新时间 |
 | TEST-058 / REQ-058 | [campus-page.test.js](../tests/frontend/campus-page.test.js#L1) | 人物舞台、图片迟到隔离、真实目录素材、键盘和减少动态效果，失败查场景revision与资源ID |
-| TEST-059 / REQ-059 | [exitingSimulationWithoutGpsClearsEnvironmentAndAsksForRouteOrigin](../src/test/java/com/guide/campus/CampusAssistantTest.java#L240)、[deniedLocationAfterSimulationRemainsUnknownAndExplicitNullClearsRealPosition](../src/test/java/com/guide/campus/CampusAssistantTest.java#L255)、[页面退出](../tests/frontend/campus-page.test.js#L1) | false/null清模拟位置、time/hour/weather，拒绝定位继续问起点 |
+| TEST-059 / REQ-059 | [exitingSimulationWithoutGpsClearsEnvironmentAndAsksForRouteOrigin](../src/test/java/com/guide/campus/CampusAssistantTest.java#L279)、[deniedLocationAfterSimulationRemainsUnknownAndExplicitNullClearsRealPosition](../src/test/java/com/guide/campus/CampusAssistantTest.java#L294)、[页面退出](../tests/frontend/campus-page.test.js#L1) | false/null清模拟位置、time/hour/weather，拒绝定位继续问起点 |
 | TEST-054HTTP / REQ-054～059 | [verify_campus](../scripts/smoke_teacher_project.py#L76) | 真实CSRF、5/26目录、重放400/409、两Cookie、三闭环、取消/新会话、8素材magic，失败看业务断言及隔离服务日志 |
 
 ```powershell
@@ -264,3 +264,10 @@ python -X utf8 scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar 
 `smoke_teacher_project.py --help` 给出CLI参数，支持--jar必填、--java默认java、--port默认18080、--timeout默认60。脚本仅使用临时数据和空Key，输出JSON，成功0失败1。`verify_campus(base)`可供已有隔离服务调用，只验证接口与资源，进程生命周期由调用方负责。
 
 根代理已在桌面1440×1000和手机390×844点击三个场景，最新打包页到馆/馆外声音状态复验通过。截图链接与实际边界见 [运行手册](campus_demo_runbook.md#L101)。天气当次真实供应商可达、模型HTTP替身和页面空Key证据分别记录，真实DeepSeek Key、手机GPS、声音、麦克风与GPU继续按环境验收。
+
+
+### TEST-057B 第一轮复审回归
+
+新增 [futureLibraryEntryDoesNotEstablishOrRefreshPhysicalEvidence](../src/test/java/com/guide/campus/CampusAssistantTest.java#L235)、[libraryOutsideWithDeClearsInteriorAndPreservesDestination](../src/test/java/com/guide/campus/CampusAssistantTest.java#L249)、[libraryDoorwayWithDeClearsInteriorAndPreservesDestination](../src/test/java/com/guide/campus/CampusAssistantTest.java#L260)。三项各先RED1失败，再运行 `mvn -o -DforkCount=0 -Dtest=CampusAssistantTest test`，全类25项通过。覆盖未来入馆及离馆不改已有位置时间戳，含“的”的馆外与门口清除确认且保留目的地。原明确到馆用例覆盖“我在/我到了/我已经进入/我已经在图书馆内”和标点子句、目录别名。
+
+同一 [HTTP入口](../scripts/smoke_teacher_project.py#L76)补入上述三个实测句式，分别验证新会话未知位置、已有位置时点和馆外清除。最终计数为304项Java、276项Node，其他检查命令与边界沿用上节。

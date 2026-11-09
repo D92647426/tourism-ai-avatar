@@ -132,7 +132,7 @@ Task1～4已实现并经根代理分阶段复审。Task5 worker补充到馆与�
 | 到馆表达TDD | 新增单项RED1失败、GREEN1通过 |
 | 馆外/离馆/假设TDD | 三项RED3失败，全部CampusAssistantTest22项通过 |
 | 允许场景动作TDD | RETURN_STAGE、SHOW_MAP空地点、SHOW_WEATHER各自RED1失败、GREEN1通过 |
-| Maven离线nofork verify | 301项，0失败/错误/跳过，BUILD SUCCESS |
+| Maven离线nofork verify | 304项，0失败/错误/跳过，BUILD SUCCESS |
 | Node全部前端 | 276项通过，0失败 |
 | Python数据脚本 | 结构检查通过，44项测试通过 |
 | Python语音工作进程 | 3项通过 |
@@ -142,3 +142,6 @@ Task1～4已实现并经根代理分阶段复审。Task5 worker补充到馆与�
 本机使用JDK19、绝对Maven、`-o -DforkCount=0`，socket/atomic-file测试使用已授权提升环境。新增语言规则支持“我已经在图书馆内”，排除馆外、门口、附近和假设句，明确离馆清 `position:null` 并保留主题与导航目的地。[回归测试](../../../src/test/java/com/guide/campus/CampusAssistantTest.java#L192)
 
 本轮采用独立校园入口与打包目录，旧景区和管理端继续保留。前台事件首版覆盖饭点和图书馆用途，教学区离开与校门由后续#61推进。入口坐标、真实评分、更多跨校区资料、真手机GPS与真实模型Key继续单独验收。[实施差异](../specs/2026-11-09-campus-assistant-design.md#L1)
+
+
+Task5第一轮独立复审补充三条位置回归，未来条件“等我进入图书馆再静音”保持物理证据时点，“图书馆的外面/门口”清除馆内确认并保留目的地。离线规则限定句首或标点子句起始的明确当前声明，模型回答增强继续遵守应用位置边界。[回归与命令](../../test_reference.md#L269)

@@ -45,7 +45,7 @@ $env:JAVA_HOME = 'C:/Program Files/Java/jdk-19'
 4. 地图显示本部校区边界与地点资料。点击“在高德搜索这个地点”后再核对目标，建筑入口坐标、路网与步行耗时仍需现场核验。
 5. 输入“健身房在哪”，原办卡目的地清除。再次“带我过去”会要求补充目标。
 
-验证入口为 [事项回答](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L128)和[路线回归](../src/test/java/com/guide/campus/CampusAssistantTest.java#L39)。
+验证入口为 [事项回答](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L130)和[路线回归](../src/test/java/com/guide/campus/CampusAssistantTest.java#L39)。
 
 ## 教师演示二　图书馆有什么可做
 
@@ -55,7 +55,7 @@ $env:JAVA_HOME = 'C:/Program Files/Java/jdk-19'
 4. 输入“我已经在图书馆内”，状态显示已确认在逸夫图书馆，按钮显示“安静环境已静音”，当前外放停止。
 5. 输入“我在图书馆外面”，位置恢复未确认，声音按用户原设置恢复。图书馆主题和导航目的地继续保留。输入“如果我在图书馆”或“我想去图书馆”仅更新对话内容。
 
-位置识别复用目录别名，确认只记录地点ID、来源和确认时点，提问与假设句保持原物理证据时点。[馆内外识别](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L189)、[状态接入](../src/main/resources/static/js/campus-environment.js#L130)
+离线位置规则识别句首或标点子句起始的明确当前声明，如“我在”“我到了”“我已经进入”。规则复用目录别名，支持“图书馆的外面/门口”清除馆内确认，“等我进入图书馆再静音”等未来条件保持原物理证据及时间戳。确认只记录地点ID、来源和确认时点。模型可增强意图与回答，物理位置仍由应用规则和显式终端快照处理。[馆内外识别](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L191)、[状态接入](../src/main/resources/static/js/campus-environment.js#L130)
 
 ## 教师演示三　午间轻声邀约
 
@@ -100,7 +100,7 @@ python -X utf8 scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar 
 
 HTTP脚本接收 `--jar`、`--java`、`--port`、`--timeout`，默认Java命令java、端口18080、启动期限60秒。输入为打包JAR，输出检查结果JSON，成功退出0，失败退出1。脚本用临时数据及空模型Key启动并停止自己的进程，端口占用会明确失败。失败先查输出断言与服务器日志，再核对JAR是否重建。[复用HTTP入口](../scripts/smoke_teacher_project.py#L76)
 
-本轮worker亲自执行301项Java、276项前端、44项数据和3项Python语音测试，均通过，HTTP冒烟通过5校区、26地点和8素材。旧回归JAR在“未知健身房清目的地”业务断言失败，证明新冒烟可检出已知问题。最终PR与交付包以根代理独立复审记录为准。[测试索引](test_reference.md#L1)
+本轮worker亲自执行304项Java、276项前端、44项数据和3项Python语音测试，均通过，HTTP冒烟通过5校区、26地点和8素材。旧回归JAR在“未知健身房清目的地”业务断言失败，证明新冒烟可检出已知问题。最终PR与交付包以根代理独立复审记录为准。[测试索引](test_reference.md#L1)
 
 根代理已在1440×1000与390×844执行真实点击，并在最新打包JAR复验馆内静音与馆外恢复。页面使用空Key和真实同源HTTP。自动无障碍检查为0项violations，另有1类10节点对比度需人工判断，根代理已目视复核，本次继续保留人工设备验收。
 

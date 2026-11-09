@@ -259,7 +259,7 @@ POST `/api/speech/synthesize`，登录+CSRF，JSON对象只允许text/speed，te
 
 `GET /api/campus/context`，服务函数 `CampusAssistantService.current`，Cookie拥有独立校园会话。无请求参数，首次访问建立会话。响应示例 `{"conversationId":"session-uuid","contextRevision":0,"campusId":null,"placeId":null,"serverTime":"2026-11-09T11:00:00Z","timezone":"Asia/Shanghai"}`。后续可带 `taskId/audience/position/simulated/hour/time/weather/routePending` 等本次条件，字段是否存在以已提交状态为准。[快照读取](../src/main/java/com/guide/campus/CampusAssistantService.java#L37)
 
-`context.placeId` 表示浏览主题或导航目的地。`context.position.placeId` 表示物理位置声明，位置携带 `source/timestamp`，可选WGS84 `latitude/longitude/accuracy`。用户说“我已经在图书馆内”时记录 `confirmed`、地点ID和确认时点。馆外、门口、附近或明确离馆清除旧物理证据为 `position:null`，保留主题和目的地。假设与意向语句保持物理证据时点。[位置语义](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L189)
+`context.placeId` 表示浏览主题或导航目的地。`context.position.placeId` 表示物理位置声明，位置携带 `source/timestamp`，可选WGS84 `latitude/longitude/accuracy`。用户说“我已经在图书馆内”时记录 `confirmed`、地点ID和确认时点。馆外、门口、附近或明确离馆清除旧物理证据为 `position:null`，保留主题和目的地。离线规则限定句首或标点子句起始的当前声明，馆外后缀支持可选“的”和空白。“等我进入图书馆再静音”等未来条件、假设与意向语句保持原物理证据时点。模型增强回答沿用同一应用位置边界。[位置语义](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L191)
 
 ## API-054c 校园聊天
 

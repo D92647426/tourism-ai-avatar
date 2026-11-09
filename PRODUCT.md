@@ -19,7 +19,7 @@
 
 校园入口为 `/campus.html`，独立目录和六个校园API已接入统一轮次。空Key运行补卡找路、图书馆用途与实景、午间主动邀约三个闭环。模型配置默认 `deepseek-flash`，受控工具调用通过真实HTTP替身验证，真实Key联网另验。[运行手册](docs/campus_demo_runbook.md#L1)、[接口契约](docs/api_reference.md#L252)
 
-五个现行校区、26个地点、7个事项共19个变体和8项素材已纳入目录。补卡使用2026年10月迁址后的学综楼四层窗口。图书馆访客规则带入馆须知，馆内确认进入安静环境，明确离馆清除旧物理确认并保留对话主题与目的地。[目录实现](src/main/java/com/guide/campus/CampusCatalog.java#L55)、[到馆与离馆语义](src/main/java/com/guide/campus/CampusLocalAnswers.java#L189)
+五个现行校区、26个地点、7个事项共19个变体和8项素材已纳入目录。补卡使用2026年10月迁址后的学综楼四层窗口。图书馆访客规则带入馆须知，馆内确认进入安静环境，明确离馆清除旧物理确认并保留对话主题与目的地。[目录实现](src/main/java/com/guide/campus/CampusCatalog.java#L55)、[到馆与离馆语义](src/main/java/com/guide/campus/CampusLocalAnswers.java#L191)
 
 主动陪伴目前覆盖饭点到餐厅及图书馆用途。教学区离开、校门事件按后续议题扩展，真实餐饮评分、入口坐标、路网与更多跨校区资料分别核验。课堂情境显示模拟时间与位置，加速30秒停留，退出后清除模拟证据并重新请求设备位置。[已批准实施计划](docs/superpowers/plans/2026-11-09-campus-demo.md#L1)
 

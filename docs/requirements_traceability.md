@@ -160,6 +160,6 @@ REQ-043（#29）情境编排、REQ-044（#30）观察辅助、REQ-045（#31）�
 | REQ-056 / #54 | 按需设备定位、校时、天气时点、本部范围和地址预览、显式外部地图搜索 | [环境](../src/main/resources/static/js/campus-environment.js#L4)、[天气](../src/main/java/com/guide/campus/CampusWeatherService.java#L57)、[场景](../src/main/resources/static/js/campus-scene.js#L55) |
 | REQ-057 / #55 | 前台饭点/图书馆轻邀约、忙态冷却、馆内静音、馆外清物理确认。教学区离开和校门事件由#61跟进，#55保持open追踪后续 | [陪伴](../src/main/resources/static/js/campus-companion.js#L16)、[馆内外](../src/test/java/com/guide/campus/CampusAssistantTest.java#L192) |
 | REQ-058 / #56 | 燕小北二维人物舞台、实景、侧边陪伴、图片版本隔离，来源保留许可状态 | [页面](../src/main/resources/static/campus.html#L1)、[素材](../src/main/resources/static/media/campus/SOURCES.md#L1)、[前端测试](../tests/frontend/campus-page.test.js#L1) |
-| REQ-059 / #57 | 午间与到馆模拟、持续标识、30秒停留加速、退出清除并重新定位 | [模拟](../src/main/resources/static/js/campus-environment.js#L103)、[退出回归](../src/test/java/com/guide/campus/CampusAssistantTest.java#L240) |
+| REQ-059 / #57 | 午间与到馆模拟、持续标识、30秒停留加速、退出清除并重新定位 | [模拟](../src/main/resources/static/js/campus-environment.js#L103)、[退出回归](../src/test/java/com/guide/campus/CampusAssistantTest.java#L279) |
 
 课堂操作、来源、模型/声音与手机待验边界见 [运行手册](campus_demo_runbook.md#L1)，六API见 [API-054a～f](api_reference.md#L252)，验证命令与本轮实际结果见 [TEST-054～059](test_reference.md#L1)。旧景区入口与数据继续独立保留，校园目录随JAR发布。

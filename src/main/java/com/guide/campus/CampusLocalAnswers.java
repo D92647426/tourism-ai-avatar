@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /** REQ-054/055: deterministic catalog-backed answers, including offline campus disambiguation. */
 final class CampusLocalAnswers {
+    private static final String CURRENT_DECLARATION = "(?s)(?:^|.*[，,。！？!?\\n])\\s*我";
+    private static final String OUTSIDE_PLACE = "\\s*的?\\s*(?:外|门口|门外|附近|周边|旁边)";
     private final CampusCatalog catalog;
     private final ObjectMapper mapper = new ObjectMapper();
     CampusLocalAnswers(CampusCatalog catalog) { this.catalog = catalog; }
@@ -190,8 +192,8 @@ final class CampusLocalAnswers {
         if (place == null || hypothetical(message)) return false;
         for (JsonNode alias : place.path("aliases")) {
             String name = java.util.regex.Pattern.quote(alias.asText());
-            if (message.matches("(?s).*我(?:已经|现在)?(?:在|到了|到达|进入|进了)\\s*" + name
-                    + "(?!外|门口|附近|周边|旁边|门外|外面).*")) return true;
+            if (message.matches(CURRENT_DECLARATION + "(?:已经|现在)?(?:在|到了|到达|进入|进了)\\s*" + name
+                    + "(?!" + OUTSIDE_PLACE + ").*")) return true;
         }
         return false;
     }
@@ -202,14 +204,14 @@ final class CampusLocalAnswers {
         if (place != null) {
             for (JsonNode alias : place.path("aliases")) {
                 String name = java.util.regex.Pattern.quote(alias.asText());
-                if (message.matches("(?s).*我(?:已经|现在)?(?:在|到了|到达)\\s*" + name + "(?:外|门口|附近|周边|旁边).*")
-                        || message.matches("(?s).*我(?:已经|现在)?(?:离开|走出|出了|不在)\\s*" + name + ".*")
-                        || message.matches("(?s).*我(?:已经|现在)?从\\s*" + name + "(?:里|内)?(?:出来|离开).*")) return true;
+                if (message.matches(CURRENT_DECLARATION + "(?:已经|现在)?(?:在|到了|到达)\\s*" + name + OUTSIDE_PLACE + ".*")
+                        || message.matches(CURRENT_DECLARATION + "(?:已经|现在)?(?:离开|走出|出了|不在)\\s*" + name + ".*")
+                        || message.matches(CURRENT_DECLARATION + "(?:已经|现在)?从\\s*" + name + "(?:里|内)?(?:出来|离开).*")) return true;
             }
         }
         ObjectNode previous = catalog.place(context.path("position").path("placeId").asText());
         return previous != null && "library".equals(previous.path("category").asText())
-                && message.matches("(?s).*我(?:已经|现在)?(?:出馆|离馆)(?:了|啦)?[。！!\\s]*");
+                && message.matches(CURRENT_DECLARATION + "(?:已经|现在)?(?:出馆|离馆)(?:了|啦)?[。！!\\s]*");
     }
 
     private boolean hypothetical(String message) {

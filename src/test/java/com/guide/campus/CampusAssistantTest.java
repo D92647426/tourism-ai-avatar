@@ -191,11 +191,14 @@ class CampusAssistantTest {
 
     @Test void explicitLibraryInteriorUsesCatalogAliasAndConfirmsOnlyPhysicalPlace() {
         ask("平乐园补卡");
-        ObjectNode arrived = ask("我已经在图书馆内");
-        assertEquals("pingleyuan-library", arrived.path("context").path("position").path("placeId").asText());
-        assertEquals("confirmed", arrived.path("context").path("position").path("source").asText());
-        assertEquals("pingleyuan-card-service", arrived.path("context").path("placeId").asText());
-        assertFalse(arrived.path("context").path("position").has("latitude"));
+        for (String message : new String[]{"我在图书馆", "我到了图书馆", "我已经进入图书馆",
+                "我已经在图书馆内", "平乐园，我现在在图书馆内", "我已经在逸夫馆内"}) {
+            ObjectNode arrived = ask(message);
+            assertEquals("pingleyuan-library", arrived.path("context").path("position").path("placeId").asText(), message);
+            assertEquals("confirmed", arrived.path("context").path("position").path("source").asText(), message);
+            assertEquals("pingleyuan-card-service", arrived.path("context").path("placeId").asText(), message);
+            assertFalse(arrived.path("context").path("position").has("latitude"), message);
+        }
     }
 
     @Test void outsideAndHypotheticalLibraryStatementsNeverConfirmInterior() {
@@ -227,6 +230,42 @@ class CampusAssistantTest {
         for (String message : new String[]{"我想去图书馆", "如果我在图书馆", "如果我离开图书馆", "图书馆外有什么"}) {
             assertEquals(arrived.path("context").path("position"), ask(message).path("context").path("position"), message);
         }
+    }
+
+    @Test void futureLibraryEntryDoesNotEstablishOrRefreshPhysicalEvidence() {
+        ask("我在平乐园");
+        assertFalse(ask("等我进入图书馆再静音").path("context").hasNonNull("position"));
+        ObjectNode evidence = mapper.createObjectNode();
+        evidence.putObject("position").put("placeId", "pingleyuan-library")
+                .put("source", "confirmed").put("timestamp", 1794211200000L);
+        ask("平乐园补卡", evidence);
+        ObjectNode physical = (ObjectNode) service.current(session).path("position");
+        for (String message : new String[]{"等我进入图书馆再静音", "等我到了图书馆再导航",
+                "我准备进入图书馆", "等我离开图书馆再开声音", "等我出馆了"}) {
+            assertEquals(physical, ask(message).path("context").path("position"), message);
+        }
+    }
+
+    @Test void libraryOutsideWithDeClearsInteriorAndPreservesDestination() {
+        ask("我在平乐园");
+        assertFalse(ask("我在图书馆的外面").path("context").hasNonNull("position"));
+        ask("平乐园补卡");
+        ask("我在图书馆");
+        ObjectNode outside = ask("我在图书馆的外面");
+        assertTrue(outside.path("context").path("position").isNull());
+        assertEquals("pingleyuan-card-service", outside.path("context").path("placeId").asText());
+        assertTrue(ask("带我过去").path("reply").asText().contains("起点"));
+    }
+
+    @Test void libraryDoorwayWithDeClearsInteriorAndPreservesDestination() {
+        ask("我在平乐园");
+        assertFalse(ask("我在图书馆的门口").path("context").hasNonNull("position"));
+        ask("平乐园补卡");
+        ask("我在图书馆");
+        ObjectNode doorway = ask("我在图书馆的门口");
+        assertTrue(doorway.path("context").path("position").isNull());
+        assertEquals("pingleyuan-card-service", doorway.path("context").path("placeId").asText());
+        assertTrue(ask("带我过去").path("reply").asText().contains("起点"));
     }
 
     private void startSimulatedCardVisit() {

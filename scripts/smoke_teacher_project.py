@@ -165,15 +165,19 @@ def verify_campus(base: str) -> dict:
     photo = ask("看看这个地点的实景")
     assert photo["sceneAction"]["placeIds"] == ["pingleyuan-library"]
     assert "外观" in photo["reply"] and not state.get("position")
+    assert not ask("等我进入图书馆再静音")["context"].get("position")
     inside = ask("我已经在图书馆内")
     assert inside["context"]["position"]["placeId"] == "pingleyuan-library", "Explicit interior must confirm arrival."
     assert state["position"]["source"] == "confirmed" and "latitude" not in state["position"]
     topic = state["placeId"]
     physical = state["position"].copy()
-    ask("如果我在图书馆")
-    assert state["position"] == physical, "Hypothetical must not refresh physical evidence."
-    outside = ask("我在图书馆外")
-    assert outside["context"]["position"] is None and state["placeId"] == topic
+    for text in ("如果我在图书馆", "等我进入图书馆再静音", "等我离开图书馆再开声音"):
+        ask(text)
+        assert state["position"] == physical, "Conditional statements must not refresh physical evidence."
+    for text in ("我在图书馆的外面", "我在图书馆的门口"):
+        ask("我已经在图书馆内")
+        outside = ask(text)
+        assert outside["context"]["position"] is None and state["placeId"] == topic
     for text in ("我在图书馆门口", "我在图书馆附近", "我想去图书馆", "如果我在图书馆"):
         assert not ask(text)["context"].get("position"), text
 

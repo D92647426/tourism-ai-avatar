@@ -56,7 +56,7 @@ python -X utf8 -m unittest discover -s tests -p test_local_voice_server.py
 python -X utf8 scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar
 ```
 
-2026年11月9日本轮验证为301项Java、276项前端、44项数据脚本测试、3项语音工作进程测试通过，隔离JAR HTTP冒烟覆盖校园与旧景区入口。Python和Node只供可选检查，网页运行使用Java。[测试方法与证据边界](docs/test_reference.md#L1)
+2026年11月9日本轮验证为304项Java、276项前端、44项数据脚本测试、3项语音工作进程测试通过，隔离JAR HTTP冒烟覆盖校园与旧景区入口。Python和Node只供可选检查，网页运行使用Java。[测试方法与证据边界](docs/test_reference.md#L1)
 
 ## 当前边界
 
