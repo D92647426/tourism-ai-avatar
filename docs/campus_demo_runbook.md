@@ -107,3 +107,20 @@ HTTP脚本接收 `--jar`、`--java`、`--port`、`--timeout`，默认Java命令j
 [桌面图书馆](screenshots/campus-desktop-library.png) · [手机图书馆](screenshots/campus-mobile-library.png) · [手机邀约](screenshots/campus-mobile-offer.png) · [手机餐饮](screenshots/campus-mobile-dining.png) · [手机布局图](screenshots/campus-mobile-floorplan.png)
 
 手机实地GPS、真实DeepSeek Key、地图导航结果、系统声音与本地GPU声线仍待对应环境复验。
+
+
+## 根代理复核与实施取舍
+
+根代理在最终位置规则修复后独立运行完整Maven verify，304项Java全部通过，0失败、0错误、0跳过，耗时43.688秒。前端276项、数据44项、Python语音3项、结构与链接检查均通过，最新打包服务的13组校园HTTP检查再次通过。nofork模式保留Maven关于useSystemClassloader无效的环境警告。语音套接字与服务存活检查使用具备本机可见性的环境复验，避免沙箱权限造成误判。
+
+真实浏览器还验证了844×390横屏无横向溢出、减少动态效果时角色transition为0秒，以及输入框Tab后焦点进入语音按钮。当前用户预览服务从target/campus-demo/app.jar运行，使用空模型Key，完整启动命令见本手册开头。
+
+本轮实施采用以下取舍，后续可通过独立提交调整。
+
+1. 沿用户已批准的书面设计连续拆任务实施，版本差异通过功能分支与评审追溯。
+2. 在项目父目录使用独立tourism-ai-avatar-campus工作树，方便本次改版与本机演示定位。该目录由Git直接管理。
+3. 先完成位置天气与陪伴接口，再接入依赖这些接口的模型工具，保持每个阶段可编译验证。
+4. 官方校园总图返回403后，采用已读取的OpenStreetMap校区范围与官方图书馆一层布局。入口和道路精度由[后续坐标核验议题](https://github.com/D92647426/tourism-ai-avatar/issues/59)继续补齐。
+5. 首个三场景Demo通过独立campus.html和打包校园目录交付。默认首页及校园资料后台的完整切换由[迁移议题](https://github.com/D92647426/tourism-ai-avatar/issues/62)承接，当前修改校园JSON后需重新构建。
+
+[人物透明素材](../src/main/resources/static/media/campus/yanxiaobei.png)采用内置image_gen进行AI辅助二维重建，边缘与面部部分细节由模型重构。[完整提示词与处理记录](../src/main/resources/static/media/campus/processing.json#L1)随项目保存，素材来源及许可状态见[来源清单](../src/main/resources/static/media/campus/SOURCES.md#L1)。

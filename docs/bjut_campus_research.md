@@ -85,7 +85,7 @@ GPS位置使用WGS84，高德地图和周边查询使用GCJ-02，坐标结构始
 
 | 能力 | 推荐接入 | 数据与配置要求 |
 |---|---|---|
-| 天气 | Open-Meteo服务端适配器 | 非商业免费API，按校区缓存并显示数据时间、来源、过期状态，国内连通性待实测 |
+| 天气 | Open-Meteo服务端适配器 | 非商业免费API，按校区缓存并显示数据时间、来源、过期状态，2026-11-09本机请求成功，其他网络待实测 |
 | 国内天气替代 | 和风天气适配器 | JWT或API Key放服务端，配额按实际账户核查 |
 | 地图 | 高德地图或地图预览适配器 | 前端JS Key与服务端Web服务Key分别配置，建筑入口待核验 |
 | 校外餐饮 | 高德POI 2.0周边搜索 | `business.rating`等字段可能缺失，显示查询时间与数据来源 |
@@ -100,6 +100,23 @@ OSM数据有ODbL署名要求，公共瓦片服务器限制批量预取。MapLibr
 
 DeepSeek支持工具调用，工具实现由应用执行，模型返回工具名称与参数。实际模型名称沿环境配置选择，接入时核对该模型与当前API的兼容性。[DeepSeek工具调用文档](https://api-docs.deepseek.com/guides/tool_calls/)
 
-现有对话与语音可复用，模型客户端当前读取文本结果。会话、场景、主动气泡需要分别管理所有权。前端请求取消与服务端历史提交需要一起处理，主动气泡阶段独立于语音忙态。[会话服务](../src/main/java/com/guide/service/ConversationService.java#L78)、[模型客户端](../src/main/java/com/guide/service/AiCompletionClient.java#L157)、[语音状态](../src/main/resources/static/js/speech-lifecycle.js#L447)
+设计前基线的对话与语音可复用，模型客户端原先只读取文本结果。会话、场景、主动气泡需要分别管理所有权。前端请求取消与服务端历史提交需要一起处理，主动气泡阶段独立于语音忙态。[会话服务](../src/main/java/com/guide/service/ConversationService.java#L78)、[模型客户端](../src/main/java/com/guide/service/AiCompletionClient.java#L157)、[语音状态](../src/main/resources/static/js/speech-lifecycle.js#L447)
 
-本轮产出为研究与设计。手机现场定位、真实餐饮评分、实际DeepSeek工具调用、具体图片像素和校内可通行路线均在后续集成验收中记录结果。
+设计稿确认后已进入校园Demo实施。具体图片已逐张检查并接入，DeepSeek工具往返已通过本地HTTP模型替身验证。手机现场定位、真实餐饮评分、真实Key工具调用和校内可通行路线分别保留后续验收。
+
+
+## 后续图像实读补充
+
+官方餐饮页面的图片已下载并目视检查，天天餐厅对应配图为学生综合服务楼外观，北区餐厅对应配图为餐饮窗口菜品。图片拍摄时间未标明，图内价签与菜品以配图展示处理，当前菜单价格通过现场或后续来源核查。[官方餐饮介绍](https://english.bjut.edu.cn/Life_BJUT/Dining.htm)
+
+逸夫图书馆官方布局页的第一幅图片已成功下载并逐图查看，标为一层布局，能读到北出入口、多媒体阅览区和北区咨询台。其余楼层图尚未逐图核验，首版可以展示这张一层示意图辅助分区指引。[布局页](https://lib.bjut.edu.cn/tsggk/tsgbj/bbxq.htm)、[一层图](https://lib.bjut.edu.cn/__local/4/A3/39/90990BF856634FA588A101AFDDA_854F433C_595C1.jpg)
+
+
+OpenStreetMap对象33617299的官方API已成功读取，名称为北京工业大学且官网标签指向bjut.edu.cn。读取的26个边界节点形成范围[116.471439,39.8702655,116.4829918,39.8780729]，WGS84，版本15，数据时点为2025年11月15日。按本部校址与该对象位置对应，用于平乐园校园范围预览，楼宇入口、道路通行及无障碍条件仍分别核验。[对象页](https://www.openstreetmap.org/way/33617299)、[API数据](https://www.openstreetmap.org/api/0.6/way/33617299/full.json)
+
+
+## 本机联网与素材验收
+
+2026年11月9日，本机通过校园天气API取得Open-Meteo的available响应。资料时点为上海时间18时30分，获取时点为18时36分56秒，返回北京市区参考温度6℃。该记录对应本机当次网络，页面展示当前获取的模型天气资料时点与供应商来源。[天气实现](../src/main/java/com/guide/campus/CampusWeatherService.java#L57)、[来源文档](https://open-meteo.com/en/docs)
+
+首版接入8张本地素材，燕小北采用官方低清横幅的AI辅助透明二维重建，其他图片保留原始内容和来源信息。图书馆、四教、月亮湖、大礼堂、两处餐饮配图和一层布局均已目视检查，原图与处理记录随项目保存。[素材记录](../src/main/resources/static/media/campus/SOURCES.md#L1)、[处理方法与完整提示词](../src/main/resources/static/media/campus/processing.json#L1)
