@@ -20,6 +20,12 @@ class CampusAssistantTest {
         return service.chat(session, request);
     }
 
+    private ObjectNode ask(String message, ObjectNode context) {
+        ObjectNode request = service.current(session).put("requestId", java.util.UUID.randomUUID().toString()).put("message", message);
+        request.set("context", context);
+        return service.chat(session, request);
+    }
+
     @Test void lostCardIntentSurvivesCampusClarification() {
         ObjectNode clarification = ask("我的校园卡丢了，去哪补");
         assertTrue(clarification.path("reply").asText().contains("校区"));
@@ -138,5 +144,93 @@ class CampusAssistantTest {
         ObjectNode dining = ask("通州午饭吃什么");
         assertTrue(dining.path("choices").size() >= 4);
         assertTrue(dining.path("choices").size() <= 6);
+    }
+
+    @Test void unknownGymAfterCardClearsDestinationButKeepsConfirmedPosition() {
+        ObjectNode location = mapper.createObjectNode();
+        location.putObject("position").put("placeId", "pingleyuan-fourth-teaching")
+                .put("source", "confirmed").put("timestamp", System.currentTimeMillis());
+        ask("平乐园补卡", location);
+        ObjectNode gym = ask("健身房在哪");
+        assertTrue(gym.path("context").path("placeId").isNull());
+        assertFalse(gym.path("context").has("routePending"));
+        assertEquals("pingleyuan-fourth-teaching", gym.path("context").path("position").path("placeId").asText());
+        ObjectNode route = ask("带我过去");
+        assertNotEquals("SHOW_ROUTE", route.path("sceneAction").path("type").asText());
+        assertFalse(route.path("reply").asText().contains("一卡通"));
+        assertTrue(route.path("sceneAction").path("placeIds").isEmpty());
+    }
+
+    @Test void tongzhouDiningActualChoiceOpensPlaceWhileGenericQuestionListsDining() {
+        ObjectNode dining = ask("通州午饭吃什么");
+        String actualChoice = dining.path("choices").path(0).path("message").asText();
+        assertEquals("看看学生食堂", actualChoice);
+        ObjectNode selected = ask(actualChoice);
+        assertEquals("SHOW_PLACE", selected.path("sceneAction").path("type").asText());
+        assertEquals("tongzhou-student-dining", selected.path("context").path("placeId").asText());
+        assertEquals("SHOW_DINING", ask("有什么食堂").path("sceneAction").path("type").asText());
+    }
+
+    private void startSimulatedCardVisit() {
+        ObjectNode context = mapper.createObjectNode().put("simulated", true).put("hour", 12).put("time", "2026-11-09T12:00:00+08:00");
+        context.putObject("weather").put("temperatureC", 20).put("weatherCode", 0);
+        context.putObject("position").put("placeId", "pingleyuan-fourth-teaching")
+                .put("source", "simulated").put("timestamp", System.currentTimeMillis());
+        ask("平乐园补卡", context);
+    }
+
+    @Test void exitingSimulationWithoutGpsClearsEnvironmentAndAsksForRouteOrigin() {
+        startSimulatedCardVisit();
+        ObjectNode omitted = ask("还要注意什么");
+        assertTrue(omitted.path("context").path("simulated").asBoolean());
+        assertEquals("simulated", omitted.path("context").path("position").path("source").asText());
+        ObjectNode exit = ask("带我过去", mapper.createObjectNode().put("simulated", false));
+        assertFalse(exit.path("context").path("simulated").asBoolean());
+        assertFalse(exit.path("context").hasNonNull("position"));
+        assertFalse(exit.path("context").has("time"));
+        assertFalse(exit.path("context").has("hour"));
+        assertFalse(exit.path("context").has("weather"));
+        assertTrue(exit.path("reply").asText().contains("起点"));
+        assertEquals("KEEP_SCENE", exit.path("sceneAction").path("type").asText());
+    }
+
+    @Test void deniedLocationAfterSimulationRemainsUnknownAndExplicitNullClearsRealPosition() {
+        startSimulatedCardVisit();
+        ObjectNode denied = mapper.createObjectNode().put("simulated", false).putNull("position");
+        ObjectNode exit = ask("带我过去", denied);
+        assertFalse(exit.path("context").hasNonNull("position"));
+        assertTrue(exit.path("reply").asText().contains("起点"));
+        assertFalse(ask("带我过去").path("context").hasNonNull("position"));
+        ask("我在四教");
+        ObjectNode cleared = ask("带我过去", mapper.createObjectNode().putNull("position"));
+        assertFalse(cleared.path("context").hasNonNull("position"));
+        assertTrue(cleared.path("reply").asText().contains("起点"));
+    }
+
+    @Test void leavingSimulationMergesFreshRealPositionAndTimeInSameTurn() {
+        startSimulatedCardVisit();
+        ObjectNode fresh = mapper.createObjectNode().put("simulated", false).put("hour", 16).put("time", "2026-11-09T16:00:00+08:00");
+        fresh.putObject("position").put("placeId", "pingleyuan-library").put("source", "geolocation")
+                .put("timestamp", System.currentTimeMillis()).put("latitude", 39.875).put("longitude", 116.481).put("accuracy", 8);
+        ObjectNode answer = ask("带我过去", fresh);
+        assertEquals("SHOW_ROUTE", answer.path("sceneAction").path("type").asText());
+        assertEquals("pingleyuan-library", answer.path("context").path("position").path("placeId").asText());
+        assertEquals("geolocation", answer.path("context").path("position").path("source").asText());
+        assertEquals(16, answer.path("context").path("hour").asInt());
+        assertEquals("2026-11-09T16:00:00+08:00", answer.path("context").path("time").asText());
+        assertFalse(answer.path("context").has("weather"));
+        assertEquals("pingleyuan-card-service", answer.path("context").path("placeId").asText());
+    }
+
+    @Test void simulationFlagRequiresBooleanButPositionAcceptsExplicitNull() {
+        assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                () -> ask("平乐园补卡", mapper.createObjectNode().putNull("simulated")));
+        assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                () -> ask("平乐园补卡", mapper.createObjectNode().put("simulated", "false")));
+        assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                () -> ask("平乐园补卡", mapper.createObjectNode().put("position", false)));
+        ObjectNode valid = ask("平乐园补卡", mapper.createObjectNode().put("simulated", false).putNull("position"));
+        assertFalse(valid.path("context").path("simulated").asBoolean());
+        assertFalse(valid.path("context").hasNonNull("position"));
     }
 }

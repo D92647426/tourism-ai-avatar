@@ -61,6 +61,11 @@ final class CampusRequestValidation {
             throw invalid("placeId/campusId");
         }
         JsonNode supplied = request.path("context");
+        // Leaving a demo is an environment boundary. An absent/denied new GPS fix must not
+        // inherit the old demo point; fresh fields below are merged only after this reset.
+        if (context.path("simulated").asBoolean() && supplied.has("simulated") && !supplied.path("simulated").asBoolean()) {
+            context.remove(Arrays.asList("position", "hour", "weather", "time"));
+        }
         for (String field : Arrays.asList("position", "simulated", "hour", "weather", "time")) {
             if (supplied.has(field)) context.set(field, supplied.path(field).deepCopy());
         }
@@ -80,7 +85,10 @@ final class CampusRequestValidation {
             if (!input.path("time").isTextual() || input.path("time").asText().length() > 40) throw invalid("time");
             safe.set("time", input.path("time"));
         }
-        if (input.hasNonNull("position")) safe.set("position", position(input.path("position"), safe.path("simulated").asBoolean()));
+        if (input.has("position")) {
+            if (input.path("position").isNull()) safe.putNull("position");
+            else safe.set("position", position(input.path("position"), safe.path("simulated").asBoolean()));
+        }
         if (safe.path("simulated").asBoolean() && input.path("weather").isObject()) {
             ObjectNode weather = mapper.createObjectNode().put("status", "simulated").put("label", "模拟天气");
             if (input.path("weather").path("temperatureC").isNumber()) weather.set("temperatureC", input.path("weather").path("temperatureC"));

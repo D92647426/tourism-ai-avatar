@@ -69,11 +69,14 @@ final class CampusLocalAnswers {
         }
         if (message.contains("健身房")) {
             context.remove("taskId");
+            context.putNull("placeId");
+            context.remove("routePending");
             reply(turn, "健身房具体位置和入口尚未核验。体育馆公开介绍可供咨询，但不能把体育馆视为已核验的健身房入口。");
             finishChoices(turn);
             return turn;
         }
-        if (message.matches(".*(吃什么|吃饭|午饭|晚饭|早饭|食堂|餐饮).*")) {
+        boolean specificDiningPlace = mentioned != null && "dining".equals(mentioned.path("category").asText());
+        if (!specificDiningPlace && message.matches(".*(吃什么|吃饭|午饭|晚饭|早饭|食堂|餐饮).*")) {
             return dining(context, turn);
         }
         if (message.contains("带我过去") || message.contains("怎么走") || message.contains("导航")) {
