@@ -9,7 +9,7 @@ const response = (data, status = 200) => ({ok: status < 400, status, json: async
 const flush = async () => { for (let i = 0; i < 12; i++) await new Promise(r => setImmediate(r)); };
 function page(options = {}) {
     const time = clock(), nodes = new Map(), requests = [], images = [], utterances = [], recognitions = [], geo = [], calls = [], watches = [], clearedWatches = [];
-    let now = Date.parse('2026-11-09T04:00:00Z'), stops = 0;
+    let now = Date.parse('2026-11-09T04:00:00Z'), stops = 0, contextReads = 0;
     class Element {
         constructor(tag = 'div') { this.tagName = tag.toUpperCase(); this.children = []; this.events = {}; this.attributes = {}; this.dataset = {}; this.style = {}; this.value = ''; this.hidden = false; this.disabled = false; this._text = ''; this.classes = new Set(); }
         get textContent() { return this._text + this.children.map(c => c.textContent).join(''); }
@@ -49,7 +49,7 @@ function page(options = {}) {
         calls.push({url,options:opts});
         if (url === '/api/auth/csrf') return Promise.resolve(response({token:'csrf-test',headerName:'X-XSRF-TOKEN'}));
         if (url === '/api/campus/catalog') return Promise.resolve(response(catalog));
-        if (url === '/api/campus/context') return Promise.resolve(response(options.context || {conversationId:'conversation-1',contextRevision:0,campusId:null,placeId:null}));
+        if (url === '/api/campus/context') return options.contextFetch ? options.contextFetch(contextReads++) : Promise.resolve(response(options.context || {conversationId:'conversation-1',contextRevision:0,campusId:null,placeId:null}));
         if (url === '/api/digital-human-config') return Promise.resolve(response(options.config || {}));
         if (url.startsWith('/api/campus/weather')) return Promise.resolve(response(options.weather || {status:'unavailable',label:'北京市区参考天气'}));
         if (url === '/api/speech/synthesize') return Promise.resolve(response({},401));
@@ -82,4 +82,4 @@ function turn(revision, placeId = 'pingleyuan-library', extra = {}) {
         sceneAction:{type:'SHOW_PLACE',placeIds:[placeId]},context:{campusId:'pingleyuan',placeId},
         choices:[{kind:'ask',label:'学习',message:'安静学习'},{kind:'ask',label:'借还',message:'找书借还'},{kind:'followup',label:'继续追问',message:'还有哪些信息'},{kind:'custom',label:'自定义',message:''}],references:[],...extra};
 }
-module.exports={page,turn,response,flush};
+module.exports={page,turn,response,flush,deferred};

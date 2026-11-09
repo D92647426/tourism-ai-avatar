@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {page,turn,response,flush} = require('./campus-fixture.cjs');
+const {page,turn,response,flush,deferred} = require('./campus-fixture.cjs');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -177,4 +177,83 @@ test('continuous GPS uses each real sample timestamp and weather exposes time an
     watch.ok({coords:{latitude:39.874,longitude:116.477,accuracy:10},timestamp:first});p.tick(30000);
     watch.ok({coords:{latitude:39.874,longitude:116.477,accuracy:10},timestamp:first+30000});p.send('图书馆');await flush();
     assert.equal(p.chats()[0].body.context.position.timestamp,first+30000);assert.equal(p.chats()[0].body.context.position.source,'geolocation');assert.equal(p.chats()[0].body.context.position.placeId,undefined);
+});
+
+test('I1 late reconnect GET cannot replace a newly created conversation',async()=>{
+    const late=deferred(), initial={conversationId:'conversation-1',contextRevision:0};
+    const p=page({contextFetch:i=>i===0?Promise.resolve(response(initial)):late.promise});await flush();
+    p.click('reloadContext');await flush();p.click('newConversation');await flush();
+    p.requests.find(r=>r.url==='/api/campus/new').resolve(response({conversationId:'conversation-2',contextRevision:0}));await flush();
+    late.resolve(response({conversationId:'conversation-1',contextRevision:1}));await flush();p.send('新会话问题');await flush();
+    assert.equal(p.chats()[0].body.conversationId,'conversation-2');assert.equal(p.chats()[0].body.contextRevision,0);
+});
+test('I1 stale reconnect failure cannot change newer turn status or controls',async()=>{
+    const late=deferred();const p=page({contextFetch:i=>i===0?Promise.resolve(response({conversationId:'conversation-1',contextRevision:0})):late.promise});await flush();
+    p.click('reloadContext');await flush();p.send('图书馆');await flush();p.chats()[0].resolve(response(turn(1)));await flush();
+    const status=p.nodes.get('requestStatus').textContent;late.reject(Error('old network failure'));await flush();
+    assert.equal(p.nodes.get('requestStatus').textContent,status);assert.equal(p.nodes.get('sendMessage').disabled,false);
+});
+test('I1 initialize reentry discards old success and old failure',async()=>{
+    for(const outcome of ['success','failure']){
+        const old=deferred(),fresh=deferred();const p=page({contextFetch:i=>i===0?old.promise:fresh.promise});await flush();p.click('reloadContext');await flush();
+        fresh.resolve(response({conversationId:'conversation-2',contextRevision:2}));await flush();
+        if(outcome==='success')old.resolve(response({conversationId:'conversation-1',contextRevision:0}));else old.reject(Error('old init'));
+        await flush();p.send('新问题');await flush();assert.equal(p.chats()[0].body.conversationId,'conversation-2');assert.equal(p.nodes.get('reloadContext').hidden,true);
+    }
+});
+test('I1 reconnect cannot roll back a revision or publish after hide/disposal, but ordinary recovery works',async()=>{
+    for(const boundary of ['revision','hide','dispose','recover']){
+        const late=deferred();const p=page({contextFetch:i=>i===0?Promise.resolve(response({conversationId:'conversation-1',contextRevision:5})):late.promise});await flush();
+        p.click('reloadContext');await flush();if(boundary==='hide')p.hide();if(boundary==='dispose')p.pagehide();
+        if(boundary==='dispose')p.nodes.get('requestStatus').textContent='离页前状态';
+        const before=p.nodes.get('requestStatus').textContent;
+        late.resolve(response({conversationId:'conversation-1',contextRevision:boundary==='revision'?1:6}));await flush();
+        if(boundary==='dispose'){assert.equal(p.nodes.get('requestStatus').textContent,before);continue;}
+        if(boundary==='hide')p.show();p.send('核对版本');await flush();assert.equal(p.chats()[0].body.contextRevision,boundary==='recover'?6:5);
+    }
+});
+test('I1 successful cancel recovery removes the reconnect entry',async()=>{
+    const p=page();await flush();p.send('图书馆');await flush();p.click('cancelRequest');await flush();
+    p.requests.find(r=>r.url==='/api/campus/cancel').reject(Error('offline'));await flush();p.click('reloadContext');await flush();
+    p.requests.filter(r=>r.url==='/api/campus/cancel')[1].resolve(response({conversationId:'conversation-1',contextRevision:1}));await flush();
+    assert.equal(p.nodes.get('reloadContext').hidden,true);
+});
+test('I2 unknown-building GPS preserves explicit library quiet evidence and its timestamp',async()=>{
+    const confirmed={placeId:'pingleyuan-library',source:'confirmed',timestamp:Date.parse('2026-11-09T03:59:50Z')};
+    const p=page({context:{conversationId:'conversation-1',contextRevision:0,campusId:'pingleyuan',position:confirmed}});await flush();
+    p.click('companionToggle');p.watches[0].ok({coords:{latitude:39.874,longitude:116.477,accuracy:10},timestamp:Date.parse('2026-11-09T04:00:00Z')});
+    assert.equal(p.nodes.get('soundToggle').textContent,'安静环境已静音');assert.match(p.nodes.get('positionStatus').textContent,/已确认在 逸夫图书馆/);
+    p.send('继续了解借书');await flush();assert.deepEqual(p.chats()[0].body.context.position,confirmed);
+    p.chats()[0].resolve(response(turn(1,'pingleyuan-fourth-teaching',{context:{campusId:'pingleyuan',placeId:'pingleyuan-library',position:{placeId:'pingleyuan-fourth-teaching',source:'confirmed',timestamp:confirmed.timestamp+30000}}})));await flush();
+    assert.equal(p.nodes.get('soundToggle').textContent,'声音已开');assert.match(p.nodes.get('positionStatus').textContent,/已确认在 第四教学楼/);
+});
+test('I1 backgrounded automatic conflict resync can be explicitly recovered on return',async()=>{
+    const late=deferred();const snapshot={conversationId:'conversation-1',contextRevision:0};
+    const p=page({contextFetch:i=>i===1?late.promise:Promise.resolve(response(snapshot))});await flush();
+    p.send('图书馆');await flush();p.chats()[0].resolve(response({code:'STALE_CONTEXT'},409));await flush();p.hide();
+    late.resolve(response({conversationId:'conversation-1',contextRevision:10}));await flush();p.show();
+    assert.equal(p.nodes.get('reloadContext').hidden,false);p.click('reloadContext');await flush();p.click('retryRequest');await flush();
+    assert.equal(p.chats()[1].body.contextRevision,0);
+});
+test('I3 authoritative null clears confirmed building while preserving newly sampled GPS',async()=>{
+    const confirmed={placeId:'pingleyuan-library',source:'confirmed',timestamp:Date.parse('2026-11-09T03:59:50Z')};
+    const p=page({context:{conversationId:'conversation-1',contextRevision:0,campusId:'pingleyuan',position:confirmed}});await flush();
+    p.click('companionToggle');p.watches[0].ok({coords:{latitude:39.874,longitude:116.477,accuracy:10},timestamp:Date.parse('2026-11-09T04:00:00Z')});
+    p.send('位置需要重新确认');await flush();p.chats()[0].resolve(response(turn(1,'pingleyuan-library',{context:{campusId:'pingleyuan',placeId:'pingleyuan-library',position:null}})));await flush();
+    assert.equal(p.nodes.get('soundToggle').textContent,'声音已开');assert.match(p.nodes.get('positionStatus').textContent,/具体建筑未确认/);
+    p.send('再问一个问题');await flush();assert.equal(p.chats()[1].body.context.position.source,'geolocation');assert.equal(p.chats()[1].body.context.position.placeId,undefined);
+});
+test('I3 omitted physical position preserves confirmation, explicit null without GPS clears it',async()=>{
+    const confirmed={placeId:'pingleyuan-library',source:'confirmed',timestamp:Date.parse('2026-11-09T04:00:00Z')};
+    const p=page({context:{conversationId:'conversation-1',contextRevision:0,campusId:'pingleyuan',position:confirmed}});await flush();p.send('想去四教');await flush();
+    p.chats()[0].resolve(response(turn(1,'pingleyuan-fourth-teaching')));await flush();assert.equal(p.nodes.get('soundToggle').textContent,'安静环境已静音');
+    p.send('清除位置');await flush();p.chats()[1].resolve(response(turn(2,'pingleyuan-fourth-teaching',{context:{campusId:'pingleyuan',placeId:'pingleyuan-fourth-teaching',position:null}})));await flush();
+    assert.equal(p.nodes.get('soundToggle').textContent,'声音已开');assert.match(p.nodes.get('positionStatus').textContent,/当前位置未确认/);
+});
+test('I2 simulation exit clears a pre-demo building returned by cancellation sync',async()=>{
+    const confirmed={placeId:'pingleyuan-library',source:'confirmed',timestamp:Date.parse('2026-11-09T04:00:00Z')};
+    const p=page({context:{conversationId:'conversation-1',contextRevision:0,campusId:'pingleyuan',position:confirmed}});await flush();
+    p.click('demoDining');await flush();p.tick(1000);p.click('acceptOffer');await flush();p.click('exitDemo');await flush();
+    p.requests.find(r=>r.url==='/api/campus/cancel').resolve(response({conversationId:'conversation-1',contextRevision:1,campusId:'pingleyuan',position:confirmed}));await flush();
+    assert.equal(p.nodes.get('soundToggle').textContent,'声音已开');p.send('重新开始');await flush();assert.equal(p.chats()[1].body.context.position,null);
 });

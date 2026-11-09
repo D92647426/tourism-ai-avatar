@@ -4,6 +4,7 @@
     var byId = function (id) { return document.getElementById(id); };
     var context = null, catalog = null, scene = null, environment = null, voice = null;
     var active = null, failed = null, barrier = null, generation = 0, serial = 0, ready = false, disposed = false;
+    var contextReadSequence = 0;
     var draftRevision = 0, lastSpeech = '嗨，我是燕小北。今天在校园里，想做些什么？';
     var welcomeTimer = null;
     var nonce = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,9);
@@ -31,6 +32,23 @@
     function adopt(snapshot) {
         context = Object.assign({},snapshot); ready = true;
         if (environment) environment.setContext(context);
+    }
+    /** Read responses own the exact UI generation and context they started from. */
+    function beginContextRead() {
+        return {sequence:++contextReadSequence,generation:generation,
+            conversationId:context && context.conversationId,revision:context && context.contextRevision};
+    }
+    function ownsContextRead(read) {
+        return !disposed && read.sequence === contextReadSequence && read.generation === generation
+            && read.conversationId === (context && context.conversationId)
+            && read.revision === (context && context.contextRevision);
+    }
+    function checkReadSnapshot(read,snapshot) {
+        if (!snapshot || typeof snapshot.conversationId !== 'string' || !snapshot.conversationId
+                || !Number.isSafeInteger(snapshot.contextRevision) || snapshot.contextRevision < 0
+                || snapshot.conversationId === read.conversationId && snapshot.contextRevision < read.revision) {
+            throw new Error('invalid-context-snapshot');
+        }
     }
     function choices(items) {
         var target = byId('campusChoices'); target.replaceChildren();
@@ -86,10 +104,14 @@
             voice.activity('idle');
             if (error.status === 409 && error.code !== 'REQUEST_IN_PROGRESS') {
                 ready = false; attempt.payload = null;
+                var read = beginContextRead();
                 try {
                     var synchronized = await api('/api/campus/context');
-                    if (generation === own && !disposed) { adopt(synchronized); byId('requestStatus').textContent = '对话状态已同步。可以重试这条消息。'; }
-                } catch (_) { if (generation === own) byId('reloadContext').hidden = false; }
+                    if (ownsContextRead(read)) {
+                        checkReadSnapshot(read,synchronized); adopt(synchronized);
+                        byId('requestStatus').textContent = '对话状态已同步。可以重试这条消息。';
+                    }
+                } catch (_) { if (ownsContextRead(read)) byId('reloadContext').hidden = false; }
             }
         } finally { clearTimeout(timer); if (generation === own) update(); }
     }
@@ -120,6 +142,7 @@
             .then(function (snapshot) {
                 if (own !== generation || disposed) return;
                 adopt(snapshot); task.payload = null; task.payloadToCancel = null;
+                byId('reloadContext').hidden = true;
                 byId('requestStatus').textContent = '已取消等待。你可以重试这条消息，或输入新问题。';
             }).catch(function () {
                 if (own !== generation) return;
@@ -144,10 +167,11 @@
         update();
     }
     async function initialize() {
-        var own = generation;
+        var read = beginContextRead(), own = generation;
         try {
             var data = await Promise.all([api('/api/campus/catalog'),api('/api/campus/context')]);
-            if (disposed || generation !== own) return;
+            if (!ownsContextRead(read)) return;
+            checkReadSnapshot(read,data[1]);
             catalog = data[0]; scene = CampusScene.create({catalog:catalog,onChoice:function (message) {
                 if (byId('campusInput').value.trim()) { byId('requestStatus').textContent = '输入框里还有草稿，可以先发送或修改。'; byId('campusInput').focus(); return; } submit(message,'choice');
             }});
@@ -159,6 +183,7 @@
             adopt(data[1]); byId('requestStatus').textContent = ''; byId('reloadContext').hidden = true; update();
             voice.ready.then(function () { if (!document.hidden && generation === own && !disposed && !active) voice.speak(lastSpeech); });
         } catch (_) {
+            if (!ownsContextRead(read)) return;
             byId('requestStatus').textContent = '校园资料暂未连接。输入的内容会保留，请重新连接。'; byId('reloadContext').hidden = false; update();
         }
     }
@@ -177,8 +202,18 @@
         if (barrier || active) return;
         if (!catalog || !environment) { initialize(); return; }
         if (failed && failed.payloadToCancel) { await cancel(); return; }
-        try { adopt(await api('/api/campus/context')); byId('reloadContext').hidden = true; byId('requestStatus').textContent = ''; update(); }
-        catch (_) { byId('requestStatus').textContent = '暂未连接，请稍后再试。'; }
+        var read = beginContextRead();
+        try {
+            var snapshot = await api('/api/campus/context');
+            if (!ownsContextRead(read)) return;
+            checkReadSnapshot(read,snapshot); adopt(snapshot);
+            byId('reloadContext').hidden = true; byId('requestStatus').textContent = ''; update();
+        } catch (_) { if (ownsContextRead(read)) byId('requestStatus').textContent = '暂未连接，请稍后再试。'; }
+    });
+    document.addEventListener('visibilitychange',function () {
+        if (document.hidden) contextReadSequence++;
+        else if (!disposed && (!catalog || !environment)) initialize();
+        else if (!disposed && failed && !ready && !active && !barrier) byId('reloadContext').hidden = false;
     });
     byId('replaySpeech').addEventListener('click',function () { if (voice && !requestBusy()) { voice.stop(); voice.speak(lastSpeech); } });
     window.addEventListener('pagehide',function () {
