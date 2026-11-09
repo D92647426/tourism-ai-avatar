@@ -92,6 +92,49 @@ class CampusCatalogTest {
     }
 
     @Test
+    void everyVisitorApplicableLibraryVariantIncludesEntryPrerequisitesAndTheirSource() {
+        int visitorVariants = 0;
+        for (JsonNode task : new CampusCatalog().snapshot().path("tasks")) {
+            if (!task.path("id").asText().startsWith("library-")) {
+                continue;
+            }
+            for (JsonNode variant : task.path("variants")) {
+                if (!includesAudience(variant, "alumni") && !includesAudience(variant, "visitor")) {
+                    continue;
+                }
+                visitorVariants++;
+                String id = variant.path("id").asText();
+                String steps = variant.path("steps").toString();
+                assertTrue(steps.contains("校友证明与身份证"), id);
+                assertTrue(steps.contains("核验登记"), id);
+                assertTrue(steps.contains("提前申请批准备案后凭身份证登记"), id);
+                assertTrue(steps.contains("校门入校规则另查"), id);
+                assertTrue(steps.contains("借阅资格需另行核实"), id);
+                assertTrue(variant.path("sourceRefs").isArray(), id);
+                assertTrue(variant.path("sourceRefs").findValuesAsText("url")
+                        .contains("https://lib.bjut.edu.cn/info/1147/1005.htm"), id);
+            }
+        }
+        assertTrue(visitorVariants > 0);
+    }
+
+    @Test
+    void rejectsMalformedSupplementarySourcesAndUnsafeReferenceUrls() {
+        assertRejected(root -> firstVariant(root).put("sourceRefs", "invalid"), "sourceRefs");
+        assertRejected(root -> firstVariant(root).putArray("sourceRefs").add("invalid"), "sourceRefs");
+        assertRejected(root -> firstVariant(root).putArray("sourceRefs").addObject()
+                .put("url", "https://lib.bjut.edu.cn/info/1147/1005.htm"), "title");
+        assertRejected(root -> firstVariant(root).putArray("sourceRefs").addObject()
+                .put("title", "图书馆入馆须知"), "url");
+        assertRejected(root -> firstVariant(root).putArray("sourceRefs").addObject()
+                .put("title", "图书馆入馆须知").put("url", "javascript:alert(1)"), "sourceRefs");
+        assertRejected(root -> firstVariant(root).putArray("sourceRefs").addObject()
+                .put("title", "图书馆入馆须知").put("url", "/relative"), "sourceRefs");
+        assertRejected(root -> firstVariant(root).putArray("sourceRefs").addObject()
+                .put("title", "图书馆入馆须知").put("url", "https:///no-host"), "sourceRefs");
+    }
+
+    @Test
     void linksCampusPhotosToTheirBuildingsAndRecordsUnpublishedReusePermission() {
         CampusCatalog catalog = new CampusCatalog();
         JsonNode assets = catalog.snapshot().path("assets");
@@ -190,6 +233,15 @@ class CampusCatalogTest {
 
     private ObjectNode firstVariant(ObjectNode root) {
         return (ObjectNode) root.path("tasks").get(0).path("variants").get(0);
+    }
+
+    private boolean includesAudience(JsonNode variant, String audience) {
+        for (JsonNode value : variant.path("audiences")) {
+            if (audience.equals(value.asText())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void assertRejected(Consumer<ObjectNode> mutation, String message) {

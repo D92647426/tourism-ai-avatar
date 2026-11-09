@@ -748,16 +748,23 @@
             "visitor"
           ],
           "steps": [
-            "先确认是否为校友。校友按入馆须知核验证件并登记。",
-            "其他无相关证件人员须提前申请并获得批准备案。馆内拍摄、采访需另行联系。",
-            "上述为图书馆入馆规则，学校校门入校安排另需核实。"
+            "校友凭校友证明与身份证核验登记。其他无相关证件者须提前申请批准备案后凭身份证登记。",
+            "校门入校规则另查。入馆资格按入馆须知核验，借阅资格需另行核实。",
+            "馆内拍摄、采访等需另行联系图书馆。"
           ],
           "placeId": "pingleyuan-library",
           "sourceUrl": "https://lib.bjut.edu.cn/info/1147/1005.htm",
           "unknownFields": [
             "campusGateEntryRules",
             "applicationProcessingTime",
-            "liveSeats"
+            "liveSeats",
+            "visitorBorrowingEligibility"
+          ],
+          "sourceRefs": [
+            {
+              "title": "图书馆入馆须知",
+              "url": "https://lib.bjut.edu.cn/info/1147/1005.htm"
+            }
           ]
         },
         {
@@ -768,16 +775,23 @@
             "visitor"
           ],
           "steps": [
-            "先确认要去汲学馆还是耕园馆，以及是否为校友。",
-            "入馆须知规定校友核验证件并登记，其他无相关证件人员须提前申请并获得批准备案。",
-            "具体日期服务安排与学校校门入校规则需另行核实。"
+            "校友凭校友证明与身份证核验登记。其他无相关证件者须提前申请批准备案后凭身份证登记。",
+            "校门入校规则另查。入馆资格按入馆须知核验，借阅资格需另行核实。",
+            "先确认要去汲学馆还是耕园馆，具体日期开放安排需查询图书馆通知。"
           ],
           "placeId": "tongzhou-jixue-library",
           "sourceUrl": "https://lib.bjut.edu.cn/info/1147/1005.htm",
           "unknownFields": [
             "campusGateEntryRules",
             "applicationProcessingTime",
-            "dateSpecificOpeningHours"
+            "dateSpecificOpeningHours",
+            "visitorBorrowingEligibility"
+          ],
+          "sourceRefs": [
+            {
+              "title": "图书馆入馆须知",
+              "url": "https://lib.bjut.edu.cn/info/1147/1005.htm"
+            }
           ]
         }
       ]
@@ -855,6 +869,8 @@
             "visitor"
           ],
           "steps": [
+            "校友凭校友证明与身份证核验登记。其他无相关证件者须提前申请批准备案后凭身份证登记。",
+            "校门入校规则另查。入馆资格按入馆须知核验，借阅资格需另行核实。",
             "全日制学生一卡通自动开通借阅，其他持卡人可申请激活。",
             "校园一卡通丢失须及时挂失。实体补卡操作与当前完整挂失路径需另行核实。",
             "人工咨询可到本部图书馆二层总服务台，具体日期人工服务时段待查询。"
@@ -864,7 +880,16 @@
           "unknownFields": [
             "currentLossReportingPath",
             "dateSpecificStaffedHours",
-            "currentLoanAvailability"
+            "currentLoanAvailability",
+            "campusGateEntryRules",
+            "applicationProcessingTime",
+            "visitorBorrowingEligibility"
+          ],
+          "sourceRefs": [
+            {
+              "title": "图书馆入馆须知",
+              "url": "https://lib.bjut.edu.cn/info/1147/1005.htm"
+            }
           ]
         },
         {
@@ -877,16 +902,25 @@
             "visitor"
           ],
           "steps": [
+            "校友凭校友证明与身份证核验登记。其他无相关证件者须提前申请批准备案后凭身份证登记。",
+            "校门入校规则另查。入馆资格按入馆须知核验，借阅资格需另行核实。",
             "全日制学生一卡通自动开通借阅，其他持卡人可申请激活。",
-            "人工咨询可到通州汲学馆服务台，具体日期人工服务时段待查询。",
-            "访客入馆申请和借阅激活分别按对应规则办理，具体借阅资格需咨询。"
+            "人工咨询可到通州汲学馆服务台，具体日期人工服务时段待查询。"
           ],
           "placeId": "tongzhou-jixue-library",
           "sourceUrl": "https://lib.bjut.edu.cn/fw/jyfw/zjgl.htm",
           "unknownFields": [
             "dateSpecificStaffedHours",
             "currentLoanAvailability",
-            "visitorBorrowingEligibility"
+            "visitorBorrowingEligibility",
+            "campusGateEntryRules",
+            "applicationProcessingTime"
+          ],
+          "sourceRefs": [
+            {
+              "title": "图书馆入馆须知",
+              "url": "https://lib.bjut.edu.cn/info/1147/1005.htm"
+            }
           ]
         }
       ]
@@ -911,14 +945,25 @@
             "visitor"
           ],
           "steps": [
+            "校友凭校友证明与身份证核验登记。其他无相关证件者须提前申请批准备案后凭身份证登记。",
+            "校门入校规则另查。入馆资格按入馆须知核验，借阅资格需另行核实。",
             "本部公共电脑查资料区域为图书馆北区一层西侧多媒体阅览区。",
-            "设备实时占用与具体日期开放安排需查询。访客入馆需另按入馆须知办理。"
+            "设备实时占用与具体日期开放安排需查询。"
           ],
           "placeId": "pingleyuan-library-computer-area",
           "sourceUrl": "https://lib.bjut.edu.cn/fw/kjyss/dmtylq.htm",
           "unknownFields": [
             "liveDeviceAvailability",
-            "dateSpecificOpeningHours"
+            "dateSpecificOpeningHours",
+            "campusGateEntryRules",
+            "applicationProcessingTime",
+            "visitorBorrowingEligibility"
+          ],
+          "sourceRefs": [
+            {
+              "title": "图书馆入馆须知",
+              "url": "https://lib.bjut.edu.cn/info/1147/1005.htm"
+            }
           ]
         },
         {
@@ -931,6 +976,8 @@
             "visitor"
           ],
           "steps": [
+            "校友凭校友证明与身份证核验登记。其他无相关证件者须提前申请批准备案后凭身份证登记。",
+            "校门入校规则另查。入馆资格按入馆须知核验，借阅资格需另行核实。",
             "通州公共电脑服务区域尚未核实，请向汲学馆服务台咨询具体馆舍与分区。"
           ],
           "placeId": null,
@@ -938,7 +985,16 @@
           "unknownFields": [
             "computerAreaLocation",
             "liveDeviceAvailability",
-            "dateSpecificOpeningHours"
+            "dateSpecificOpeningHours",
+            "campusGateEntryRules",
+            "applicationProcessingTime",
+            "visitorBorrowingEligibility"
+          ],
+          "sourceRefs": [
+            {
+              "title": "图书馆入馆须知",
+              "url": "https://lib.bjut.edu.cn/info/1147/1005.htm"
+            }
           ]
         }
       ]

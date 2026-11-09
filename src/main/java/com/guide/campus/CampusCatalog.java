@@ -243,16 +243,27 @@ public class CampusCatalog {
     }
 
     private void validateSourceUrl(ObjectNode record) {
-        String sourceUrl = requireText(record, "sourceUrl");
+        validateHttpUrl(requireText(record, "sourceUrl"), "sourceUrl");
+        if (!record.has("sourceRefs")) {
+            return;
+        }
+        for (JsonNode node : requireArray(record, "sourceRefs")) {
+            ObjectNode reference = requireObject(node, "sourceRefs");
+            requireText(reference, "title");
+            validateHttpUrl(requireText(reference, "url"), "sourceRefs.url");
+        }
+    }
+
+    private void validateHttpUrl(String sourceUrl, String field) {
         URI uri;
         try {
             uri = URI.create(sourceUrl);
         } catch (IllegalArgumentException exception) {
-            throw new IllegalArgumentException("Invalid sourceUrl: " + sourceUrl, exception);
+            throw new IllegalArgumentException("Invalid " + field + ": " + sourceUrl, exception);
         }
         if (!("https".equalsIgnoreCase(uri.getScheme()) || "http".equalsIgnoreCase(uri.getScheme()))
                 || uri.getHost() == null || uri.getUserInfo() != null) {
-            throw new IllegalArgumentException("Invalid sourceUrl: " + sourceUrl);
+            throw new IllegalArgumentException("Invalid " + field + ": " + sourceUrl);
         }
     }
 
