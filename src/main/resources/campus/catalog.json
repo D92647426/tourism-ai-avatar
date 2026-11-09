@@ -1,0 +1,1073 @@
+{
+  "version": "2026-11-09",
+  "campuses": [
+    {
+      "id": "pingleyuan",
+      "name": "校本部（平乐园）",
+      "aliases": [
+        "本部",
+        "校本部",
+        "平乐园",
+        "平乐园校区"
+      ],
+      "address": "朝阳区平乐园100号",
+      "sourceUrl": "https://www.bjut.edu.cn/xxgk/xxjj1.htm",
+      "verifiedAt": "2026-11-09"
+    },
+    {
+      "id": "tongzhou",
+      "name": "通州校区",
+      "aliases": [
+        "通州"
+      ],
+      "address": "通州区潞苑南大街89号",
+      "sourceUrl": "https://www.bjut.edu.cn/xxgk/xxjj1.htm",
+      "verifiedAt": "2026-11-09"
+    },
+    {
+      "id": "guanzhuang",
+      "name": "管庄校区",
+      "aliases": [
+        "管庄"
+      ],
+      "address": "朝阳区管庄西里20号",
+      "sourceUrl": "https://www.bjut.edu.cn/xxgk/xxjj1.htm",
+      "verifiedAt": "2026-11-09"
+    },
+    {
+      "id": "liulijing",
+      "name": "琉璃井校区",
+      "aliases": [
+        "琉璃井"
+      ],
+      "address": "东城区永外琉璃井路41号",
+      "sourceUrl": "https://www.bjut.edu.cn/xxgk/xxjj1.htm",
+      "verifiedAt": "2026-11-09"
+    },
+    {
+      "id": "huixin-east",
+      "name": "惠新东街校区",
+      "aliases": [
+        "惠新东街"
+      ],
+      "address": "朝阳区惠新东街8号",
+      "sourceUrl": "https://www.bjut.edu.cn/xxgk/xxjj1.htm",
+      "verifiedAt": "2026-11-09"
+    }
+  ],
+  "places": [
+    {
+      "id": "pingleyuan-library",
+      "campusId": "pingleyuan",
+      "name": "图书馆",
+      "aliases": [
+        "本部图书馆",
+        "平乐园图书馆",
+        "图书馆",
+        "图书馆外观"
+      ],
+      "category": "library",
+      "summary": "本部图书馆提供阅览、自修、研讨与借阅服务。人工咨询位于二层总服务台，具体日期服务时段待核实。",
+      "address": "朝阳区平乐园100号，图书馆（具体入口待核验）",
+      "sourceUrl": "https://lib.bjut.edu.cn/tsggk/fwsj.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": [
+        "library-exterior"
+      ]
+    },
+    {
+      "id": "pingleyuan-fourth-teaching",
+      "campusId": "pingleyuan",
+      "name": "第四教学楼",
+      "aliases": [
+        "四教",
+        "第四教学楼",
+        "四教楼"
+      ],
+      "category": "teaching",
+      "summary": "官方招生校园图集收录的本部教学楼。楼内房间、入口与开放时段待核实。",
+      "address": "朝阳区平乐园100号，第四教学楼（具体入口待核验）",
+      "sourceUrl": "https://admissions.bjut.edu.cn/xysh/bgdyx/xydt.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": [
+        "fourth-teaching-exterior"
+      ]
+    },
+    {
+      "id": "pingleyuan-science-building",
+      "campusId": "pingleyuan",
+      "name": "科学楼",
+      "aliases": [
+        "科学楼"
+      ],
+      "category": "teaching",
+      "summary": "官方招生校园图集收录的本部建筑。具体房间用途和办事事项需另行核实。",
+      "address": "朝阳区平乐园100号，科学楼（具体入口待核验）",
+      "sourceUrl": "https://admissions.bjut.edu.cn/xysh/bgdyx/xydt.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": []
+    },
+    {
+      "id": "pingleyuan-humanities-building",
+      "campusId": "pingleyuan",
+      "name": "人文楼",
+      "aliases": [
+        "人文楼"
+      ],
+      "category": "teaching",
+      "summary": "官方招生校园图集收录的本部建筑。具体房间用途和开放时段待核实。",
+      "address": "朝阳区平乐园100号，人文楼（具体入口待核验）",
+      "sourceUrl": "https://admissions.bjut.edu.cn/xysh/bgdyx/xydt.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": []
+    },
+    {
+      "id": "pingleyuan-information-building",
+      "campusId": "pingleyuan",
+      "name": "信息楼",
+      "aliases": [
+        "信息楼"
+      ],
+      "category": "teaching",
+      "summary": "官方招生校园图集收录的本部建筑。具体房间用途和开放时段待核实。",
+      "address": "朝阳区平乐园100号，信息楼（具体入口待核验）",
+      "sourceUrl": "https://admissions.bjut.edu.cn/xysh/bgdyx/xydt.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": []
+    },
+    {
+      "id": "pingleyuan-auditorium",
+      "campusId": "pingleyuan",
+      "name": "礼堂",
+      "aliases": [
+        "礼堂",
+        "大礼堂"
+      ],
+      "category": "culture",
+      "summary": "官方招生校园图集收录的本部礼堂。活动安排和入场资格需按具体活动核实。",
+      "address": "朝阳区平乐园100号，礼堂（具体入口待核验）",
+      "sourceUrl": "https://admissions.bjut.edu.cn/xysh/bgdyx/xydt.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": [
+        "auditorium-exterior"
+      ]
+    },
+    {
+      "id": "pingleyuan-moon-lake",
+      "campusId": "pingleyuan",
+      "name": "月亮湖",
+      "aliases": [
+        "月亮湖"
+      ],
+      "category": "landmark",
+      "summary": "官方招生校园图集收录的本部校园景观。周边通行状况与无障碍路线待核实。",
+      "address": "朝阳区平乐园100号，月亮湖（具体入口待核验）",
+      "sourceUrl": "https://admissions.bjut.edu.cn/xysh/bgdyx/xydt.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": [
+        "moon-lake-view"
+      ]
+    },
+    {
+      "id": "pingleyuan-north-dining",
+      "campusId": "pingleyuan",
+      "name": "北区餐厅",
+      "aliases": [
+        "北区食堂",
+        "北区餐厅",
+        "北食堂"
+      ],
+      "category": "dining",
+      "summary": "学校公开餐饮介绍列出的本部餐厅。页面未注明更新时间，现行营业时间、窗口、价格与菜品待核实。",
+      "address": "朝阳区平乐园100号，北区餐厅（具体入口待核验）",
+      "sourceUrl": "https://english.bjut.edu.cn/Life_BJUT/Dining.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": []
+    },
+    {
+      "id": "pingleyuan-tiantian-dining",
+      "campusId": "pingleyuan",
+      "name": "天天餐厅",
+      "aliases": [
+        "天天食堂",
+        "天天餐厅",
+        "天天"
+      ],
+      "category": "dining",
+      "summary": "学校公开餐饮介绍列出的本部餐厅。现行营业时间、窗口、价格与菜品待核实。",
+      "address": "朝阳区平乐园100号，天天餐厅（具体入口待核验）",
+      "sourceUrl": "https://english.bjut.edu.cn/Life_BJUT/Dining.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": []
+    },
+    {
+      "id": "pingleyuan-halal-dining",
+      "campusId": "pingleyuan",
+      "name": "清真餐厅",
+      "aliases": [
+        "清真食堂",
+        "清真餐厅",
+        "清真"
+      ],
+      "category": "dining",
+      "summary": "学校公开餐饮介绍列出的本部餐厅。现行营业时间、窗口、价格与菜品待核实。",
+      "address": "朝阳区平乐园100号，清真餐厅（具体入口待核验）",
+      "sourceUrl": "https://english.bjut.edu.cn/Life_BJUT/Dining.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": []
+    },
+    {
+      "id": "pingleyuan-olympic-dining",
+      "campusId": "pingleyuan",
+      "name": "奥运餐厅",
+      "aliases": [
+        "奥运食堂",
+        "奥运餐厅"
+      ],
+      "category": "dining",
+      "summary": "学校公开餐饮介绍列出的本部餐厅。现行营业时间、窗口、价格与菜品待核实。",
+      "address": "朝阳区平乐园100号，奥运餐厅（具体入口待核验）",
+      "sourceUrl": "https://english.bjut.edu.cn/Life_BJUT/Dining.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": []
+    },
+    {
+      "id": "pingleyuan-food-garden",
+      "campusId": "pingleyuan",
+      "name": "美食园餐厅",
+      "aliases": [
+        "美食园",
+        "美食园食堂"
+      ],
+      "category": "dining",
+      "summary": "学校公开餐饮介绍列出的本部餐厅。现行营业时间、窗口、价格与菜品待核实。",
+      "address": "朝阳区平乐园100号，美食园餐厅（具体入口待核验）",
+      "sourceUrl": "https://english.bjut.edu.cn/Life_BJUT/Dining.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": []
+    },
+    {
+      "id": "pingleyuan-gymnasium",
+      "campusId": "pingleyuan",
+      "name": "体育馆",
+      "aliases": [
+        "本部体育馆",
+        "平乐园体育馆",
+        "体育馆"
+      ],
+      "category": "sports",
+      "summary": "学校公开介绍的体育设施。具体预约入口、资格、收费与现行营业时间待核实。",
+      "address": "朝阳区平乐园100号，体育馆（具体入口待核验）",
+      "sourceUrl": "https://english.bjut.edu.cn/Life_BJUT/Sports_Fitness.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": []
+    },
+    {
+      "id": "pingleyuan-swimming-pool",
+      "campusId": "pingleyuan",
+      "name": "游泳馆",
+      "aliases": [
+        "游泳馆",
+        "泳池"
+      ],
+      "category": "sports",
+      "summary": "学校公开介绍的游泳设施。具体预约入口、资格、收费与现行营业时间待核实。",
+      "address": "朝阳区平乐园100号，游泳馆（具体入口待核验）",
+      "sourceUrl": "https://english.bjut.edu.cn/Life_BJUT/Sports_Fitness.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": []
+    },
+    {
+      "id": "pingleyuan-south-track",
+      "campusId": "pingleyuan",
+      "name": "南田径场",
+      "aliases": [
+        "南田径场",
+        "南操场"
+      ],
+      "category": "sports",
+      "summary": "2026年体育部体测通知关联的服务地点。其他年度与其他事项需另核实。",
+      "address": "朝阳区平乐园100号，南田径场（具体入口待核验）",
+      "sourceUrl": "https://tyb.bjut.edu.cn/info/1043/1817.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": []
+    },
+    {
+      "id": "pingleyuan-fitness-test-center",
+      "campusId": "pingleyuan",
+      "name": "体测中心",
+      "aliases": [
+        "体测中心",
+        "体质测试中心"
+      ],
+      "category": "service",
+      "summary": "2026年体育部体测通知关联的服务地点。学期签到、课程考勤与校园跑的具体地点需先识别事项。",
+      "address": "朝阳区平乐园100号，体测中心（具体入口待核验）",
+      "sourceUrl": "https://tyb.bjut.edu.cn/info/1043/1817.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": []
+    },
+    {
+      "id": "pingleyuan-swimming-207",
+      "campusId": "pingleyuan",
+      "name": "游泳馆207",
+      "aliases": [
+        "游泳馆207",
+        "游泳馆207室",
+        "免测材料提交"
+      ],
+      "category": "service",
+      "summary": "2026年体测免测材料线下提交地点，通知所列日期为11月26、27日。该地点仅关联通知证实的免测材料业务。",
+      "address": "朝阳区平乐园100号，游泳馆207（入口待核验）",
+      "sourceUrl": "https://tyb.bjut.edu.cn/info/1043/1817.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": []
+    },
+    {
+      "id": "pingleyuan-academic-services-building",
+      "campusId": "pingleyuan",
+      "name": "学综楼",
+      "aliases": [
+        "学综楼",
+        "学综楼一站式服务大厅"
+      ],
+      "category": "service",
+      "summary": "一卡通服务迁址通知中所列建筑。相关服务位于4层一站式服务大厅1—3号窗口。",
+      "address": "朝阳区平乐园100号，学综楼（具体入口待核验）",
+      "sourceUrl": "https://xxh.bjut.edu.cn/info/1047/2422.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": []
+    },
+    {
+      "id": "pingleyuan-card-service",
+      "campusId": "pingleyuan",
+      "name": "一卡通服务窗口",
+      "aliases": [
+        "一卡通",
+        "校园卡",
+        "校园一卡通",
+        "补卡",
+        "补校园卡",
+        "信息化服务咨询"
+      ],
+      "category": "service",
+      "summary": "自2026年10月12日起，一卡通及信息化服务咨询迁至学综楼4层一站式服务大厅1—3号窗口。原知新园101为历史地址。67392037是24小时咨询电话，大厅办公时间另行核实。",
+      "address": "朝阳区平乐园100号，学综楼4层一站式服务大厅1—3号窗口",
+      "sourceUrl": "https://xxh.bjut.edu.cn/info/1047/2422.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": []
+    },
+    {
+      "id": "pingleyuan-library-computer-area",
+      "campusId": "pingleyuan",
+      "name": "多媒体阅览区",
+      "aliases": [
+        "公共电脑",
+        "多媒体阅览区",
+        "电脑查资料"
+      ],
+      "category": "library-area",
+      "summary": "本部图书馆北区一层西侧多媒体阅览区提供公共电脑查资料。设备实时占用情况待查询。",
+      "address": "本部图书馆北区一层西侧（入口待核验）",
+      "sourceUrl": "https://lib.bjut.edu.cn/fw/kjyss/dmtylq.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": []
+    },
+    {
+      "id": "pingleyuan-library-discussion-rooms",
+      "campusId": "pingleyuan",
+      "name": "研讨室",
+      "aliases": [
+        "研讨室",
+        "小组讨论",
+        "讨论室"
+      ],
+      "category": "library-area",
+      "summary": "研讨室分布在负一层、三层、四层，419—435部分房间有显示屏。各室布局和实时空位待查询。",
+      "address": "本部图书馆负一层、三层、四层（各室入口待核验）",
+      "sourceUrl": "https://lib.bjut.edu.cn/fw/kjyss/ytsyy.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": []
+    },
+    {
+      "id": "pingleyuan-library-service-desk",
+      "campusId": "pingleyuan",
+      "name": "二层总服务台",
+      "aliases": [
+        "总服务台",
+        "人工咨询",
+        "借还书咨询"
+      ],
+      "category": "service",
+      "summary": "本部图书馆人工咨询服务点位于二层总服务台。具体日期人工服务时段待查询。",
+      "address": "本部图书馆二层总服务台（入口待核验）",
+      "sourceUrl": "https://lib.bjut.edu.cn/tsggk/fwsj.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": []
+    },
+    {
+      "id": "tongzhou-jixue-library",
+      "campusId": "tongzhou",
+      "name": "汲学馆",
+      "aliases": [
+        "通州图书馆",
+        "汲学馆",
+        "图书馆"
+      ],
+      "category": "library",
+      "summary": "通州校区图书馆馆舍之一，设有人工服务台。具体日期服务时段需查询图书馆通知。",
+      "address": "通州区潞苑南大街89号，汲学馆（具体入口待核验）",
+      "sourceUrl": "https://lib.bjut.edu.cn/tsggk/fwsj.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": []
+    },
+    {
+      "id": "tongzhou-gengyuan-library",
+      "campusId": "tongzhou",
+      "name": "耕园馆",
+      "aliases": [
+        "通州图书馆",
+        "耕园馆",
+        "图书馆"
+      ],
+      "category": "library",
+      "summary": "通州校区图书馆馆舍之一。各分区服务及具体日期开放安排需查询图书馆通知。",
+      "address": "通州区潞苑南大街89号，耕园馆（具体入口待核验）",
+      "sourceUrl": "https://lib.bjut.edu.cn/tsggk/fwsj.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": []
+    },
+    {
+      "id": "tongzhou-student-dining",
+      "campusId": "tongzhou",
+      "name": "学生食堂",
+      "aliases": [
+        "通州食堂",
+        "学生食堂",
+        "学生餐厅"
+      ],
+      "category": "dining",
+      "summary": "学校2025—2028餐饮服务采购公告确认的通州学生食堂。现行营业时间、菜品与价格待核实。",
+      "address": "通州区潞苑南大街89号，学生食堂（具体入口待核验）",
+      "sourceUrl": "https://www.bjut.edu.cn/info/1119/3930.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": []
+    },
+    {
+      "id": "tongzhou-gymnasium",
+      "campusId": "tongzhou",
+      "name": "体育馆",
+      "aliases": [
+        "通州体育馆",
+        "体育馆"
+      ],
+      "category": "sports",
+      "summary": "2026年学院迎新报道提及的通州体育馆。现行预约、资格、收费与开放时段待核实。",
+      "address": "通州区潞苑南大街89号，体育馆（具体入口待核验）",
+      "sourceUrl": "https://cmt.bjut.edu.cn/info/1101/1934.htm",
+      "verifiedAt": "2026-11-09",
+      "coordinateStatus": "unverified",
+      "coordinates": null,
+      "assetIds": []
+    }
+  ],
+  "tasks": [
+    {
+      "id": "campus-card",
+      "name": "校园一卡通咨询与补卡",
+      "aliases": [
+        "校园卡",
+        "一卡通",
+        "校园一卡通",
+        "学生卡",
+        "补卡",
+        "补学生卡",
+        "卡丢了",
+        "丢卡",
+        "挂失"
+      ],
+      "variants": [
+        {
+          "id": "card-pingleyuan",
+          "campusId": "pingleyuan",
+          "audiences": [
+            "student",
+            "staff",
+            "alumni",
+            "visitor"
+          ],
+          "steps": [
+            "先确认你说的学生卡是校园一卡通还是学生证，并确认所在校区。学生证办理流程需另行核实。",
+            "如校园一卡通丢失，请先咨询确认当前完整挂失路径，再核实实体补卡操作。",
+            "本部一卡通及信息化服务自2026年10月12日起迁至学综楼4层一站式服务大厅1—3号窗口。原知新园101为历史地址。",
+            "可拨67392037咨询补卡材料、费用、办理时限与大厅办公时间。通知中的24小时指咨询电话。"
+          ],
+          "placeId": "pingleyuan-card-service",
+          "sourceUrl": "https://xxh.bjut.edu.cn/info/1047/2422.htm",
+          "unknownFields": [
+            "materials",
+            "fees",
+            "processingTime",
+            "openingHours",
+            "entranceCoordinates",
+            "currentLossReportingPath",
+            "studentIdentityDocumentProcedure"
+          ]
+        },
+        {
+          "id": "card-tongzhou",
+          "campusId": "tongzhou",
+          "audiences": [
+            "student",
+            "staff",
+            "alumni",
+            "visitor"
+          ],
+          "steps": [
+            "先确认你说的学生卡是校园一卡通还是学生证。",
+            "当前核验的迁址通知明确本部窗口。该校区的具体办理地点、挂失路径与流程待咨询核实。",
+            "可拨迁址通知中的咨询电话67392037询问适用校区与所需材料。"
+          ],
+          "placeId": null,
+          "sourceUrl": "https://xxh.bjut.edu.cn/info/1047/2422.htm",
+          "unknownFields": [
+            "serviceLocation",
+            "materials",
+            "fees",
+            "processingTime",
+            "openingHours",
+            "currentLossReportingPath",
+            "studentIdentityDocumentProcedure"
+          ]
+        },
+        {
+          "id": "card-guanzhuang",
+          "campusId": "guanzhuang",
+          "audiences": [
+            "student",
+            "staff",
+            "alumni",
+            "visitor"
+          ],
+          "steps": [
+            "先确认你说的学生卡是校园一卡通还是学生证。",
+            "当前核验的迁址通知明确本部窗口。该校区的具体办理地点、挂失路径与流程待咨询核实。",
+            "可拨迁址通知中的咨询电话67392037询问适用校区与所需材料。"
+          ],
+          "placeId": null,
+          "sourceUrl": "https://xxh.bjut.edu.cn/info/1047/2422.htm",
+          "unknownFields": [
+            "serviceLocation",
+            "materials",
+            "fees",
+            "processingTime",
+            "openingHours",
+            "currentLossReportingPath",
+            "studentIdentityDocumentProcedure"
+          ]
+        },
+        {
+          "id": "card-liulijing",
+          "campusId": "liulijing",
+          "audiences": [
+            "student",
+            "staff",
+            "alumni",
+            "visitor"
+          ],
+          "steps": [
+            "先确认你说的学生卡是校园一卡通还是学生证。",
+            "当前核验的迁址通知明确本部窗口。该校区的具体办理地点、挂失路径与流程待咨询核实。",
+            "可拨迁址通知中的咨询电话67392037询问适用校区与所需材料。"
+          ],
+          "placeId": null,
+          "sourceUrl": "https://xxh.bjut.edu.cn/info/1047/2422.htm",
+          "unknownFields": [
+            "serviceLocation",
+            "materials",
+            "fees",
+            "processingTime",
+            "openingHours",
+            "currentLossReportingPath",
+            "studentIdentityDocumentProcedure"
+          ]
+        },
+        {
+          "id": "card-huixin-east",
+          "campusId": "huixin-east",
+          "audiences": [
+            "student",
+            "staff",
+            "alumni",
+            "visitor"
+          ],
+          "steps": [
+            "先确认你说的学生卡是校园一卡通还是学生证。",
+            "当前核验的迁址通知明确本部窗口。该校区的具体办理地点、挂失路径与流程待咨询核实。",
+            "可拨迁址通知中的咨询电话67392037询问适用校区与所需材料。"
+          ],
+          "placeId": null,
+          "sourceUrl": "https://xxh.bjut.edu.cn/info/1047/2422.htm",
+          "unknownFields": [
+            "serviceLocation",
+            "materials",
+            "fees",
+            "processingTime",
+            "openingHours",
+            "currentLossReportingPath",
+            "studentIdentityDocumentProcedure"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "library-study",
+      "name": "图书馆安静学习",
+      "aliases": [
+        "自习",
+        "安静学习",
+        "学习",
+        "看书",
+        "阅览",
+        "自修"
+      ],
+      "variants": [
+        {
+          "id": "study-pingleyuan",
+          "campusId": "pingleyuan",
+          "audiences": [
+            "student",
+            "staff"
+          ],
+          "steps": [
+            "可选择本部图书馆阅览区或自修室进行安静学习。",
+            "具体日期开放时段、学习分区和实时空位需查询图书馆通知。"
+          ],
+          "placeId": "pingleyuan-library",
+          "sourceUrl": "https://lib.bjut.edu.cn/tsggk/fwsj.htm",
+          "unknownFields": [
+            "liveSeats",
+            "dateSpecificOpeningHours",
+            "roomLayout"
+          ]
+        },
+        {
+          "id": "study-tongzhou-jixue",
+          "campusId": "tongzhou",
+          "audiences": [
+            "student",
+            "staff"
+          ],
+          "steps": [
+            "通州图书馆有汲学馆和耕园馆，先确认要去哪个馆及具体用途。",
+            "如需人工咨询可前往汲学馆服务台，具体日期开放时段与学习分区需查询图书馆通知。"
+          ],
+          "placeId": "tongzhou-jixue-library",
+          "sourceUrl": "https://lib.bjut.edu.cn/tsggk/fwsj.htm",
+          "unknownFields": [
+            "liveSeats",
+            "dateSpecificOpeningHours",
+            "studyAreaLayout"
+          ]
+        },
+        {
+          "id": "study-tongzhou-gengyuan",
+          "campusId": "tongzhou",
+          "audiences": [
+            "student",
+            "staff"
+          ],
+          "steps": [
+            "耕园馆属于通州图书馆。具体日期开放安排、学习分区和实时空位需查询图书馆通知。"
+          ],
+          "placeId": "tongzhou-gengyuan-library",
+          "sourceUrl": "https://lib.bjut.edu.cn/tsggk/fwsj.htm",
+          "unknownFields": [
+            "liveSeats",
+            "dateSpecificOpeningHours",
+            "studyAreaLayout"
+          ]
+        },
+        {
+          "id": "study-pingleyuan-visitor",
+          "campusId": "pingleyuan",
+          "audiences": [
+            "alumni",
+            "visitor"
+          ],
+          "steps": [
+            "先确认是否为校友。校友按入馆须知核验证件并登记。",
+            "其他无相关证件人员须提前申请并获得批准备案。馆内拍摄、采访需另行联系。",
+            "上述为图书馆入馆规则，学校校门入校安排另需核实。"
+          ],
+          "placeId": "pingleyuan-library",
+          "sourceUrl": "https://lib.bjut.edu.cn/info/1147/1005.htm",
+          "unknownFields": [
+            "campusGateEntryRules",
+            "applicationProcessingTime",
+            "liveSeats"
+          ]
+        },
+        {
+          "id": "study-tongzhou-visitor",
+          "campusId": "tongzhou",
+          "audiences": [
+            "alumni",
+            "visitor"
+          ],
+          "steps": [
+            "先确认要去汲学馆还是耕园馆，以及是否为校友。",
+            "入馆须知规定校友核验证件并登记，其他无相关证件人员须提前申请并获得批准备案。",
+            "具体日期服务安排与学校校门入校规则需另行核实。"
+          ],
+          "placeId": "tongzhou-jixue-library",
+          "sourceUrl": "https://lib.bjut.edu.cn/info/1147/1005.htm",
+          "unknownFields": [
+            "campusGateEntryRules",
+            "applicationProcessingTime",
+            "dateSpecificOpeningHours"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "library-discussion",
+      "name": "图书馆小组研讨",
+      "aliases": [
+        "研讨",
+        "研讨室预约",
+        "小组讨论",
+        "讨论室",
+        "研讨室签到"
+      ],
+      "variants": [
+        {
+          "id": "discussion-pingleyuan",
+          "campusId": "pingleyuan",
+          "audiences": [
+            "student",
+            "staff"
+          ],
+          "steps": [
+            "2025年5月6日规则面向本校在职教职工及全日制学生开放预约。",
+            "研讨室分布在负一层、三层和四层，419—435部分房间有显示屏。",
+            "预约后按规则刷校园卡签到。逐间布局、实时可预约情况和假期安排需查询图书馆系统。"
+          ],
+          "placeId": "pingleyuan-library-discussion-rooms",
+          "sourceUrl": "https://lib.bjut.edu.cn/tsggk/jygz/ytssygz.htm",
+          "unknownFields": [
+            "liveAvailability",
+            "individualRoomLayout",
+            "holidaySchedule"
+          ]
+        },
+        {
+          "id": "discussion-tongzhou",
+          "campusId": "tongzhou",
+          "audiences": [
+            "student",
+            "staff"
+          ],
+          "steps": [
+            "通州具体研讨室、预约条件与签到地点尚未核实，请向图书馆服务台确认。"
+          ],
+          "placeId": null,
+          "sourceUrl": "https://lib.bjut.edu.cn/tsggk/fwsj.htm",
+          "unknownFields": [
+            "discussionRoomLocation",
+            "bookingRules",
+            "liveAvailability"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "library-borrow",
+      "name": "图书馆找书借还与借阅权限",
+      "aliases": [
+        "借书",
+        "还书",
+        "借还",
+        "借阅",
+        "找书",
+        "借阅权限"
+      ],
+      "variants": [
+        {
+          "id": "borrow-pingleyuan",
+          "campusId": "pingleyuan",
+          "audiences": [
+            "student",
+            "staff",
+            "alumni",
+            "visitor"
+          ],
+          "steps": [
+            "全日制学生一卡通自动开通借阅，其他持卡人可申请激活。",
+            "校园一卡通丢失须及时挂失。实体补卡操作与当前完整挂失路径需另行核实。",
+            "人工咨询可到本部图书馆二层总服务台，具体日期人工服务时段待查询。"
+          ],
+          "placeId": "pingleyuan-library-service-desk",
+          "sourceUrl": "https://lib.bjut.edu.cn/fw/jyfw/zjgl.htm",
+          "unknownFields": [
+            "currentLossReportingPath",
+            "dateSpecificStaffedHours",
+            "currentLoanAvailability"
+          ]
+        },
+        {
+          "id": "borrow-tongzhou",
+          "campusId": "tongzhou",
+          "audiences": [
+            "student",
+            "staff",
+            "alumni",
+            "visitor"
+          ],
+          "steps": [
+            "全日制学生一卡通自动开通借阅，其他持卡人可申请激活。",
+            "人工咨询可到通州汲学馆服务台，具体日期人工服务时段待查询。",
+            "访客入馆申请和借阅激活分别按对应规则办理，具体借阅资格需咨询。"
+          ],
+          "placeId": "tongzhou-jixue-library",
+          "sourceUrl": "https://lib.bjut.edu.cn/fw/jyfw/zjgl.htm",
+          "unknownFields": [
+            "dateSpecificStaffedHours",
+            "currentLoanAvailability",
+            "visitorBorrowingEligibility"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "library-computer",
+      "name": "图书馆公共电脑查资料",
+      "aliases": [
+        "公共电脑",
+        "电脑查资料",
+        "多媒体阅览",
+        "电脑"
+      ],
+      "variants": [
+        {
+          "id": "computer-pingleyuan",
+          "campusId": "pingleyuan",
+          "audiences": [
+            "student",
+            "staff",
+            "alumni",
+            "visitor"
+          ],
+          "steps": [
+            "本部公共电脑查资料区域为图书馆北区一层西侧多媒体阅览区。",
+            "设备实时占用与具体日期开放安排需查询。访客入馆需另按入馆须知办理。"
+          ],
+          "placeId": "pingleyuan-library-computer-area",
+          "sourceUrl": "https://lib.bjut.edu.cn/fw/kjyss/dmtylq.htm",
+          "unknownFields": [
+            "liveDeviceAvailability",
+            "dateSpecificOpeningHours"
+          ]
+        },
+        {
+          "id": "computer-tongzhou",
+          "campusId": "tongzhou",
+          "audiences": [
+            "student",
+            "staff",
+            "alumni",
+            "visitor"
+          ],
+          "steps": [
+            "通州公共电脑服务区域尚未核实，请向汲学馆服务台咨询具体馆舍与分区。"
+          ],
+          "placeId": null,
+          "sourceUrl": "https://lib.bjut.edu.cn/tsggk/fwsj.htm",
+          "unknownFields": [
+            "computerAreaLocation",
+            "liveDeviceAvailability",
+            "dateSpecificOpeningHours"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sports-sign-in",
+      "name": "体育签到事项确认",
+      "aliases": [
+        "体测",
+        "体测签到",
+        "学期签到",
+        "体育签到",
+        "体育录入",
+        "录入",
+        "校园跑",
+        "体育课签到"
+      ],
+      "variants": [
+        {
+          "id": "sports-sign-in-pingleyuan",
+          "campusId": "pingleyuan",
+          "audiences": [
+            "student"
+          ],
+          "steps": [
+            "先确认你指的是体测、体育课课程考勤、课外校园跑还是其他事项，并确认对应学年与学期。",
+            "2026年体测通知关联体测中心和南田径场；其他签到与录入事项的现行制度和业务地点仍待核实。",
+            "游泳馆207仅关联该通知确认的免测材料提交，其他体育业务地点需按具体事项另行核实。"
+          ],
+          "placeId": null,
+          "sourceUrl": "https://tyb.bjut.edu.cn/info/1043/1817.htm",
+          "unknownFields": [
+            "specificTask",
+            "academicYearAndTerm",
+            "currentRules",
+            "serviceLocation"
+          ]
+        },
+        {
+          "id": "sports-sign-in-tongzhou",
+          "campusId": "tongzhou",
+          "audiences": [
+            "student"
+          ],
+          "steps": [
+            "先确认具体是体测、课程考勤、校园跑还是其他事项，并确认学年与学期。",
+            "通州对应事项的业务地点与现行制度尚未核实。"
+          ],
+          "placeId": null,
+          "sourceUrl": "https://tyb.bjut.edu.cn/info/1043/1817.htm",
+          "unknownFields": [
+            "specificTask",
+            "academicYearAndTerm",
+            "currentRules",
+            "serviceLocation"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fitness-exemption-2026",
+      "name": "2026年体测免测材料提交",
+      "aliases": [
+        "体测免测",
+        "免测材料",
+        "体测免测材料",
+        "免测申请"
+      ],
+      "variants": [
+        {
+          "id": "fitness-exemption-pingleyuan-2026",
+          "campusId": "pingleyuan",
+          "audiences": [
+            "student"
+          ],
+          "steps": [
+            "先确认办理的是2026年体测免测材料提交。",
+            "2026年通知所列线下提交日期为2026年11月26、27日，地点为游泳馆207。",
+            "材料要求、具体时段与适用人群请按当年通知进一步核实。"
+          ],
+          "placeId": "pingleyuan-swimming-207",
+          "sourceUrl": "https://tyb.bjut.edu.cn/info/1043/1817.htm",
+          "unknownFields": [
+            "materials",
+            "dailyServiceHours",
+            "individualEligibility"
+          ]
+        }
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "id": "yanxiaobei-mascot",
+      "placeId": null,
+      "path": "/media/campus/yanxiaobei.png",
+      "alt": "由北京工业大学官方二维吉祥物燕小北形象提取的课程原型角色，原型为北京雨燕",
+      "sourceUrl": "https://www.bjut.edu.cn/__local/E/F4/1E/371D362D8251848F5C317301EDE_FB4410EF_8B19F.png",
+      "license": "upstream-unspecified"
+    },
+    {
+      "id": "library-exterior",
+      "placeId": "pingleyuan-library",
+      "path": "/media/campus/library.jpg",
+      "alt": "平乐园校本部图书馆外观，来自学校招生校园图集",
+      "sourceUrl": "https://admissions.bjut.edu.cn/__local/D/21/E4/8EC3A0C2D387811EF79A842B9B8_9EF60F6C_99192.jpg",
+      "license": "upstream-unspecified"
+    },
+    {
+      "id": "fourth-teaching-exterior",
+      "placeId": "pingleyuan-fourth-teaching",
+      "path": "/media/campus/fourth-teaching.jpg",
+      "alt": "平乐园校本部第四教学楼外观，来自学校招生校园图集",
+      "sourceUrl": "https://admissions.bjut.edu.cn/__local/F/84/75/E2577833E71361CDEB4C186F496_1AD94178_190AC.jpg",
+      "license": "upstream-unspecified"
+    },
+    {
+      "id": "moon-lake-view",
+      "placeId": "pingleyuan-moon-lake",
+      "path": "/media/campus/moon-lake.jpg",
+      "alt": "平乐园校本部月亮湖景观，来自学校招生校园图集",
+      "sourceUrl": "https://admissions.bjut.edu.cn/__local/B/FB/41/C4771E064141BC6DE678ED0BFBA_92911EC9_158CA.jpg",
+      "license": "upstream-unspecified"
+    },
+    {
+      "id": "auditorium-exterior",
+      "placeId": "pingleyuan-auditorium",
+      "path": "/media/campus/auditorium.jpg",
+      "alt": "平乐园校本部礼堂外观，来自学校招生校园图集",
+      "sourceUrl": "https://admissions.bjut.edu.cn/__local/5/FB/90/7A1985533FD803063D8246B626B_FE0350FD_1AB5F.jpg",
+      "license": "upstream-unspecified"
+    }
+  ]
+}
