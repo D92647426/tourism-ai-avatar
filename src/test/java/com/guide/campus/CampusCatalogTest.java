@@ -138,12 +138,14 @@ class CampusCatalogTest {
     void linksCampusPhotosToTheirBuildingsAndRecordsUnpublishedReusePermission() {
         CampusCatalog catalog = new CampusCatalog();
         JsonNode assets = catalog.snapshot().path("assets");
-        assertEquals(5, assets.size());
+        assertEquals(8, assets.size());
+        assertEquals(26, catalog.snapshot().path("places").size());
         for (JsonNode asset : assets) {
             assertTrue(asset.path("path").asText().startsWith("/media/campus/"));
             assertTrue(asset.path("sourceUrl").asText().startsWith("https://"));
             assertEquals("upstream-unspecified", asset.path("license").asText());
             assertFalse(asset.path("alt").asText().isEmpty());
+            assertTrue(java.util.Arrays.asList("character", "photo", "floorplan").contains(asset.path("kind").asText()));
             if (!asset.path("placeId").isNull()) {
                 assertTrue(catalog.place(asset.path("placeId").asText()).path("assetIds").toString()
                         .contains(asset.path("id").asText()));
@@ -152,6 +154,15 @@ class CampusCatalogTest {
         assertEquals("library-exterior", catalog.place("pingleyuan-library")
                 .path("assetIds").get(0).asText());
         assertTrue(catalog.place("pingleyuan-library-discussion-rooms").path("assetIds").isEmpty());
+        assertTrue(catalog.place("pingleyuan-library").path("assetIds").toString().contains("library-floorplan-1"));
+        assertTrue(catalog.place("pingleyuan-tiantian-dining").path("assetIds").toString().contains("tiantian-dining-photo"));
+        assertTrue(catalog.place("pingleyuan-north-dining").path("assetIds").toString().contains("north-dining-photo"));
+        JsonNode map = catalog.campus("pingleyuan").path("mapPreview");
+        assertEquals("WGS84", map.path("coordinateSystem").asText());
+        assertEquals(26, map.path("boundary").size());
+        assertEquals(4, map.path("bbox").size());
+        assertEquals("ODbL-1.0", map.path("license").asText());
+        assertEquals("https://www.openstreetmap.org/way/33617299", map.path("sourceUrl").asText());
     }
 
     @Test
