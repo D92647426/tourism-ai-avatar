@@ -147,6 +147,7 @@
             clearTimer(task, 'cap');
             clearTimer(task, 'voices');
             removeVoiceListener(task);
+            if (task.cancelLocal) task.cancelLocal();
             if (task.utterance) {
                 task.utterance.onstart = null;
                 task.utterance.onend = null;
@@ -166,6 +167,8 @@
                 } else if (task.engine === 'native') {
                     var bridge = task.bridge;
                     if (bridge && typeof bridge.stopSpeaking === 'function') bridge.stopSpeaking();
+                } else if (task.engine === 'local' && task.cancelLocal) {
+                    task.cancelLocal();
                 }
             } catch (error) { /* the task is already settled; never throw to page */ }
         }
@@ -220,7 +223,7 @@
             task.started = true;
             clearTimer(task, 'start');
             setMouth(true);
-            notify('speaking', '');
+            notify('speaking', task.notice || '');
             armFailureCap(task);
             return true;
         }
@@ -268,7 +271,7 @@
             }
             var utterance;
             try {
-                utterance = new UtteranceCtor(task.text);
+                utterance = new UtteranceCtor(task.webText || task.text);
                 utterance.lang = 'zh-CN';
                 utterance.voice = voice;
                 utterance.rate = task.settings ? task.settings.speechRate : 1.05;
@@ -326,6 +329,39 @@
             var voice = (options.selectVoice ? options.selectVoice(readVoices(), task.settings) : findChineseVoice(readVoices()));
             if (voice) speakThroughWeb(task, voice);
             else waitForVoices(task);
+        }
+
+        /** REQ-053: fallback once from the unfinished sentence; old media callbacks lose ownership. */
+        function localFallback(task, remaining) {
+            if (active !== task || task.engine !== 'local') return;
+            task.engine = 'web';
+            if (task.cancelLocal) task.cancelLocal();
+            clearTimer(task, 'start'); clearTimer(task, 'cap');
+            task.started = false; task.paused = false; setMouth(false);
+            if (!remaining || !remaining.trim()) { finish(task, activity, '', false); return; }
+            task.webText = remaining;
+            task.notice = '角色声线暂不可用，正在使用系统声音';
+            notify('queued', task.notice);
+            task.timers.start = schedule(function(){if(active===task)finish(task,'error',MESSAGES.startTimeout,true);},START_TIMEOUT_MS);
+            beginWeb(task);
+        }
+
+        /** REQ-053: genuine HTMLAudio events reuse task identity and the existing failure cap. */
+        function beginLocal(task) {
+            if (!task.settings || task.settings.voiceType !== 'local:character' || !options.localEngine) return false;
+            task.engine = 'local';
+            function owned(){return active===task&&task.engine==='local';}
+            try {
+                task.cancelLocal = options.localEngine.speak(task.text, task.settings, {
+                    start:function(){if(!owned())return;if(!task.started)handleStart(task);else if(task.paused)handleResume(task);else{setMouth(true);notify('speaking','');}},
+                    pause:function(){if(owned())handlePause(task);},
+                    wait:function(){if(owned()){setMouth(false);notify('queued','正在准备下一句…');}},
+                    end:function(){if(owned())handleEnd(task);},
+                    fallback:function(remaining){if(owned())localFallback(task,remaining);},
+                    error:function(code){if(owned())finish(task,'error',code==='playback-blocked'?'浏览器尚未允许播放声音，请点击回听。':MESSAGES.engineError,true);}
+                });
+            } catch(error){localFallback(task,task.text);}
+            return true;
         }
 
         /**
@@ -396,9 +432,10 @@
             task.timers.start = schedule(function () {
                 if (active !== task) return;
                 task.timers.start = null;
+                if (task.engine === 'local') { localFallback(task, task.text); return; }
                 finish(task, 'error', MESSAGES.startTimeout, true);
             }, START_TIMEOUT_MS);
-            if (beginNative(task)) return true;
+            if (beginLocal(task) || beginNative(task)) return true;
             beginWeb(task);
             return true;
         }

@@ -557,8 +557,9 @@
         select.innerHTML = '';
         function option(key,label) { var node=document.createElement('option');node.value=key;node.textContent=label;select.appendChild(node); }
         option('auto','设备默认中文声线');
+        option('local:character','本地角色声线（需启动本地语音服务）');
         list.forEach(function(voice) { option(voice.voiceURI,(voice.name || voice.voiceURI)+' · '+voice.lang); });
-        if(selected !== 'auto' && !list.some(function(v){return v.voiceURI===selected;})) option(selected,'已保存但本设备未提供：'+selected);
+        if(selected !== 'auto' && selected !== 'local:character' && !list.some(function(v){return v.voiceURI===selected;})) option(selected,'已保存但本设备未提供：'+selected);
         select.value = selected;
         S('cfgVoiceNotice').textContent = window.GuideVoiceSettings.choose({voiceType:selected},voices).notice + ' 声线依赖游客设备，不保证跨设备或男女声。Android 参数使用浏览器语音回退。';
     }

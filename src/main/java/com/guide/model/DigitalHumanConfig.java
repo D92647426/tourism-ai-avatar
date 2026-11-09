@@ -6,7 +6,7 @@ package com.guide.model;
 public class DigitalHumanConfig {
     private String name;            // 导游名称，如"灵灵"
     private String welcomeMessage;  // 欢迎语
-    private String voiceType;       // 声音类型：female/male
+    private String voiceType;       // local:character / auto / device voiceURI; legacy gender values supported
     private String modelName;       // Live2D 模型名称
     private String primaryColor;    // 主题色
     private double volume;          // 音量 0.0~1.0
@@ -16,7 +16,7 @@ public class DigitalHumanConfig {
         // 默认配置
         this.name = "灵灵";
         this.welcomeMessage = "阿弥陀佛！我是您的AI导游灵灵，欢迎来到灵山胜境，愿您在此感悟灵山，吉祥平安！";
-        this.voiceType = "female";
+        this.voiceType = "local:character";
         this.modelName = "haru";
         this.primaryColor = "#c8963e";
         this.volume = 1.0;

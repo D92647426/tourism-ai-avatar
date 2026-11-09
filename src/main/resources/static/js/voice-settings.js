@@ -12,6 +12,7 @@
     /** Select an actually available Chinese voice; gender labels never invent a device capability. */
     function choose(raw,voices){
         var config=normalize(raw),list=chinese(voices),key=config.voiceType;
+        if(key==='local:character')return {voice:list.find(function(v){return v.default;})||list[0]||null,notice:'本地角色声线；服务不可用时回退设备中文声音。'};
         if(!list.length)return {voice:null,notice:'此设备暂无可用中文声线，保留文字回答。'};
         var exact=list.find(function(v){return v.voiceURI===key;});
         if(exact)return {voice:exact,notice:'使用设备声线：'+(exact.name||exact.voiceURI)};

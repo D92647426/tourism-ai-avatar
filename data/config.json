@@ -1,7 +1,7 @@
 {
   "name": "灵灵",
   "welcomeMessage": "阿弥陀佛！我是您的AI导游灵灵，欢迎来到灵山胜境，愿您在此感悟灵山，吉祥平安！",
-  "voiceType": "female",
+  "voiceType": "local:character",
   "modelName": "haru",
   "primaryColor": "#c8963e",
   "volume": 1.0,
