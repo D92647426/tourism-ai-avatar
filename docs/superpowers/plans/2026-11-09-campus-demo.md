@@ -39,7 +39,7 @@ Java8、Jackson、Spring Boot 2.7、原生HTML/CSS/JavaScript、JUnit5、Node te
 
 资源`campus/catalog.json`包含`version/campuses/places/tasks/assets`。地点字段使用`id/campusId/name/aliases/category/summary/address/sourceUrl/verifiedAt/coordinateStatus/coordinates/assetIds`。事项含`id/name/aliases/variants`，变体含`id/campusId/audiences/steps/placeId/sourceUrl/unknownFields`。资源含`id/placeId/path/alt/sourceUrl/license`。
 
-Java包为`com.guide.campus`。`CampusCatalog.snapshot()`返回深拷贝ObjectNode，`place(String id)`、`campus(String id)`、`task(String id)`返回找到的ObjectNode深拷贝或null，`searchPlaces(String query,String campusId)`返回List<ObjectNode>。目录加载时校验ID与引用。
+Java包为`com.guide.campus`。`CampusCatalog.snapshot()`返回深拷贝ObjectNode，`place(String id)`、`campus(String id)`、`task(String id)`返回找到的ObjectNode深拷贝或null，`searchPlaces(String query,String campusId)`返回List<ObjectNode>。目录加载时校验ID与引用。校区ID固定为pingleyuan、tongzhou、guanzhuang、liulijing、huixin-east，地点与事项使用目录稳定ID。
 
 API采用`GET /api/campus/catalog`、`GET /api/campus/context`、`POST /api/campus/chat`、`POST /api/campus/new`、`POST /api/campus/cancel`、`GET /api/campus/weather`。POST沿用AuthGuard同源CSRF传输。
 
@@ -66,7 +66,19 @@ API采用`GET /api/campus/catalog`、`GET /api/campus/context`、`POST /api/camp
 - [ ] 实现上述冻结接口，收录本部和通州已核实地点、事务变体与图片来源，费用及营业状态保持资料实际状态。
 - [ ] 运行目录测试并记录结果，交根代理审查。
 
-## Task 2 统一轮次与DS工具
+## Task 2 前台上下文与主动邀约
+
+文件由情境实现者负责。
+
+- 新增`CampusWeatherService.java`、`CampusWeatherController.java`及对应JUnit。
+- 新增`static/js/campus-companion.js`及`tests/frontend/campus-companion.test.js`。
+
+- [ ] 编写气泡暂缓、接受、关闭、过期、冷却、位置抖动、后台恢复和静音场景测试。
+- [ ] 实现冻结的纯状态接口，使用设计中的30秒时效、40米精度、30秒停留、100/150米边界、10分钟冷却及同饭点去重，未知坐标仅接受明确位置来源。
+- [ ] 实现Open-Meteo有界请求和10分钟缓存，支持注入HTTP替身，失败返回可辨认状态。
+- [ ] 运行对应Node和JUnit，交根代理审查。
+
+## Task 3 统一轮次与DS工具
 
 文件由对话实现者负责。
 
@@ -80,18 +92,6 @@ API采用`GET /api/campus/catalog`、`GET /api/campus/context`、`POST /api/camp
 - [ ] 实现真实DeepSeek兼容工具调用，工具为find_places/find_tasks/get_place/get_weather/preview_route/get_dining_candidates。先使用目录候选，返回同一结构化轮次，模型最终文字依据工具资料组织。
 - [ ] 使用本机HTTP模型替身验证工具调用往返，未配置密钥时本地三场景可完整演示。
 - [ ] 运行目标JUnit及现有模型客户端测试，交根代理审查。
-
-## Task 3 前台上下文与主动邀约
-
-文件由情境实现者负责。
-
-- 新增`CampusWeatherService.java`、`CampusWeatherController.java`及对应JUnit。
-- 新增`static/js/campus-companion.js`及`tests/frontend/campus-companion.test.js`。
-
-- [ ] 编写气泡暂缓、接受、关闭、过期、冷却、位置抖动、后台恢复和静音场景测试。
-- [ ] 实现冻结的纯状态接口，使用设计中的30秒时效、40米精度、30秒停留、100/150米边界、10分钟冷却及同饭点去重，未知坐标仅接受明确位置来源。
-- [ ] 实现Open-Meteo有界请求和10分钟缓存，支持注入HTTP替身，失败返回可辨认状态。
-- [ ] 运行对应Node和JUnit，交根代理审查。
 
 ## Task 4 校园人物舞台与场景
 
