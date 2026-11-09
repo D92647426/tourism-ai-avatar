@@ -111,7 +111,7 @@ HTTP脚本接收 `--jar`、`--java`、`--port`、`--timeout`，默认Java命令j
 
 ## 根代理复核与实施取舍
 
-根代理在最终位置规则修复后独立运行完整Maven verify，304项Java全部通过，0失败、0错误、0跳过，耗时43.688秒。前端276项、数据44项、Python语音3项、结构与链接检查均通过，最新打包服务的13组校园HTTP检查再次通过。nofork模式保留Maven关于useSystemClassloader无效的环境警告。语音套接字与服务存活检查使用具备本机可见性的环境复验，避免沙箱权限造成误判。
+根代理在最终分支修复后独立运行完整Maven verify，312项Java全部通过，0失败、0错误、0跳过，耗时24.162秒。前端285项、数据44项、Python语音3项、结构与链接检查均通过，最新打包服务的13组校园HTTP检查再次通过。nofork模式保留Maven关于useSystemClassloader无效的环境警告。语音套接字与服务存活检查使用具备本机可见性的环境复验，避免沙箱权限造成误判。
 
 真实浏览器还验证了844×390横屏无横向溢出、减少动态效果时角色transition为0秒，以及输入框Tab后焦点进入语音按钮。当前用户预览服务从target/campus-demo/app.jar运行，使用空模型Key，完整启动命令见本手册开头。
 
@@ -122,6 +122,9 @@ HTTP脚本接收 `--jar`、`--java`、`--port`、`--timeout`，默认Java命令j
 3. 先完成位置天气与陪伴接口，再接入依赖这些接口的模型工具，保持每个阶段可编译验证。
 4. 官方校园总图返回403后，采用已读取的OpenStreetMap校区范围与官方图书馆一层布局。入口和道路精度由[后续坐标核验议题](https://github.com/D92647426/tourism-ai-avatar/issues/59)继续补齐。
 5. 首个三场景Demo通过独立campus.html和打包校园目录交付。默认首页及校园资料后台的完整切换由[迁移议题](https://github.com/D92647426/tourism-ai-avatar/issues/62)承接，当前修改校园JSON后需重新构建。
+6. 将普通对话版本与物理证据版本分开，并增加“我仍在这里”显式复核。代价是人工确认场景需要复核操作，自动到楼感知继续依赖区域核验。
+7. 为修掉审查遗留的错误导航，额外完成一次范围限定的照片切换修复和复核。代价是增加了这轮验证时间。
+8. 总服务台的父馆外观关联记录为[后续小修](https://github.com/D92647426/tourism-ai-avatar/issues/63)。代价是该服务点目前显示暂无照片，具体业务与导航目标仍可用。
 
 [人物透明素材](../src/main/resources/static/media/campus/yanxiaobei.png)采用内置image_gen进行AI辅助二维重建，边缘与面部部分细节由模型重构。[完整提示词与处理记录](../src/main/resources/static/media/campus/processing.json#L1)随项目保存，素材来源及许可状态见[来源清单](../src/main/resources/static/media/campus/SOURCES.md#L1)。
 
@@ -136,3 +139,8 @@ HTTP脚本接收 `--jar`、`--java`、`--port`、`--timeout`，默认Java命令j
 
 
 补卡之后输入“看看图书馆实景”，浏览主题和后续导航目标切换为图书馆，旧补卡事项清除。再说“带我过去”先确认起点，输入“我在四教”后预览到图书馆的路线。当前业务地点照片，以及公共电脑等具体服务区借用父馆外观时，仍保留原服务区目标。[离线照片切换回归](../src/test/java/com/guide/campus/CampusAssistantTest.java#L149)、[模型原样增强回归](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L217)
+
+
+根代理在非模拟模式使用人工地点声明，实际等待20秒后点击“我仍在这里”，到30秒停留后接收图书馆气泡，再接受并展开用途与实景。正式用户消息在接受后增加，馆内保持静音。该检查验证浏览器正常交互，手机实地GPS单独验收。[实际复核界面](screenshots/campus-real-recheck.png)
+
+最终包还从真实输入框重复验证“平乐园补卡→看看图书馆实景→带我过去→我在四教”，实际回复和预览目标均指向逸夫图书馆。来源、许可与设备边界以本手册上述记录为准。

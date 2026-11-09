@@ -120,5 +120,8 @@ PR #51已合并，#50已完成关闭。用户已确认改为面向新生和访�
 | [#60](https://github.com/D92647426/tourism-ai-avatar/issues/60) | 其他校区内部地点与事务扩充 | 后续开发 |
 | [#61](https://github.com/D92647426/tourism-ai-avatar/issues/61) | 离开教学区与校门附近邀约 | 后续开发 |
 | [#62](https://github.com/D92647426/tourism-ai-avatar/issues/62) | 校园默认入口与资料管理迁移 | 后续开发 |
+| [#63](https://github.com/D92647426/tourism-ai-avatar/issues/63) | 总服务台关联父馆外观 | 后续小修 |
 
 当前实现处于独立功能分支，尚未合并。首版范围、接口、顺序及验收见[设计](superpowers/specs/2026-11-09-campus-assistant-design.md#L1)和[计划](superpowers/plans/2026-11-09-campus-demo.md#L1)，事实与来源见[校园核验](bjut_campus_research.md#L1)。#1、#2、#3仍为团队真实协作、互审和来源贡献记录事项。
+
+最终阻断问题已通过独立复核，根代理完整复验Java312、Node285、数据44、Python语音3和旧景区加校园HTTP冒烟。普通模式人工位置复核、真实时间等候邀约以及照片切换后的新导航目标均已实际浏览器验证。当前分支准备提交PR，#55后续触发和#58～#63继续保持open。
