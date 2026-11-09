@@ -247,3 +247,62 @@ GET /api/themes 公开返回数组，元素含 id/title/question/notice/stops，
 ## API-053 本地角色语音（REQ-053）
 
 POST `/api/speech/synthesize`，登录+CSRF，JSON对象只允许text/speed，text必填1–80 Unicode字符、不得控制字符（LF/Tab除外），speed可选数值0.5–2默认1。例 `{"text":"你好，我是景区导游。","speed":0.9}` →200 `audio/wav` 二进制WAV，`Cache-Control:no-store`。失败400 INVALID_SPEECH、401未登录、403 CSRF失败、503禁用/繁忙/不可用、502坏音频或上游错误、504读取超时，JSON `{"code":"SPEECH_UNAVAILABLE","message":"角色声线暂不可用，可使用系统声音。"}`；不返回上游正文/路径。控制器 [LocalSpeechController.synthesize](../src/main/java/com/guide/controller/LocalSpeechController.java#L21)，服务 [LocalSpeechService.synthesize](../src/main/java/com/guide/service/LocalSpeechService.java#L41)。输入不写聊天历史。测试 [Java代理测试](../src/test/java/com/guide/service/LocalSpeechServiceTest.java#L11)、[身份/CSRF测试](../src/test/java/com/guide/security/SecurityIntegrationTest.java#L200)。内部工作进程API与队列见 [设计](local_voice_design.md#L1)。
+
+
+## API-054a 校园目录
+
+`GET /api/campus/catalog`，公开读取，服务函数 `CampusAssistantController.catalog → CampusCatalog.snapshot`，无请求参数。响应为 `version/campuses/places/tasks/assets` 对象，当前5校区、26地点、7事项19变体、8素材。示例 `{"version":"2026-11-09","campuses":[{"id":"pingleyuan","name":"校本部（平乐园）"}],"places":[],"tasks":[],"assets":[]}` 仅展示结构，数组内容以实际目录为准。地点含 `coordinateStatus/coordinates/assetIds/sourceUrl/verifiedAt`，事项变体补充来源为可选 `sourceRefs=[{title,url}]`。
+
+本部 `campuses[].mapPreview` 含 `campusId/provider/coordinateSystem/bbox/boundary/sourceUrl/dataTime/verifiedAt/license/attribution/purpose`，WGS84校区范围用于预览，地点入口保持 `coordinates:null`。异常目录在启动时被校验拒绝。[控制器](../src/main/java/com/guide/campus/CampusAssistantController.java#L22)、[目录校验](../src/main/java/com/guide/campus/CampusCatalog.java#L78)
+
+## API-054b 校园上下文
+
+`GET /api/campus/context`，服务函数 `CampusAssistantService.current`，Cookie拥有独立校园会话。无请求参数，首次访问建立会话。响应示例 `{"conversationId":"session-uuid","contextRevision":0,"campusId":null,"placeId":null,"serverTime":"2026-11-09T11:00:00Z","timezone":"Asia/Shanghai"}`。后续可带 `taskId/audience/position/simulated/hour/time/weather/routePending` 等本次条件，字段是否存在以已提交状态为准。[快照读取](../src/main/java/com/guide/campus/CampusAssistantService.java#L37)
+
+`context.placeId` 表示浏览主题或导航目的地。`context.position.placeId` 表示物理位置声明，位置携带 `source/timestamp`，可选WGS84 `latitude/longitude/accuracy`。用户说“我已经在图书馆内”时记录 `confirmed`、地点ID和确认时点。馆外、门口、附近或明确离馆清除旧物理证据为 `position:null`，保留主题和目的地。假设与意向语句保持物理证据时点。[位置语义](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L189)
+
+## API-054c 校园聊天
+
+`POST /api/campus/chat`，服务函数 `CampusAssistantService.chat`，同源Cookie和CSRF必需。先GET `/api/auth/csrf`，沿返回 `headerName/token` 发送请求头。必填 `requestId/conversationId/contextRevision/message`。ID为1～100位字母数字下划线短横线，revision为非负整数，message为非空文本最多2000字符，完整请求最多16000字符。
+
+可选 `campusId/placeId/audience/origin/context`，校区与地点ID须在目录且相互一致，audience为student/staff/visitor/alumni，origin为user/choice/proactive_accept。正式建议点击发送返回的 `choices[].message` 并设置origin，选项版本守卫在客户端校验。
+
+```json
+{"requestId":"request-001","conversationId":"从context获取","contextRevision":0,"message":"平乐园补卡","origin":"user","context":{"simulated":false,"position":null}}
+```
+
+```json
+{"conversationId":"同一会话","turnId":"本轮UUID","contextRevision":1,"reply":"办理步骤与现行窗口","speech":"可播报文本","mode":"local","sceneAction":{"type":"SHOW_SERVICE_TASK","placeIds":["pingleyuan-card-service"],"taskId":"campus-card","title":"校园助手"},"choices":[{"id":"choice-0","label":"带我过去","message":"带我过去","kind":"ask"}],"references":[{"title":"校园一卡通服务","url":"官方来源URL"}],"context":{"conversationId":"同一会话","contextRevision":1,"campusId":"pingleyuan","placeId":"pingleyuan-card-service"}}
+```
+
+示例省略其他建议与快照字段。当前建议面板共4～6项，校区选择含自定义。mode为local/deepseek/local-fallback。场景允许SHOW_PLACE、SHOW_MAP、SHOW_ROUTE、SHOW_SERVICE_TASK、SHOW_DINING、SHOW_WEATHER、KEEP_SCENE、RETURN_STAGE。RETURN_STAGE清场景并保留对话，SHOW_MAP可在placeIds为空时按context.campusId显示校区范围，SHOW_WEATHER显示本轮reply并链接已有天气资料区。未知模型动作保留文字并返回KEEP_SCENE及sceneNotice。references来自当前目录的主来源与sourceRefs，场景和文字受同一轮次提交保护。[聊天入口](../src/main/java/com/guide/campus/CampusAssistantService.java#L74)、[模型校验](../src/main/java/com/guide/campus/CampusModelOrchestrator.java#L121)
+
+有界context只消费position/simulated/hour/time/weather。position允许显式null，或含来源和毫秒timestamp的对象，来源白名单gps/geolocation/confirmed/simulated/demo。模拟来源需同时 `simulated:true`。坐标须成对且有效，有坐标需非负accuracy，缺坐标时须有有效placeId。hour为0～23整数，time为最长40字符文本，模拟weather仅保留有限温度与天气码。客户端声明经校验后仍保留其来源。[输入验证](../src/main/java/com/guide/campus/CampusRequestValidation.java#L22)
+
+省略context字段沿用已有状态。显式 `{"simulated":false,"position":null}` 退出模拟并清空位置，原模拟hour/time/weather删除，当前轮提供的新真实字段再合入。`position:null` 同样可单独清除确认地点。服务端 `serverTime` 为UTC时刻，timezone固定Asia/Shanghai，页面据此校时；传入time保留声明来源语境。[环境合并](../src/main/java/com/guide/campus/CampusRequestValidation.java#L51)
+
+同一会话最近32个requestId保留结果或取消标记。相同requestId与规范化payload重放返回同一turnId及结果，无额外提交。更换payload、正在处理、旧revision、会话变化或已取消请求返回409。模型在会话锁外运行，提交前复核归属、revision和取消状态。三轮六工具与20秒总期限后本地回退。[幂等与提交](../src/main/java/com/guide/campus/CampusAssistantService.java#L74)
+
+| 状态 | 代码与含义 | 恢复 |
+|---|---|---|
+| 400 | INVALID_字段名，含message、campusId、position等 | 修正请求后使用新requestId |
+| 403 | 既有安全链的CSRF失败 | 重新获取同Cookie的CSRF |
+| 409 | STALE_CONTEXT / CONVERSATION_CHANGED / REQUEST_ID_REUSED / REQUEST_IN_PROGRESS / REQUEST_CANCELED / STALE_COMPLETION | 同步context，按当前状态继续 |
+
+校园控制器400/409 JSON形如 `{"code":"STALE_CONTEXT","message":"本轮已取消、会话已变化或请求仍在处理中，请同步当前对话状态。"}`。其他安全或解析错误沿用Spring安全链。[错误适配](../src/main/java/com/guide/campus/CampusAssistantController.java#L37)
+
+## API-054d 新校园对话
+
+`POST /api/campus/new`，空对象 `{}`，同Cookie和CSRF，服务函数 `CampusAssistantService.start`。响应同API-054b初始快照，新的conversationId、revision0、campusId/placeId为null，旧请求失去提交资格。例 `POST {}` → `{"conversationId":"新UUID","contextRevision":0,"campusId":null,"placeId":null,"serverTime":"UTC时刻","timezone":"Asia/Shanghai"}`。CSRF失败403，携带旧会话继续chat返回409。[新会话](../src/main/java/com/guide/campus/CampusAssistantService.java#L42)
+
+## API-054e 取消校园请求
+
+`POST /api/campus/cancel`，同Cookie和CSRF。必填conversationId/requestId，例 `{"conversationId":"当前UUID","requestId":"request-001"}`。服务函数 `CampusAssistantService.cancel` 返回当前快照及canceled布尔。取消可先于chat到达，保存取消标记并使后到请求409。有效取消增加revision，重复取消沿用标记；已提交轮次保留结果并返回canceled=false。新会话后取消旧ID为409，非法ID400，CSRF失败403。取消撤销本地提交资格，远端传输按自身超时结束。[取消实现](../src/main/java/com/guide/campus/CampusAssistantService.java#L51)
+
+## API-054f 校园天气
+
+`GET /api/campus/weather`，可选WGS84经纬度须成对，例 `?latitude=39.875&longitude=116.481`。服务函数 `CampusWeatherController.current → CampusWeatherService.current`。省略坐标时显示北京市区参考点39.9042/116.4074。例 `{"status":"available","label":"当前位置参考天气","temperatureC":6,"weatherCode":0,"time":"2026-11-09T18:30","dataTime":"2026-11-09T18:30","fetchedAt":"2026-11-09T10:36:56Z","provider":"Open-Meteo","sourceUrl":"https://open-meteo.com/en/docs","stale":false}`。
+
+time/dataTime按请求供应商Asia/Shanghai参数解释，fetchedAt为UTC。status为available/stale/unavailable，失败仍返回200并保留原资料获取时间或null字段。非法/单边/非有限/超范围坐标400 `{"code":"INVALID_COORDINATES","message":"经纬度须同时提供有效WGS84数值，纬度范围[-90,90]，经度范围[-180,180]"}`。[HTTP适配](../src/main/java/com/guide/campus/CampusWeatherController.java#L27)、[缓存与失败](../src/main/java/com/guide/campus/CampusWeatherService.java#L57)
+
+六端点统一测试命令为 `python -X utf8 scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar --port 18090`。该命令启动隔离JAR并检查真实Cookie/CSRF、契约、业务与素材，天气有效响应另由替身Java测试和当次供应商联调验证。[verify_campus](../scripts/smoke_teacher_project.py#L76)

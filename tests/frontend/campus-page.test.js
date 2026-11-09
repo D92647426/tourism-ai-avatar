@@ -172,7 +172,7 @@ test('foreground companionship keeps one GPS watcher and rejects old callbacks a
 });
 test('continuous GPS uses each real sample timestamp and weather exposes time and provider',async()=>{
     const p=page({weather:{status:'available',label:'北京市区参考天气',temperatureC:6,dataTime:'2026-11-09T12:00',fetchedAt:'2026-11-09T04:01:00Z',provider:'Open-Meteo',sourceUrl:'https://open-meteo.com/en/docs',stale:false}});await flush();
-    assert.match(p.nodes.get('weatherEvidence').textContent,/观测时间 2026-11-09T12:00/);assert.match(p.nodes.get('weatherEvidence').textContent,/获取时间 2026-11-09 12:01:00/);assert.match(p.nodes.get('weatherEvidence').textContent,/Open-Meteo/);
+    assert.match(p.nodes.get('weatherEvidence').textContent,/天气资料时间 2026-11-09T12:00/);assert.match(p.nodes.get('weatherEvidence').textContent,/获取时间 2026-11-09 12:01:00/);assert.match(p.nodes.get('weatherEvidence').textContent,/Open-Meteo/);
     p.click('companionToggle');const watch=p.watches[0];const first=Date.parse('2026-11-09T04:00:00Z');
     watch.ok({coords:{latitude:39.874,longitude:116.477,accuracy:10},timestamp:first});p.tick(30000);
     watch.ok({coords:{latitude:39.874,longitude:116.477,accuracy:10},timestamp:first+30000});p.send('图书馆');await flush();
@@ -256,4 +256,57 @@ test('I2 simulation exit clears a pre-demo building returned by cancellation syn
     p.click('demoDining');await flush();p.tick(1000);p.click('acceptOffer');await flush();p.click('exitDemo');await flush();
     p.requests.find(r=>r.url==='/api/campus/cancel').resolve(response({conversationId:'conversation-1',contextRevision:1,campusId:'pingleyuan',position:confirmed}));await flush();
     assert.equal(p.nodes.get('soundToggle').textContent,'声音已开');p.send('重新开始');await flush();assert.equal(p.chats()[1].body.context.position,null);
+});
+
+
+test('allowed RETURN_STAGE clears the content scene and invalidates late photos', async () => {
+    const p = page(); await flush(); p.tick(1800);
+    p.send('看看图书馆'); await flush();
+    p.chats()[0].resolve(response(turn(1))); await flush();
+    const oldImage = p.images.at(-1);
+    p.send('回到人物舞台'); await flush();
+    p.chats()[1].resolve(response(turn(2, null, {sceneAction: {type: 'RETURN_STAGE', placeIds: []}}))); await flush();
+    assert.equal(p.nodes.get('scenePanel').hidden, true);
+    assert.equal(p.nodes.get('campusStage').classList.contains('has-scene'), false);
+    assert.equal(p.nodes.get('sceneContent').children.length, 0);
+    oldImage.onload();
+    assert.equal(p.nodes.get('sceneBackdrop').style.backgroundImage, '');
+    assert.equal(p.nodes.get('conversation').hidden, false);
+});
+
+
+test('allowed SHOW_MAP without a place renders the current campus or its missing-data state', async () => {
+    for (const [campusId, expected] of [['pingleyuan', /校园边界来自 OpenStreetMap/],
+            ['tongzhou', /校内地图资料待补充/], [null, /校区.*待确认/]]) {
+        const p = page(); await flush();
+        p.send('看看校区地图'); await flush();
+        p.chats()[0].resolve(response(turn(1, null, {
+            sceneAction: {type: 'SHOW_MAP', placeIds: [], title: '校园地图'},
+            context: {campusId, placeId: null}
+        }))); await flush();
+        assert.match(p.nodes.get('sceneContent').textContent, expected);
+        assert.equal(p.nodes.get('scenePanel').hidden, false);
+        assert.match(p.nodes.get('positionStatus').textContent, /未确认/);
+    }
+});
+
+
+test('allowed SHOW_WEATHER renders the committed reply and opens existing weather evidence', async () => {
+    const p = page({weather: {status: 'available', label: '北京市区参考天气', temperatureC: 6,
+        dataTime: '2026-11-09T18:30', fetchedAt: '2026-11-09T10:36:56Z', stale: false,
+        provider: 'Open-Meteo', sourceUrl: 'https://open-meteo.com/en/docs'}});
+    await flush();
+    const evidence = p.nodes.get('weatherEvidence').textContent;
+    const reply = '本次天气资料显示6℃，请留意天气资料时间。';
+    p.send('现在天气怎么样'); await flush();
+    p.chats()[0].resolve(response(turn(1, null, {reply,
+        sceneAction: {type: 'SHOW_WEATHER', placeIds: [], title: '参考天气'}}))); await flush();
+    assert.match(p.nodes.get('sceneContent').textContent, /本次天气资料显示6℃，请留意天气资料时间。/);
+    const evidenceLink = p.nodes.get('sceneContent').children.find(node => node.href === '#weatherDetails');
+    assert.ok(evidenceLink);
+    evidenceLink.fire('click');
+    assert.equal(p.nodes.get('weatherDetails').open, true);
+    assert.equal(p.nodes.get('weatherEvidence').textContent, evidence);
+    assert.match(evidence, /2026-11-09T18:30/);
+    assert.match(evidence, /Open-Meteo/);
 });

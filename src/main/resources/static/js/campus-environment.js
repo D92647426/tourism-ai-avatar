@@ -40,11 +40,11 @@
         function weatherEvidence(result) {
             var area = byId('weatherEvidence'); area.replaceChildren();
             if (simulated) { area.textContent = '模拟天气，仅用于课堂情境演示。'; return; }
-            if (!result || result.status === 'unavailable') { area.textContent = '暂未取得可用天气观测。'; return; }
-            area.appendChild(CampusScene.element('p', '观测时间 ' + (result.dataTime || result.time || '未提供') + ' · 上海时间'));
+            if (!result || result.status === 'unavailable') { area.textContent = '暂未取得可用天气资料。'; return; }
+            area.appendChild(CampusScene.element('p', '天气资料时间 ' + (result.dataTime || result.time || '未提供') + ' · 上海时间'));
             var fetched = Date.parse(result.fetchedAt);
             area.appendChild(CampusScene.element('p', '获取时间 ' + (Number.isFinite(fetched) ? new Date(fetched + 8 * 3600000).toISOString().slice(0,19).replace('T',' ') + ' · 上海时间' : '未提供')));
-            area.appendChild(CampusScene.element('p', result.stale ? '当前展示上次观测，请留意资料时间。' : '当前展示最近取得的观测。'));
+            area.appendChild(CampusScene.element('p', result.stale ? '当前展示上次资料，请留意资料时间。' : '当前展示最近取得的资料。'));
             if (result.sourceUrl) area.appendChild(CampusScene.link(result.provider || '天气来源',result.sourceUrl));
         }
         async function loadWeather(token) {
@@ -54,7 +54,7 @@
                 var result = await options.get('/api/campus/weather' + query);
                 if (token !== generation || weatherToken !== weatherGeneration || simulated || disposed) return;
                 weather = result;
-                byId('weatherStatus').textContent = result.status === 'unavailable' ? '天气暂不可用' : result.label + ' ' + result.temperatureC + '℃' + (result.stale ? ' · 上次观测' : '');
+                byId('weatherStatus').textContent = result.status === 'unavailable' ? '天气暂不可用' : result.label + ' ' + result.temperatureC + '℃' + (result.stale ? ' · 上次资料' : '');
                 weatherEvidence(result);
             } catch (_) { if (token === generation && weatherToken === weatherGeneration && !simulated) { byId('weatherStatus').textContent = '天气暂不可用'; weatherEvidence(null); } }
         }

@@ -230,3 +230,37 @@ TEST-052 关键用例定位
 - 真实GPU和浏览器另验：按 [运行手册](local_voice_runbook.md#L1) 启动，登录后提问，核对文字先显示、真实playing时嘴型、停止清理、分段回听；停语音服务验证系统声音回退。Android真机与多人吞吐未验证。
 
 TEST-053补充：`LocalSpeechServiceTest.readTimeoutReturns504AndReleasesItsSlot` 通过真实延迟响应验证12秒读取超时映射504，再同时成功处理两个请求，证明超时释放并发额度。
+
+
+## TEST-054～059 校园首版
+
+2026年11月9日Task5 worker亲自运行全量Maven verify，301项Java通过，Node276项通过，Python数据44项和本地voice3项通过，结构检查与隔离JAR HTTP通过。命令使用本机JDK19、绝对Maven、`-o -DforkCount=0`，socket与atomic file测试在授权提升环境执行。[本机命令](campus_demo_runbook.md#L24)
+
+| 测试编号与需求 | 测试函数或文件 | 预期与失败定位 |
+|---|---|---|
+| TEST-054 / REQ-054 | [CampusCatalogTest](../src/test/java/com/guide/campus/CampusCatalogTest.java#L1)，[访客来源回归](../src/test/java/com/guide/campus/CampusCatalogTest.java#L95) | 五校区26地点、现行窗口、19变体和来源合法，失败查目录ID、校区与主/补充来源 |
+| TEST-055A / REQ-055 | [lostCardIntentSurvivesCampusClarification](../src/test/java/com/guide/campus/CampusAssistantTest.java#L29)、[routeKeepsCardDestinationWhenUserSuppliesStartingPlace](../src/test/java/com/guide/campus/CampusAssistantTest.java#L39) | 补卡消歧后仍选现行窗口，四教只作为起点 |
+| TEST-055B / REQ-055 | [真实HTTP模型工具往返](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L21)、[取消并发](../src/test/java/com/guide/campus/CampusConcurrencyTest.java#L16)、[控制器](../src/test/java/com/guide/campus/CampusControllerTest.java#L30) | 已核验ID、三轮六工具/总期限、重放取消与新会话，失败查请求身份与提交归属 |
+| TEST-055C / REQ-055 | [RETURN_STAGE](../tests/frontend/campus-page.test.js#L262)、[SHOW_MAP](../tests/frontend/campus-page.test.js#L278)、[SHOW_WEATHER](../tests/frontend/campus-page.test.js#L294) | 实际API入口返回舞台清旧图、空地点校区地图与资料不足、天气正文及已有来源入口，三项分别RED/GREEN |
+| TEST-056 / REQ-056 | [CampusWeatherServiceTest](../src/test/java/com/guide/campus/CampusWeatherServiceTest.java#L1)、[校园页面](../tests/frontend/campus-page.test.js#L1) | 缓存时点、超时、无GPS与地图降级，失败查source/timestamp与坐标系 |
+| TEST-057A / REQ-057 | [confirmed dining invitation](../tests/frontend/campus-companion.test.js#L19)、[busy defers](../tests/frontend/campus-companion.test.js#L34)、[foreground samples](../tests/frontend/campus-companion.test.js#L87) | 气泡暂缓、30秒停留/20秒采样、前台恢复与过期，失败查时间与可见性 |
+| TEST-057B / REQ-057 | [explicitLibraryInteriorUsesCatalogAliasAndConfirmsOnlyPhysicalPlace](../src/test/java/com/guide/campus/CampusAssistantTest.java#L192)、[outsideAndHypotheticalLibraryStatementsNeverConfirmInterior](../src/test/java/com/guide/campus/CampusAssistantTest.java#L201)、[explicitLibraryDepartureClearsPhysicalEvidenceAndPreservesDestination](../src/test/java/com/guide/campus/CampusAssistantTest.java#L210)、[libraryQuestionsAndHypotheticalDepartureDoNotRefreshOrClearPhysicalEvidence](../src/test/java/com/guide/campus/CampusAssistantTest.java#L224) | 馆内确认成立，馆外/门口/附近/离馆清旧位置，主题保留，假设意向不刷新时间 |
+| TEST-058 / REQ-058 | [campus-page.test.js](../tests/frontend/campus-page.test.js#L1) | 人物舞台、图片迟到隔离、真实目录素材、键盘和减少动态效果，失败查场景revision与资源ID |
+| TEST-059 / REQ-059 | [exitingSimulationWithoutGpsClearsEnvironmentAndAsksForRouteOrigin](../src/test/java/com/guide/campus/CampusAssistantTest.java#L240)、[deniedLocationAfterSimulationRemainsUnknownAndExplicitNullClearsRealPosition](../src/test/java/com/guide/campus/CampusAssistantTest.java#L255)、[页面退出](../tests/frontend/campus-page.test.js#L1) | false/null清模拟位置、time/hour/weather，拒绝定位继续问起点 |
+| TEST-054HTTP / REQ-054～059 | [verify_campus](../scripts/smoke_teacher_project.py#L76) | 真实CSRF、5/26目录、重放400/409、两Cookie、三闭环、取消/新会话、8素材magic，失败看业务断言及隔离服务日志 |
+
+```powershell
+mvn -o -DforkCount=0 verify
+node --test tests/frontend/*.test.js
+python -X utf8 scripts/check_data_integrity.py
+python -X utf8 scripts/test_data_integrity.py
+python -X utf8 scripts/check_doc_links.py
+python -X utf8 -m unittest discover -s tests -p test_local_voice_server.py
+python -X utf8 scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar --port 18090
+```
+
+目标TDD命令为 `mvn -o -DforkCount=0 -Dtest=CampusAssistantTest test`。馆内单项先RED1失败再GREEN1通过，馆外/离馆/假设三项先RED3失败，再全类22通过。旧回归JAR使用同一HTTP入口，在“Unknown gym must clear the old card destination.”断言退出1，业务检查先于素材检查。故障可检出证据留在本轮SDD报告中。
+
+`smoke_teacher_project.py --help` 给出CLI参数，支持--jar必填、--java默认java、--port默认18080、--timeout默认60。脚本仅使用临时数据和空Key，输出JSON，成功0失败1。`verify_campus(base)`可供已有隔离服务调用，只验证接口与资源，进程生命周期由调用方负责。
+
+根代理已在桌面1440×1000和手机390×844点击三个场景，最新打包页到馆/馆外声音状态复验通过。截图链接与实际边界见 [运行手册](campus_demo_runbook.md#L101)。天气当次真实供应商可达、模型HTTP替身和页面空Key证据分别记录，真实DeepSeek Key、手机GPS、声音、麦克风与GPU继续按环境验收。

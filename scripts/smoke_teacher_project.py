@@ -15,6 +15,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import uuid
 
 
 def make_opener() -> urllib.request.OpenerDirector:
@@ -70,6 +71,156 @@ def wait_ready(process: subprocess.Popen, base: str, timeout: float) -> bytes:
             if time.monotonic() >= deadline:
                 raise RuntimeError("Java server did not become ready in time.")
             time.sleep(0.25)
+
+
+def verify_campus(base: str) -> dict:
+    """REQ-054..059: verify a running empty-key campus server via real cookies/CSRF.
+
+    Input is the local server base URL. Returns check labels/counts, raises on a
+    contract regression. Process ownership stays with verify. See docs/test_reference.md.
+    """
+    opener = make_opener()
+
+    def call(path, payload=None, headers=None, visitor=opener):
+        return json.loads(fetch(base + path, payload, headers, visitor))
+
+    csrf = call("/api/auth/csrf")
+    headers = {csrf["headerName"]: csrf["token"]}
+    state = call("/api/campus/context")
+    catalog = call("/api/campus/catalog")
+    assert len(catalog["campuses"]) == 5 and len(catalog["places"]) == 26
+    assert state["contextRevision"] == 0 and state["timezone"] == "Asia/Shanghai"
+    assert state["serverTime"] and state["placeId"] is None
+
+    def payload(message, context=None, origin="user"):
+        body = {"requestId": str(uuid.uuid4()), "conversationId": state["conversationId"],
+                "contextRevision": state["contextRevision"], "message": message, "origin": origin}
+        if context is not None:
+            body["context"] = context
+        return body
+
+    def ask(message, context=None, origin="user"):
+        nonlocal state
+        turn = call("/api/campus/chat", payload(message, context, origin), headers)
+        assert turn["mode"] == "local" and turn["reply"] and turn["speech"]
+        state = turn["context"]
+        return turn
+
+    def new():
+        nonlocal state
+        old = state["conversationId"]
+        state = call("/api/campus/new", {}, headers)
+        assert state["conversationId"] != old and state["contextRevision"] == 0
+        assert state["placeId"] is None and not state.get("position")
+
+    def rejected(body, status, visitor=opener, request_headers=headers, path="/api/campus/chat"):
+        actual, response = status_of(base + path, body, request_headers, visitor)
+        assert actual == status, (path, actual, response)
+        return response
+
+    rejected(payload("补卡"), 403, request_headers={})
+    first_request = payload("我的校园卡丢了，去哪补")
+    first = call("/api/campus/chat", first_request, headers)
+    assert "校区" in first["reply"] and len(first["choices"]) == 6
+    replay = call("/api/campus/chat", first_request, headers)
+    assert replay == first, "Identical request replay must return the same committed turn."
+    state = first["context"]
+    rejected({**first_request, "message": "另一个问题"}, 409)
+    rejected({**payload("旧版本"), "contextRevision": 0}, 409)
+    rejected({**payload("无效地点"), "placeId": "missing"}, 400)
+    rejected({**payload("无效输入"), "message": " "}, 400)
+    after_invalid = call("/api/campus/context")
+    assert after_invalid["contextRevision"] == state["contextRevision"]
+    assert after_invalid["placeId"] == state["placeId"]
+
+    other = make_opener()
+    other_csrf = call("/api/auth/csrf", visitor=other)
+    other_headers = {other_csrf["headerName"]: other_csrf["token"]}
+    other_state = call("/api/campus/context", visitor=other)
+    assert other_state["conversationId"] != state["conversationId"] and other_state["campusId"] is None
+    rejected(payload("跨Cookie请求"), 409, visitor=other, request_headers=other_headers)
+
+    card = ask("我在平乐园")
+    assert card["sceneAction"]["type"] == "SHOW_SERVICE_TASK"
+    assert state["placeId"] == "pingleyuan-card-service"
+    assert "学综楼" in card["reply"] and "1—3" in card["reply"] and card["references"]
+    origin = ask("带我过去")
+    assert "起点" in origin["reply"] and origin["sceneAction"]["type"] == "KEEP_SCENE"
+    route = ask("我在四教")
+    assert route["sceneAction"]["type"] == "SHOW_ROUTE"
+    assert state["placeId"] == "pingleyuan-card-service"
+    assert state["position"]["placeId"] == "pingleyuan-fourth-teaching"
+    assert "坐标" in route["reply"]
+    gym = ask("健身房在哪")
+    assert gym["context"]["placeId"] is None and "routePending" not in state, "Unknown gym must clear the old card destination."
+    assert ask("带我过去")["sceneAction"]["type"] != "SHOW_ROUTE"
+
+    new()
+    visitor = ask("平乐园，我是访客，图书馆能做什么")
+    assert visitor["sceneAction"]["type"] == "SHOW_PLACE"
+    study = ask("想在图书馆安静学习")
+    assert study["sceneAction"]["taskId"] == "library-study"
+    assert "申请" in study["reply"] and study["references"]
+    assert any(ref["url"] == "https://lib.bjut.edu.cn/info/1147/1005.htm" for ref in study["references"])
+    photo = ask("看看这个地点的实景")
+    assert photo["sceneAction"]["placeIds"] == ["pingleyuan-library"]
+    assert "外观" in photo["reply"] and not state.get("position")
+    inside = ask("我已经在图书馆内")
+    assert inside["context"]["position"]["placeId"] == "pingleyuan-library", "Explicit interior must confirm arrival."
+    assert state["position"]["source"] == "confirmed" and "latitude" not in state["position"]
+    topic = state["placeId"]
+    physical = state["position"].copy()
+    ask("如果我在图书馆")
+    assert state["position"] == physical, "Hypothetical must not refresh physical evidence."
+    outside = ask("我在图书馆外")
+    assert outside["context"]["position"] is None and state["placeId"] == topic
+    for text in ("我在图书馆门口", "我在图书馆附近", "我想去图书馆", "如果我在图书馆"):
+        assert not ask(text)["context"].get("position"), text
+
+    new()
+    dining = ask("通州午饭吃什么")
+    assert dining["sceneAction"]["type"] == "SHOW_DINING" and 4 <= len(dining["choices"]) <= 6
+    assert {"followup", "custom"}.issubset({choice["kind"] for choice in dining["choices"]})
+    actual_choice = next(choice for choice in dining["choices"] if choice["kind"] == "ask")
+    chosen = ask(actual_choice["message"], origin="choice")
+    assert chosen["sceneAction"]["type"] == "SHOW_PLACE", "Actual dining choice.message must open its place."
+    assert state["placeId"] == "tongzhou-student-dining"
+    new()
+    ask("平乐园补卡", {"simulated": True, "hour": 12, "time": "2026-11-09T12:00:00+08:00",
+                         "weather": {"temperatureC": 20, "weatherCode": 0}, "position": {
+                             "placeId": "pingleyuan-fourth-teaching", "source": "simulated",
+                             "timestamp": int(time.time() * 1000)}})
+    exited = ask("带我过去", {"simulated": False, "position": None})
+    assert state["simulated"] is False and state["position"] is None
+    assert not any(key in state for key in ("hour", "time", "weather"))
+    assert exited["sceneAction"]["type"] == "KEEP_SCENE" and "起点" in exited["reply"]
+    assert ask("带我过去")["sceneAction"]["type"] != "SHOW_ROUTE"
+    canceled_request = payload("被取消的请求")
+    canceled = call("/api/campus/cancel", {key: canceled_request[key] for key in ("conversationId", "requestId")}, headers)
+    assert canceled["canceled"] is True
+    rejected(canceled_request, 409)
+    old = canceled_request.copy()
+    new()
+    rejected(old, 409)
+    assert status_of(base + "/api/campus/weather?latitude=999&longitude=116", opener=opener)[0] == 400
+
+    # Business assertions run before assets so older JARs fail for the known behavior.
+    assert len(catalog["assets"]) == 8
+    assert b"campus" in fetch(base + "/campus.html")
+    for resource in ("/css/campus.css", "/js/campus.js", "/js/campus-scene.js", "/js/campus-companion.js",
+                     "/js/campus-environment.js", "/js/campus-voice.js"):
+        assert fetch(base + resource), resource
+    for asset in catalog["assets"]:
+        content = fetch(base + asset["path"])
+        image = (content.startswith(b"\x89PNG\r\n\x1a\n") or content.startswith(b"\xff\xd8\xff")
+                 or content.startswith((b"GIF87a", b"GIF89a"))
+                 or content.startswith(b"RIFF") and content[8:12] == b"WEBP")
+        assert image, (asset["id"], "Image magic does not match a common raster format.")
+    return {"campus_count": 5, "place_count": 26, "asset_count": 8,
+            "checks": ["campus_csrf", "campus_replay", "campus_400_409", "campus_cookie_isolation",
+                       "campus_card_route", "campus_unknown_gym", "campus_library_visitor_sources",
+                       "campus_interior_exterior", "campus_dining_choice", "campus_simulation_exit",
+                       "campus_cancel_new", "campus_weather_invalid", "campus_http_assets"]}
 
 
 def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
@@ -285,7 +436,7 @@ def verify(jar: Path, java: str, port: int, timeout: float) -> dict:
                 wait_ready(process, base, timeout)
                 assert json.loads(fetch(base + "/api/digital-human-config")) == expected
                 assert status_of(base + "/api/admin/digital-human-config")[0] == 401
-                return {"status": "passed", "spot_count": len(spots),
+                return {"status": "passed", "spot_count": len(spots), "campus": verify_campus(base),
                         "checks": ["homepage", "spots", "csrf_token", "public_config",
                                    "narration_modes", "narration_session_restore", "narration_invalid_rollback", "narration_reset",
                                    "journey_assets", "followup_asset", "audio_asset", "theme_three_stops", "theme_invalid_rollback", "local_followup_replies", "journey_station_handoff", "knowledge_candidate_contract",

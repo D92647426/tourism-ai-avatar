@@ -60,7 +60,7 @@ final class CampusModelTools {
                 String origin = context.path("position").path("placeId").asText("");
                 if (catalog.place(origin) != null) route.set("origin", catalog.place(origin));
                 route.put("status", origin.isEmpty() ? "origin-required" : "address-preview");
-                route.put("notice", "坐标未核验，不提供距离、耗时和逐步导航；浏览目的地不表示到达。");
+                route.put("notice", "当前提供地址预览。建筑入口坐标、距离、耗时与逐步路线待核验。物理位置由设备采样或用户确认。");
                 return route;
             case "get_weather":
                 if (context.path("simulated").asBoolean() && context.path("weather").isObject()) return context.path("weather").deepCopy();

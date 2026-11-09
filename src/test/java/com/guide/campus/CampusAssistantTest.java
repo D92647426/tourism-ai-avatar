@@ -189,6 +189,46 @@ class CampusAssistantTest {
         assertTrue(dining.path("reply").asText().contains("学生食堂"));
     }
 
+    @Test void explicitLibraryInteriorUsesCatalogAliasAndConfirmsOnlyPhysicalPlace() {
+        ask("平乐园补卡");
+        ObjectNode arrived = ask("我已经在图书馆内");
+        assertEquals("pingleyuan-library", arrived.path("context").path("position").path("placeId").asText());
+        assertEquals("confirmed", arrived.path("context").path("position").path("source").asText());
+        assertEquals("pingleyuan-card-service", arrived.path("context").path("placeId").asText());
+        assertFalse(arrived.path("context").path("position").has("latitude"));
+    }
+
+    @Test void outsideAndHypotheticalLibraryStatementsNeverConfirmInterior() {
+        for (String message : new String[]{"我在图书馆外", "我在图书馆门口", "我在图书馆附近",
+                "我想去图书馆", "如果我在图书馆", "假如我已经在图书馆内"}) {
+            service.start(session);
+            ask("我在平乐园");
+            assertFalse(ask(message).path("context").hasNonNull("position"), message);
+        }
+    }
+
+    @Test void explicitLibraryDepartureClearsPhysicalEvidenceAndPreservesDestination() {
+        for (String message : new String[]{"我在图书馆外", "我现在在图书馆门口", "我在图书馆附近",
+                "我已经离开图书馆", "我已经出馆了", "我不在图书馆里了"}) {
+            service.start(session);
+            ask("平乐园补卡");
+            ask("我在图书馆");
+            ObjectNode departed = ask(message);
+            assertTrue(departed.path("context").path("position").isNull(), message);
+            assertEquals("pingleyuan-card-service", departed.path("context").path("placeId").asText(), message);
+            assertEquals("campus-card", departed.path("context").path("taskId").asText(), message);
+            assertTrue(ask("带我过去").path("reply").asText().contains("起点"), message);
+        }
+    }
+
+    @Test void libraryQuestionsAndHypotheticalDepartureDoNotRefreshOrClearPhysicalEvidence() {
+        ask("平乐园补卡");
+        ObjectNode arrived = ask("我在图书馆");
+        for (String message : new String[]{"我想去图书馆", "如果我在图书馆", "如果我离开图书馆", "图书馆外有什么"}) {
+            assertEquals(arrived.path("context").path("position"), ask(message).path("context").path("position"), message);
+        }
+    }
+
     private void startSimulatedCardVisit() {
         ObjectNode context = mapper.createObjectNode().put("simulated", true).put("hour", 12).put("time", "2026-11-09T12:00:00+08:00");
         context.putObject("weather").put("temperatureC", 20).put("weatherCode", 0);

@@ -31,7 +31,7 @@
 | server.servlet.session.cookie.same-site | 枚举，lax | 降低跨站请求携带会话 Cookie 的风险 |
 | ai.api-key | 字符串，读取 DEEPSEEK_API_KEY，默认空 | 模型凭据，空值进入本地降级回答 |
 | ai.base-url | URL，源码默认 DeepSeek v1 地址 | 模型 API 基址，改变后验证响应兼容性 |
-| ai.model | 字符串，源码默认 deepseek-chat | 模型名称，使用服务商实际支持的名称 |
+| ai.model / DEEPSEEK_MODEL | 字符串，默认 deepseek-flash，非必填 | 模型名称，需用供应商实际支持的名称并重启验证 |
 | data.knowledge-file | 路径，data/knowledge.json | 可维护知识；外部合法文件优先（含空数组），缺文件时写打包默认库，损坏时降级且不覆盖原文件；加载逻辑见 [KnowledgeService.java:L75](../src/main/java/com/guide/service/KnowledgeService.java#L75) |
 | data.interactions-file | 路径，data/interactions.json | 本地问答记录，被 Git 忽略 |
 | data.config-file | 路径，data/config.json | 显示和语音设置 |
@@ -119,3 +119,25 @@ REQ-047内部调用参数：GuideChatRequest.create 的 requireCorrectionOn400�
 | --port | 整数/9880/否 | Python固定127.0.0.1，只改端口；与Javabase-url对应 | [load_engine](../scripts/local_voice_server.py#L94)，[Python工作进程测试](../tests/test_local_voice_server.py#L17) |
 
 固定限额：工作进程2个请求、1个推理；Java并发2，连接800ms/单次读取12秒/响应4MiB。网页按32字符或标点切句，初始等待8秒后回退，播放故障上限沿用120秒。不保证硬取消GPU或总请求严格12秒。运行与素材条件见 [手册](local_voice_runbook.md#L1)。
+
+
+## REQ-054～059 校园配置与固定边界
+
+校园独立加载 [campus/catalog.json](../src/main/resources/campus/catalog.json#L1)，版本默认2026-11-09，必需对象为campuses/places/tasks/assets。ID、别名、校区与人群、来源、资源路径、坐标核验状态在加载时校验，重复或无效关联拒绝启动。外部景区知识路径继续由data.knowledge-file维护，校园目录随JAR发布。[目录构造和校验](../src/main/java/com/guide/campus/CampusCatalog.java#L34)
+
+| 字段或代码参数 | 类型、默认、必填 | 业务用途及修改风险 | 使用位置和测试 |
+|---|---|---|---|
+| ai.api-key / DEEPSEEK_API_KEY | 字符串，空，否 | 空值运行本地闭环，非空请求模型，凭据只放环境 | [配置](../src/main/resources/application.yml#L22)、[HTTP工具往返](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L21) |
+| ai.base-url | URL，https://api.deepseek.com/v1，否 | 继承模型传输基址，改供应商后核对工具协议 | [客户端](../src/main/java/com/guide/service/AiCompletionClient.java#L134) |
+| ai.model / DEEPSEEK_MODEL | 字符串，deepseek-flash，否 | 模型选择，改动后需真实Key联调 | [配置](../src/main/resources/application.yml#L23)、[HTTP工具测试](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L21) |
+| DigitalHumanConfig.voiceType/volume/speechRate | 字符串/0～1数值/0.5～2数值，沿用公开配置，否 | 校园消费声线音量语速，音量0保留静音 | [声音加载](../src/main/resources/static/js/campus-voice.js#L86)、[页面测试](../tests/frontend/campus-page.test.js#L1) |
+| catalog.campuses[].mapPreview | 可选对象，本部有WGS84范围 | 只表达校区范围，变更需核对边界和ODbL署名 | [范围渲染](../src/main/resources/static/js/campus-scene.js#L20)、[目录测试](../src/test/java/com/guide/campus/CampusCatalogTest.java#L1) |
+| catalog.tasks[].variants[].sourceRefs | 可选title/url对象数组，默认省略 | 补充规则来源，访客用途保持入馆规则可追溯 | [来源校验](../src/main/java/com/guide/campus/CampusCatalog.java#L245)、[来源回归](../src/test/java/com/guide/campus/CampusCatalogTest.java#L95) |
+| weather固定供应商与期限 | 代码常量，Open-Meteo，连接2000ms/读取3000ms | 供应商错误返回unavailable/stale，超时影响等待 | [天气传输](../src/main/java/com/guide/campus/CampusWeatherService.java#L28)、[缓存测试](../src/test/java/com/guide/campus/CampusWeatherServiceTest.java#L1) |
+| weather缓存/容量/响应上限 | 代码常量，600000ms/64项/16384字节 | 过期刷新失败保留原时点，变更影响时效与内存 | [天气缓存](../src/main/java/com/guide/campus/CampusWeatherService.java#L30)、[边界测试](../src/test/java/com/guide/campus/CampusWeatherServiceTest.java#L1) |
+| 模型工具与总期限 | 代码常量，3轮/每轮6次/20000ms | 超限回本地，工作池4线程加8等待项 | [校园编排](../src/main/java/com/guide/campus/CampusModelOrchestrator.java#L18)、[并发测试](../src/test/java/com/guide/campus/CampusConcurrencyTest.java#L16) |
+| 前台陪伴规则 | 代码初值，位置30秒/40米，停留30秒，两采样间隔20秒 | 气泡有效60秒、冷却10分钟，进入100米/离开150米需要核验区域 | [纯规则](../src/main/resources/static/js/campus-companion.js#L16)、[规则测试](../tests/frontend/campus-companion.test.js#L19) |
+
+校园名称、欢迎语与配色由校园页面维护，公开配置中的景区显示字段仅供旧页面使用。校园页面默认regions为空，建筑入口未核验时采用明确确认或模拟。模拟时钟加速30秒，天气固定晴18℃，退出会清除模拟条件并重新定位。[环境适配](../src/main/resources/static/js/campus-environment.js#L103)
+
+改校园目录或上述代码常量后运行 `mvn -o -DforkCount=0 verify`、`node --test tests/frontend/*.test.js` 和隔离HTTP冒烟。供应商配置、模型Key、真实地图和设备权限另外按 [运行手册](campus_demo_runbook.md#L1)验证。

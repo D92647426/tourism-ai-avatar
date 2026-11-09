@@ -47,11 +47,13 @@ final class CampusLocalAnswers {
         }
         ObjectNode mentioned = mentionedPlace(message, context.path("campusId").asText());
         boolean arrival = confirmedArrival(request.path("message").asText(), mentioned);
+        boolean departure = confirmedDeparture(request.path("message").asText(), mentioned, context);
+        if (departure) context.putNull("position");
         if (arrival && mentioned != null) {
             context.putObject("position").put("placeId", mentioned.path("id").asText())
                     .put("timestamp", System.currentTimeMillis()).put("source", "confirmed");
         }
-        if ((!taskId.isEmpty() || mentioned != null) && !arrival) context.remove("routePending");
+        if ((!taskId.isEmpty() || mentioned != null) && !arrival && !departure) context.remove("routePending");
         if (message.contains("实景") || message.contains("照片") || message.contains("外观")) {
             ObjectNode preview = mentioned == null ? catalog.place(context.path("placeId").asText()) : mentioned;
             if (preview != null && preview.path("assetIds").isEmpty() && preview.path("id").asText().startsWith("pingleyuan-library-")) {
@@ -102,7 +104,7 @@ final class CampusLocalAnswers {
                 return turn;
             }
         }
-        if (mentioned != null && !arrival && taskId.isEmpty()) {
+        if (mentioned != null && !arrival && !departure && taskId.isEmpty()) {
             context.put("placeId", mentioned.path("id").asText());
             context.remove("taskId");
             reply(turn, mentioned.path("summary").asText() + " " + mentioned.path("address").asText());
@@ -183,13 +185,35 @@ final class CampusLocalAnswers {
         return turn;
     }
 
+    /** REQ-057: explicit current-place statements establish physical evidence without inventing coordinates. */
     private boolean confirmedArrival(String message, ObjectNode place) {
-        if (place == null) return false;
+        if (place == null || hypothetical(message)) return false;
         for (JsonNode alias : place.path("aliases")) {
-            if (message.matches("(?s).*(?:我在|我到了|我已经进入|我现在在)\\s*"
-                    + java.util.regex.Pattern.quote(alias.asText()) + ".*")) return true;
+            String name = java.util.regex.Pattern.quote(alias.asText());
+            if (message.matches("(?s).*我(?:已经|现在)?(?:在|到了|到达|进入|进了)\\s*" + name
+                    + "(?!外|门口|附近|周边|旁边|门外|外面).*")) return true;
         }
         return false;
+    }
+
+    /** REQ-057: outside/departure clears physical evidence only, preserving the topic and route destination. */
+    private boolean confirmedDeparture(String message, ObjectNode place, ObjectNode context) {
+        if (hypothetical(message)) return false;
+        if (place != null) {
+            for (JsonNode alias : place.path("aliases")) {
+                String name = java.util.regex.Pattern.quote(alias.asText());
+                if (message.matches("(?s).*我(?:已经|现在)?(?:在|到了|到达)\\s*" + name + "(?:外|门口|附近|周边|旁边).*")
+                        || message.matches("(?s).*我(?:已经|现在)?(?:离开|走出|出了|不在)\\s*" + name + ".*")
+                        || message.matches("(?s).*我(?:已经|现在)?从\\s*" + name + "(?:里|内)?(?:出来|离开).*")) return true;
+            }
+        }
+        ObjectNode previous = catalog.place(context.path("position").path("placeId").asText());
+        return previous != null && "library".equals(previous.path("category").asText())
+                && message.matches("(?s).*我(?:已经|现在)?(?:出馆|离馆)(?:了|啦)?[。！!\\s]*");
+    }
+
+    private boolean hypothetical(String message) {
+        return message.matches("(?s).*(?:如果|假如|假设|要是|假想|假装).*");
     }
 
     private String matchedTask(String message) {

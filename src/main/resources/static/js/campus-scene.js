@@ -104,6 +104,7 @@
         function render(turn) {
             var action = turn.sceneAction || {};
             if (action.type === 'KEEP_SCENE') return;
+            if (action.type === 'RETURN_STAGE') { clear(); return; }
             var own = ++epoch; backdrop.style.backgroundImage = ''; content.replaceChildren(); stage.scrollTop = 0;
             var places = (action.placeIds || []).map(place).filter(Boolean), p = places[0];
             stage.classList.add('has-scene'); panel.hidden = false;
@@ -116,7 +117,15 @@
                     if (variant.unknownFields.length) content.appendChild(element('p', '材料、时段与适用条件请再核对当前通知。', 'unknown-note'));
                 }
             }
-            if (action.type === 'SHOW_DINING') {
+            if (action.type === 'SHOW_MAP') {
+                var campus = catalog.campuses.find(function (item) { return item.id === (turn.context || {}).campusId; });
+                content.appendChild(campus ? mapPanel(campus) : element('p', '校区待确认，可以先在对话中说明校区。'));
+            } else if (action.type === 'SHOW_WEATHER') {
+                content.appendChild(element('p', turn.reply));
+                var evidence = element('a', '查看天气资料与来源'); evidence.href = '#weatherDetails';
+                evidence.addEventListener('click', function () { document.getElementById('weatherDetails').open = true; });
+                content.appendChild(evidence);
+            } else if (action.type === 'SHOW_DINING') {
                 var list = element('div', null, 'place-list');
                 places.forEach(function (item) {
                     var card = element('article', null, 'place-item'); card.appendChild(element('h2', item.name));
