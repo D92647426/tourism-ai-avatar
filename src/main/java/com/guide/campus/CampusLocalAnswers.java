@@ -76,7 +76,9 @@ final class CampusLocalAnswers {
             return turn;
         }
         boolean specificDiningPlace = mentioned != null && "dining".equals(mentioned.path("category").asText());
-        if (!specificDiningPlace && message.matches(".*(吃什么|吃饭|午饭|晚饭|早饭|食堂|餐饮).*")) {
+        boolean asksForDiningRecommendation = message.matches(".*(吃什么|吃点什么|吃啥|推荐|有哪些|有什么).*");
+        if ((!specificDiningPlace || asksForDiningRecommendation)
+                && message.matches(".*(吃什么|吃饭|午饭|晚饭|早饭|食堂|餐饮).*")) {
             return dining(context, turn);
         }
         if (message.contains("带我过去") || message.contains("怎么走") || message.contains("导航")) {

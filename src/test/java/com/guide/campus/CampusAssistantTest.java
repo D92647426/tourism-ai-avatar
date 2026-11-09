@@ -169,6 +169,24 @@ class CampusAssistantTest {
         assertEquals("SHOW_PLACE", selected.path("sceneAction").path("type").asText());
         assertEquals("tongzhou-student-dining", selected.path("context").path("placeId").asText());
         assertEquals("SHOW_DINING", ask("有什么食堂").path("sceneAction").path("type").asText());
+        ObjectNode location = ask("学生食堂在哪");
+        assertEquals("SHOW_PLACE", location.path("sceneAction").path("type").asText());
+        assertEquals("tongzhou-student-dining", location.path("sceneAction").path("placeIds").path(0).asText());
+    }
+
+    @Test void diningRecommendationPreservesIntentWhenNewConversationIncludesCurrentDiningPlace() {
+        ObjectNode dining = ask("通州，我在学生食堂，午饭吃什么");
+        assertEquals("SHOW_DINING", dining.path("sceneAction").path("type").asText());
+        assertEquals("tongzhou-student-dining", dining.path("context").path("position").path("placeId").asText());
+        assertTrue(dining.path("reply").asText().contains("学生食堂"));
+    }
+
+    @Test void diningRecommendationPreservesIntentAtKnownCampusWithCurrentDiningPlace() {
+        ask("我在通州");
+        ObjectNode dining = ask("我在学生食堂，午饭吃什么");
+        assertEquals("SHOW_DINING", dining.path("sceneAction").path("type").asText());
+        assertEquals("tongzhou-student-dining", dining.path("context").path("position").path("placeId").asText());
+        assertTrue(dining.path("reply").asText().contains("学生食堂"));
     }
 
     private void startSimulatedCardVisit() {
