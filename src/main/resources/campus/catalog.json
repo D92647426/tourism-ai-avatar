@@ -59,12 +59,14 @@
     {
       "id": "pingleyuan-library",
       "campusId": "pingleyuan",
-      "name": "图书馆",
+      "name": "逸夫图书馆",
       "aliases": [
         "本部图书馆",
         "平乐园图书馆",
         "图书馆",
-        "图书馆外观"
+        "图书馆外观",
+        "逸夫图书馆",
+        "逸夫馆"
       ],
       "category": "library",
       "summary": "本部图书馆提供阅览、自修、研讨与借阅服务。人工咨询位于二层总服务台，具体日期服务时段待核实。",

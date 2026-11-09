@@ -34,6 +34,7 @@ class CampusCatalogTest {
         assertEquals(3, libraries.size());
         assertEquals("pingleyuan-library", catalog.searchPlaces("图书馆", "pingleyuan")
                 .get(0).path("id").asText());
+        assertEquals("逸夫图书馆", catalog.place("pingleyuan-library").path("name").asText());
         assertEquals(2, catalog.searchPlaces("图书馆", "tongzhou").size());
         assertEquals("汲学馆", catalog.place("tongzhou-jixue-library").path("name").asText());
         assertEquals("耕园馆", catalog.place("tongzhou-gengyuan-library").path("name").asText());
@@ -123,7 +124,7 @@ class CampusCatalogTest {
         results.clear();
         assertEquals(5, catalog.snapshot().path("campuses").size());
         assertEquals("校本部（平乐园）", catalog.campus("pingleyuan").path("name").asText());
-        assertEquals("图书馆", catalog.place("pingleyuan-library").path("name").asText());
+        assertEquals("逸夫图书馆", catalog.place("pingleyuan-library").path("name").asText());
         assertFalse(catalog.place("pingleyuan-library").path("aliases").isEmpty());
         assertFalse(catalog.place("pingleyuan-library").path("assetIds").isEmpty());
         assertFalse(catalog.task("campus-card").path("variants").isEmpty());
