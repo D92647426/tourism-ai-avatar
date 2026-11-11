@@ -109,12 +109,12 @@ PR #51已合并，#50已完成关闭。用户已确认改为面向新生和访�
 
 | 议题 | 本轮内容 | 当前阶段 |
 |---|---|---|
-| [#52](https://github.com/D92647426/tourism-ai-avatar/issues/52) | 校区、地点和办事知识目录 | 已实现并验收，待PR #64合并 |
-| [#53](https://github.com/D92647426/tourism-ai-avatar/issues/53) | DS对话驱动场景与连续办事 | 已实现并验收，待PR #64合并 |
-| [#54](https://github.com/D92647426/tourism-ai-avatar/issues/54) | 位置、时间、天气、地图与导航衔接 | 已实现并验收，待PR #64合并 |
+| [#52](https://github.com/D92647426/tourism-ai-avatar/issues/52) | 校区、地点和办事知识目录 | 已完成，PR #64已合并 |
+| [#53](https://github.com/D92647426/tourism-ai-avatar/issues/53) | DS对话驱动场景与连续办事 | 已完成，PR #64已合并 |
+| [#54](https://github.com/D92647426/tourism-ai-avatar/issues/54) | 位置、时间、天气、地图与导航衔接 | 已完成，PR #64已合并 |
 | [#55](https://github.com/D92647426/tourism-ai-avatar/issues/55) | 前台陪伴与主动气泡 | 饭点与到馆首版已实现，后续触发见#61 |
-| [#56](https://github.com/D92647426/tourism-ai-avatar/issues/56) | 燕小北人物舞台及实景转场 | 已实现并验收，待PR #64合并 |
-| [#57](https://github.com/D92647426/tourism-ai-avatar/issues/57) | 三场景演示与集成验收 | 三场景、集成与手册已完成，待PR #64合并 |
+| [#56](https://github.com/D92647426/tourism-ai-avatar/issues/56) | 燕小北人物舞台及实景转场 | 已完成，PR #64已合并 |
+| [#57](https://github.com/D92647426/tourism-ai-avatar/issues/57) | 三场景演示与集成验收 | 已完成，PR #64已合并 |
 | [#58](https://github.com/D92647426/tourism-ai-avatar/issues/58) | 校外真实评分与近期菜品资料 | 后续开发 |
 | [#59](https://github.com/D92647426/tourism-ai-avatar/issues/59) | 建筑入口及可通行路线实地核验 | 后续开发 |
 | [#60](https://github.com/D92647426/tourism-ai-avatar/issues/60) | 其他校区内部地点与事务扩充 | 后续开发 |
@@ -127,3 +127,13 @@ PR #51已合并，#50已完成关闭。用户已确认改为面向新生和访�
 最终阻断问题已通过独立复核，根代理完整复验Java312、Node285、数据44、Python语音3和旧景区加校园HTTP冒烟。普通模式人工位置复核、真实时间等候邀约以及照片切换后的新导航目标均已实际浏览器验证。当前分支已提交[PR #64](https://github.com/D92647426/tourism-ai-avatar/pull/64)，#55后续触发和#58～#63继续保持open。
 
 本轮新建后续议题 #61、#62、#63。优先完成 #62 校园默认入口和内容管理迁移、#59 实地坐标核验，随后按依赖推进 #61 主动情境、#58 餐饮评分和 #60 跨校区资料。自动检查结果可直接查看PR。
+
+## 2026-11-11 合并校园Demo并改进转场
+
+用户要求先合并当前版本，PR #64已合并到main，合并提交a589c626c99fe13090339d7b19828bd00ed3188a。#52、#53、#54、#56、#57已完成关闭。#55继续追踪后续陪伴情境。
+
+本轮新建[#65 场景自然转场](https://github.com/D92647426/tourism-ai-avatar/issues/65)，在codex/campus-scene-transitions实现图片交叉淡入、人物平滑移位、内容裁切与回复建议渐显。快速切换及新对话按轮次隔离，系统减少动态效果使用即时呈现。提交状态以本节后续PR记录为准。
+
+后续继续为#58校外评分、#59入口坐标与路网核验、#60其他校区资料、#61更多主动情境、#62校园默认入口与管理迁移、#63父馆照片关联。#1、#2、#3由小组推进真实协作、互审及来源记录。[实现与验收](../tests/frontend/campus-motion.test.js#L17)。
+
+本轮已提交[PR #66](https://github.com/D92647426/tourism-ai-avatar/pull/66)，#65已实现并完成本机验收，当前待评审合并。Java312、Node300、数据44、voice3、文档及隔离HTTP通过。18089本地演示已更新为该分支打包版本。

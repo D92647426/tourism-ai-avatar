@@ -8,10 +8,10 @@ const catalog = JSON.parse(fs.readFileSync(path.join(root, 'src/main/resources/c
 const response = (data, status = 200) => ({ok: status < 400, status, json: async () => data});
 const flush = async () => { for (let i = 0; i < 12; i++) await new Promise(r => setImmediate(r)); };
 function page(options = {}) {
-    const time = clock(), nodes = new Map(), requests = [], images = [], utterances = [], recognitions = [], geo = [], calls = [], watches = [], clearedWatches = [];
+    const time = clock(), nodes = new Map(), requests = [], images = [], utterances = [], recognitions = [], geo = [], calls = [], watches = [], clearedWatches = [], transitions = [];
     let now = Date.parse('2026-11-09T04:00:00Z'), stops = 0, contextReads = 0;
     class Element {
-        constructor(tag = 'div') { this.tagName = tag.toUpperCase(); this.children = []; this.events = {}; this.attributes = {}; this.dataset = {}; this.style = {}; this.value = ''; this.hidden = false; this.disabled = false; this._text = ''; this.classes = new Set(); }
+        constructor(tag = 'div') { this.tagName = tag.toUpperCase(); this.children = []; this.events = {}; this.attributes = {}; this.dataset = {}; this.style = {setProperty(key,value){this[key]=value;}}; this.value = ''; this.hidden = false; this.disabled = false; this._text = ''; this.classes = new Set(); }
         get textContent() { return this._text + this.children.map(c => c.textContent).join(''); }
         set textContent(v) { this._text = String(v); this.children = []; }
         get className() { return [...this.classes].join(' '); }
@@ -30,6 +30,7 @@ function page(options = {}) {
         removeAttribute(k) { delete this.attributes[k]; }
         focus() { document.activeElement = this; }
         scrollIntoView() {}
+        getBoundingClientRect() { return {top:70,bottom:615}; }
     }
     const html = fs.readFileSync(path.join(root, 'src/main/resources/static/campus.html'), 'utf8');
     for (const match of html.matchAll(/<([a-z]+)\b([^>]*\bid="([^"]+)"[^>]*)>/g)) {
@@ -41,6 +42,16 @@ function page(options = {}) {
     const document = {hidden:false, body:new Element(), documentElement:new Element(),
         getElementById:id => nodes.get(id) || null, createElement:tag => new Element(tag), createElementNS:(_,tag) => new Element(tag),
         addEventListener:documentEvents.addEventListener.bind(documentEvents)};
+    if (options.viewTransitions) document.startViewTransition = update => {
+        if (options.transitionThrows) throw new Error('snapshot unavailable');
+        const ready = deferred(), finished = deferred();
+        let committed = false;
+        const transition = {ready:ready.promise,finished:finished.promise,skipped:false,
+            commit() { if (committed) return; committed = true; update(); this.skipped ? ready.reject(new Error('skipped')) : ready.resolve(); if (this.skipped) finished.resolve(); },
+            finish() { finished.resolve(); },
+            skipTransition() { this.skipped = true; ready.reject(new Error('skipped')); if (committed) finished.resolve(); }};
+        transitions.push(transition); return transition;
+    };
     class Image { constructor(){images.push(this);} }
     class Recognition { constructor(){recognitions.push(this);} start(){ if(this.onstart)this.onstart(); } stop(){} abort(){} }
     const voiceEvents = new Element();
@@ -61,7 +72,7 @@ function page(options = {}) {
         navigator:{geolocation:{getCurrentPosition:(ok,bad) => geo.push({ok,bad}),
             watchPosition:(ok,bad) => { const watch={ok,bad,id:watches.length};watches.push(watch);return watch.id; },
             clearWatch:id => clearedWatches.push(id)}},
-        matchMedia:() => ({matches:!!options.reducedMotion}), SpeechRecognition:Recognition,
+        innerHeight:1000,matchMedia:() => ({matches:!!options.reducedMotion}), SpeechRecognition:Recognition,
         speechSynthesis:synthesis,SpeechSynthesisUtterance:function(text){this.text=text;},Audio:options.Audio || function(){},
         addEventListener:windowEvents.addEventListener.bind(windowEvents),localStorage:{getItem:()=>null,setItem(){}},location:{},
         open:()=>{},requestAnimationFrame:fn=>time.setTimeout(fn,16),cancelAnimationFrame:time.clearTimeout});
@@ -69,7 +80,7 @@ function page(options = {}) {
     for (const [,src] of html.matchAll(/<script\b[^>]*src="(\/js\/[^\"]+)"[^>]*>/g)) {
         const name = src.slice(4).split('?')[0]; vm.runInContext(fs.readFileSync(path.join(root,'src/main/resources/static/js',name),'utf8'),context,{filename:name});
     }
-    return {nodes,time,requests,images,utterances,recognitions,geo,calls,context,catalog,watches,clearedWatches,
+    return {nodes,time,requests,images,utterances,recognitions,geo,calls,context,catalog,watches,clearedWatches,transitions,
         get stops(){return stops;}, tick(ms){now+=ms;time.tick(ms);},
         send(text){nodes.get('campusInput').value=text;nodes.get('campusForm').fire('submit');},
         click(id){nodes.get(id).fire('click');}, hide(){document.hidden=true;documentEvents.fire('visibilitychange');},

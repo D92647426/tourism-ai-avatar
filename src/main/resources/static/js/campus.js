@@ -69,12 +69,14 @@
         });
     }
     function render(turn) {
-        byId('campusReply').textContent = turn.reply;
-        byId('replyMode').textContent = turn.mode === 'deepseek' ? '校园资料与智能回答' : turn.mode === 'local-fallback' ? '已使用校园资料回答' : '校园资料回答';
-        byId('greeting').textContent = '我陪你一起看看。';
-        choices(turn.choices); byId('referenceLinks').replaceChildren();
-        (turn.references || []).forEach(function (reference) { byId('referenceLinks').appendChild(CampusScene.link(reference.title,reference.url)); });
-        scene.render(turn); lastSpeech = turn.speech || turn.reply;
+        lastSpeech = turn.speech || turn.reply;
+        scene.render(turn,function () {
+            byId('campusReply').replaceChildren(CampusScene.element('span',turn.reply,'reply-text'));
+            byId('replyMode').textContent = turn.mode === 'deepseek' ? '校园资料与智能回答' : turn.mode === 'local-fallback' ? '已使用校园资料回答' : '校园资料回答';
+            byId('greeting').textContent = '我陪你一起看看。';
+            choices(turn.choices); byId('referenceLinks').replaceChildren();
+            (turn.references || []).forEach(function (reference) { byId('referenceLinks').appendChild(CampusScene.link(reference.title,reference.url)); });
+        });
     }
     function payload(message,origin) {
         var campusId = environment.campusId() || null, destination = scene.place(context.placeId);
@@ -219,7 +221,7 @@
     window.addEventListener('pagehide',function () {
         disposed = true; generation++; clearTimeout(welcomeTimer);
         if (active) { active.controller.abort(); api('/api/campus/cancel',{conversationId:active.attempt.payload.conversationId,requestId:active.attempt.payload.requestId}).catch(function () {}); }
-        if (voice) voice.destroy(); if (environment) environment.destroy(); if (scene) scene.invalidate();
+        if (voice) voice.destroy(); if (environment) environment.destroy(); if (scene) scene.invalidate(true);
     });
     welcomeTimer = setTimeout(function () { byId('conversation').hidden = false; byId('campusControls').hidden = false; },1400);
     update(); initialize();

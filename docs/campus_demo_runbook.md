@@ -146,3 +146,9 @@ HTTP脚本接收 `--jar`、`--java`、`--port`、`--timeout`，默认Java命令j
 最终包还从真实输入框重复验证“平乐园补卡→看看图书馆实景→带我过去→我在四教”，实际回复和预览目标均指向逸夫图书馆。来源、许可与设备边界以本手册上述记录为准。
 
 本次交付提交在[PR #64](https://github.com/D92647426/tourism-ai-avatar/pull/64)，合并状态与自动检查以PR页面为准。已实现与后续工作见[议题进度](issue_progress.md#L1)。
+
+## 2026年11月11日自然转场体验
+
+刷新校园页后，依次输入“我想看看平乐园逸夫图书馆的照片”和“看看月亮湖的照片”。可观察人物从中央移到侧边、场景淡入、照片裁切展开、回复与建议渐显。继续输入地图、天气或办事问题，体验不同页面之间的衔接，再点击“新对话”回到人物中央。
+
+主转场560ms，背景交叉淡入680ms。首次图片在加载及快照完成后渐显。浏览器提供原生View Transition时支持人物位置插值，其他浏览器采用CSS内容渐显。系统开启减少动态效果后直接呈现完整内容。[转场实现](../src/main/resources/static/js/campus-scene.js#L74)、[参数](../src/main/resources/static/css/campus.css#L10)、[验证入口](../tests/frontend/campus-motion.test.js#L17)。

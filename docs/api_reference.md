@@ -315,3 +315,11 @@ time/dataTime按请求供应商Asia/Shanghai参数解释，fetchedAt为UTC。sta
 真实模式开启陪伴且已有用户确认地点时，20秒后出现“我仍在这里”，UI每秒刷新保证按钮在20～21秒内可用。点击复核页面身份、地点、模式与忙态，并记录新的 `source=confirmed` 时点。定时刷新与GPS保持原确认时间。首次有效确认后至少20秒的再次确认与30秒停留可产生邀约，开启前的确认或过期证据需要重新建立两份有效确认。[按钮入口](../src/main/resources/static/js/campus-environment.js#L167)、[真实页面顺序回归](../tests/frontend/campus-page.test.js#L7)
 
 最终通过工具与目录验证的资源场景统一写入业务上下文和建议。新地点或新事项替换旧业务，多餐厅候选清除唯一目的地，选中实际返回的 `choices[].message` 后建立新目的地。明确查看无关地点照片时切换浏览与导航目标并清除旧事项。当前业务地点照片，或已知library-area借用父馆外观时保留事项和具体服务区目标。相同业务的模型增强继续当前事项，KEEP_SCENE、SHOW_WEATHER和RETURN_STAGE保留业务条件。物理位置只由明确声明或终端证据更新。[最终协调](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L137)、[实际HTTP模型回归](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L138)
+
+## API-060 前端场景提交接口
+
+REQ-060。`CampusScene.create(options)` 返回 `render(turn, updateDialogue?)`、`clear(updateDialogue?)`、`invalidate(discardImages?)`及既有地点查询。turn沿用校园对话响应，updateDialogue为可选零参数函数，在当前轮次场景DOM更新时调用一次，用于一起提交回复、来源和建议。render和clear返回undefined，原生快照路径异步调用更新，CSS降级路径同步调用。invalidate递增内部epoch并跳过当前动画，返回新epoch供模块内部隔离使用。可选布尔discardImages默认false，true时同时撤销已显示场景的图片归属，clear和离页使用true。普通提问保留当前场景图片加载能力，KEEP_SCENE可继续呈现同一图片。[实现](../src/main/resources/static/js/campus-scene.js#L194)、[页面调用](../src/main/resources/static/js/campus.js#L71)
+
+KEEP_SCENE直接更新对话并保留当前内容及滚动。RETURN_STAGE调用clear。请求开始、取消、新对话及离页撤销旧轮次，原生快照即使迟到也必须通过epoch核对。快照捕获失败回CSS渐显，图片失败更新所属图注。浏览器skipTransition仍会执行关联更新，所有权核对负责拒绝旧回调。[回归](../tests/frontend/campus-motion.test.js#L35)、[浏览器语义](https://developer.mozilla.org/en-US/docs/Web/API/ViewTransition/skipTransition)
+
+验证命令为 `node --test tests/frontend/campus-motion.test.js tests/frontend/campus-page.test.js`。预期15项动效回归及原有校园页面回归全部通过。
