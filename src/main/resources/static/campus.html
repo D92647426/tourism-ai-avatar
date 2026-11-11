@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="theme-color" content="#F3F6FA">
+    <title>燕小北 · 校园助手</title>
+    <link rel="stylesheet" href="/css/campus.css">
+</head>
+<body>
+    <header class="brand"><a href="/campus.html" aria-label="燕小北校园助手首页">燕小北<span>校园助手</span></a><small>北京工业大学课程原型</small></header>
+    <main id="campusStage" class="campus-stage">
+        <div id="sceneBackdrop" class="scene-backdrop" aria-hidden="true"></div>
+        <section id="avatar" class="avatar" aria-label="燕小北">
+            <div id="greeting" class="greeting">嗨，我是燕小北。<br>今天在校园里，想做些什么？</div>
+            <img class="character" src="/media/campus/yanxiaobei.png" alt="雨燕形象的燕小北向你问好" width="1353" height="1162">
+            <p id="speechStatus" class="speech-status" role="status">很高兴见到你</p>
+        </section>
+        <section id="scenePanel" class="scene-panel" aria-label="校园地点与事项" hidden>
+            <div id="sceneContent"></div>
+        </section>
+        <aside id="proactiveOffer" class="proactive-offer" aria-label="燕小北的轻声提醒" hidden>
+            <p id="offerMessage"></p><div><button id="acceptOffer" type="button">好，看看吧</button><button id="dismissOffer" class="subtle" type="button">稍后再说</button></div>
+        </aside>
+    </main>
+    <section id="conversation" class="conversation" aria-label="和燕小北聊聊" hidden>
+        <div class="conversation-inner">
+            <div class="reply-heading"><span>燕小北</span><span id="replyMode" class="meta"></span><button id="replaySpeech" class="text-button" type="button">回听</button><button id="stopSpeech" class="text-button" type="button">停止声音</button></div>
+            <p id="userMessage" class="user-message" hidden></p>
+            <p id="campusReply" class="reply" aria-live="polite">想去哪里，或有什么事要办？</p>
+            <div id="campusChoices" class="choices" role="group" aria-label="接下来可以聊"></div>
+            <div id="referenceLinks" class="references"></div>
+            <p id="requestStatus" class="request-status" role="status"></p>
+            <div class="request-actions"><button id="retryRequest" class="text-button" type="button" hidden>重试这条消息</button><button id="cancelRequest" class="text-button" type="button" hidden>取消等待</button><button id="reloadContext" class="text-button" type="button" hidden>重新连接</button></div>
+            <form id="campusForm" class="composer">
+                <label class="sr-only" for="campusInput">想去哪里，或有什么事要办？</label>
+                <textarea id="campusInput" rows="1" maxlength="2000" placeholder="想去哪里，或有什么事要办？"></textarea>
+                <button id="voiceInput" class="voice-button" type="button" aria-label="语音输入">说话</button>
+                <button id="sendMessage" type="submit">发送</button>
+            </form>
+            <div id="campusControls" class="controls" hidden>
+                <button id="soundToggle" class="text-button" type="button" aria-pressed="true">声音已开</button>
+                <label class="voice-select-label">声线<select id="voiceSelect" aria-label="选择声线"><option value="auto">系统中文</option><option value="local:character">角色声线</option></select></label>
+                <button id="companionToggle" class="text-button" type="button" aria-pressed="false">开启陪伴</button>
+                <button id="locatePosition" class="text-button" type="button">获取位置</button>
+                <button id="demoToggle" class="text-button" type="button" aria-expanded="false">情境演示</button>
+                <button id="newConversation" class="text-button" type="button">新对话</button>
+            </div>
+            <section id="demoPanel" class="demo-panel" aria-label="情境演示" hidden>
+                <span>模拟校园中的一小段时间</span><button id="demoDining" type="button">午间来到北区餐厅</button><button id="demoLibrary" type="button">来到图书馆</button><button id="exitDemo" class="text-button" type="button">退出模拟</button>
+            </section>
+            <div class="environment"><span id="environmentStatus">真实时间与位置</span><span id="positionStatus">当前位置未确认</span><button id="recheckPosition" class="text-button" type="button" aria-describedby="recheckHelp" hidden>我仍在这里</button><span id="weatherStatus">天气暂未获取</span></div>
+            <p id="recheckHelp" class="environment" hidden>确认当前仍在此处，帮助陪伴提供合适建议。每隔20秒可再次确认。</p>
+            <details id="weatherDetails" class="weather-details"><summary>天气资料</summary><div id="weatherEvidence">天气资料暂未获取</div></details>
+        </div>
+    </section>
+    <footer class="credit">角色为 AI 辅助二维重建 <a href="/media/campus/SOURCES.md" target="_blank" rel="noopener noreferrer">素材来源</a></footer>
+    <noscript>请启用 JavaScript 使用校园问答。学校资料可访问北京工业大学官网。</noscript>
+    <script src="/js/security.js"></script>
+    <script src="/js/voice-settings.js"></script>
+    <script src="/js/local-speech.js"></script>
+    <script src="/js/speech-lifecycle.js"></script>
+    <script src="/js/campus-companion.js"></script>
+    <script src="/js/campus-scene.js"></script>
+    <script src="/js/campus-environment.js"></script>
+    <script src="/js/campus-voice.js"></script>
+    <script src="/js/campus.js"></script>
+</body>
+</html>

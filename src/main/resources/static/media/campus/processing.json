@@ -1,0 +1,9 @@
+{
+  "tool": "built-in image_gen",
+  "sourceUrl": "https://www.bjut.edu.cn/info/1193/1409.htm",
+  "originalImage": "https://www.bjut.edu.cn/__local/E/F4/1E/371D362D8251848F5C317301EDE_FB4410EF_8B19F.png",
+  "processing": "AI-assisted transparent extraction and higher-resolution reconstruction for a course prototype. Some edge and facial details are reconstructed.",
+  "output": "yanxiaobei-cutout.png",
+  "license": "upstream-unspecified",
+  "prompt": "Use case: background-extraction. Asset type: a transparent PNG character cutout for a BJUT campus assistant course prototype. The supplied image is the edit target. Extract ONLY the central official Yan Xiaobei swift mascot as a clean isolated full-body character on a genuinely transparent background. Keep its identity, existing pose, dark blue spread wings and head, large teal eyes, white face, small yellow beak and yellow feet, turquoise blue overalls with the existing white emblem exactly recognizable. Remove all red and white rectangular background regions, ALL background Chinese and English words, ALL banner typography, and the cast ground shadow. Preserve the mascot's full silhouette including both wing tips, antenna-like tuft and both feet. Center it with modest transparent padding and make edges clean and higher resolution while retaining the source's flat polished cartoon illustration. Do not redesign the character or add objects, clothing, text, emblems or scenery. Output one upright full-body character with actual alpha transparency."
+}

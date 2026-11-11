@@ -74,7 +74,7 @@ public class AiCompletionClient {
     @Autowired
     public AiCompletionClient(@Value("${ai.api-key:}") String apiKey,
                               @Value("${ai.base-url:https://api.deepseek.com/v1}") String baseUrl,
-                              @Value("${ai.model:deepseek-chat}") String model) {
+                              @Value("${ai.model:deepseek-flash}") String model) {
         this(buildDefaultRestTemplate(), apiKey, baseUrl, model);
     }
 
@@ -125,6 +125,40 @@ public class AiCompletionClient {
      */
     public boolean isEnabled() {
         return !apiKey.isEmpty();
+    }
+
+    /** REQ-055: one non-streaming DeepSeek-compatible tool message; caller owns the overall deadline.
+     * Only the assistant message is returned. Tool execution and evidence validation belong to the campus service.
+     * Existing plain-text completion methods retain their original contract.
+     */
+    public ObjectNode completeTools(ArrayNode messages, ArrayNode tools) {
+        if (!isEnabled()) throw new IllegalStateException("Model disabled");
+        ObjectNode body = objectMapper.createObjectNode();
+        body.put("model", model).put("temperature", 0.2).put("max_tokens", 1200).put("stream", false);
+        body.putObject("thinking").put("type", "disabled");
+        body.set("messages", messages);
+        body.set("tools", tools);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(apiKey);
+        byte[] bytes = restTemplate.exchange(baseUrl + "/chat/completions", HttpMethod.POST,
+                new HttpEntity<>(body.toString(), headers), byte[].class).getBody();
+        if (bytes == null || bytes.length > 65536) throw new IllegalStateException("Invalid model response size");
+        try {
+            JsonNode root = objectMapper.readTree(new String(bytes, StandardCharsets.UTF_8));
+            JsonNode message = root == null ? null : root.path("choices").path(0).path("message");
+            if (!(message instanceof ObjectNode)) throw new IllegalStateException("Missing assistant message");
+            ObjectNode safe = objectMapper.createObjectNode().put("role", "assistant");
+            if (message.path("content").isTextual()) safe.set("content", message.path("content"));
+            else safe.putNull("content");
+            if (message.has("tool_calls")) {
+                if (!message.path("tool_calls").isArray() || message.path("tool_calls").size() > 6) throw new IllegalStateException("Invalid tool calls");
+                safe.set("tool_calls", message.path("tool_calls"));
+            }
+            return safe;
+        } catch (IOException exception) {
+            throw new IllegalStateException("Invalid model JSON", exception);
+        }
     }
 
     /**
