@@ -169,3 +169,9 @@ REQ-055最终复审补齐显式导航换目标和模型最终意图协调，餐�
 
 
 REQ-055限定复审补齐无关地点照片切换后的导航闭环。同业务地点及已知馆内分区的父馆照片按实际关联保留业务，显式无关照片建立新目标。[照片目标切换](../src/test/java/com/guide/campus/CampusAssistantTest.java#L149)、[模型增强与导航](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L217)
+
+## REQ-060 校园场景自然转场
+
+对应 [#65](https://github.com/D92647426/tourism-ai-avatar/issues/65)。地点、办事、饮食、地图、天气及返回舞台使用柔和淡出、照片裁切和文字渐显，人物位置随场景平滑调整。图片预加载后的双图层交叉淡入、回复及4～6项建议的分层浮现共同完成呈现。手机为角落人物及状态预留标题区高度。
+
+[转场所有权与舞台裁切](../src/main/resources/static/js/campus-scene.js#L54)、[场景及回复共同提交](../src/main/resources/static/js/campus.js#L71)、[样式与时序](../src/main/resources/static/css/campus.css#L172)、[15项回归](../tests/frontend/campus-motion.test.js#L17)。连续请求、新对话及离页会撤销旧快照归属，系统减少动态效果采用即时渲染。

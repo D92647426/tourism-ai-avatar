@@ -7,6 +7,9 @@
     --feather: #52677C;
     --beak: #E6A15C;
     --line: #ccd9e4;
+    --scene-duration: 560ms;
+    --scene-ease: cubic-bezier(.22, .68, .2, 1);
+    view-transition-name: none;
     font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif;
     color: var(--ink);
     background: var(--paper);
@@ -48,7 +51,7 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, select:focus-visi
 }
 .avatar {
     position: relative; text-align: center; width: min(480px, 70vw); margin: 0 auto;
-    align-self: center; transition: width .65s ease, transform .65s ease;
+    align-self: center; view-transition-name: campus-avatar;
 }
 .character {
     display: block; width: 100%; height: auto; max-height: 39vh; object-fit: contain;
@@ -59,22 +62,32 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, select:focus-visi
 .avatar.speaking .character { animation: speaking 1.2s ease-in-out infinite; }
 .avatar.speaking .speech-status { color: #246b92; }
 .scene-backdrop {
-    position: absolute; inset: 0; z-index: -1; background-size: cover; background-position: center;
+    position: absolute; inset: 0; z-index: -1; overflow: hidden;
     opacity: .14; mask-image: linear-gradient(black, transparent 95%);
-    transition: background-image .4s ease; pointer-events: none;
+    pointer-events: none;
+}
+.scene-backdrop-layer {
+    position: absolute; inset: 0; background-size: cover; background-position: center;
+    opacity: 0; transition: opacity 680ms ease;
 }
 .has-scene { grid-template-columns: minmax(170px, 1fr) minmax(0, 2.3fr); align-items: start; }
 .has-scene .avatar { width: 100%; position: sticky; top: 25px; margin-top: 35px; align-self: start; }
 .has-scene .character { max-height: 270px; }
 .has-scene .greeting { font-size: 15px; line-height: 1.7; max-width: 220px; }
 .scene-panel { padding: 18px 0 20px 32px; min-width: 0; max-width: 850px; }
-.scene-panel h1 { font-size: clamp(25px, 3vw, 38px); line-height: 1.35; margin: 0 0 15px; font-weight: 600; letter-spacing: .025em; }
+#sceneContent { view-transition-name: campus-content; }
+.scene-panel h1 { font-size: clamp(25px, 3vw, 38px); line-height: 1.35; margin: 0 0 15px; font-weight: 600; letter-spacing: .025em; view-transition-name: campus-title; }
 .scene-panel h2 { font-size: 20px; margin: 22px 0 10px; }
 .scene-panel h3 { font-size: 16px; margin: 0 0 8px; }
 .scene-panel p { font-size: 14px; line-height: 1.9; margin: 10px 0; max-width: 65ch; }
 .scene-panel ol { font-size: 14px; line-height: 1.9; padding-left: 22px; }
 .scene-photo { margin: 15px 0 18px; }
-.scene-photo img { display: block; width: 100%; max-height: 350px; object-fit: cover; border-radius: 18px 18px 4px 4px; }
+.scene-photo img {
+    display: block; width: 100%; max-height: 350px; aspect-ratio: 16 / 9; object-fit: cover;
+    border-radius: 18px 18px 4px 4px; opacity: 0; clip-path: inset(0 0 7% 0 round 18px 18px 4px 4px);
+    transition: opacity var(--scene-duration) ease, clip-path var(--scene-duration) var(--scene-ease);
+}
+.scene-photo img.is-ready { opacity: 1; clip-path: inset(0 round 18px 18px 4px 4px); }
 .scene-photo figcaption { font-size: 11px; color: var(--feather); line-height: 1.7; padding-top: 7px; }
 .scene-meta, .meta { font-size: 12px; color: var(--feather); }
 .scene-details { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 18px; }
@@ -104,9 +117,16 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, select:focus-visi
 .reply-heading > span:first-child { letter-spacing: .12em; font-weight: 700; }
 .reply-heading .meta { margin-right: auto; }
 .reply { font-size: 15px; line-height: 1.8; white-space: pre-wrap; margin: 9px 0 12px; max-height: 135px; overflow: auto; scrollbar-width: thin; }
+.reply-text { display: block; animation: text-arrive 420ms var(--scene-ease) both; }
 .user-message { font-size: 12px; color: var(--feather); margin: 8px 0 0; white-space: pre-wrap; }
 .choices { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
 .choices button { background: #edf4f8; color: var(--ink); border-color: #dae7ef; padding: 8px 13px; min-height: 38px; font-size: 13px; }
+.choices button { animation: text-arrive 380ms var(--scene-ease) both; animation-delay: 80ms; }
+.choices button:nth-child(2) { animation-delay: 115ms; }
+.choices button:nth-child(3) { animation-delay: 150ms; }
+.choices button:nth-child(4) { animation-delay: 185ms; }
+.choices button:nth-child(5) { animation-delay: 220ms; }
+.choices button:nth-child(6) { animation-delay: 255ms; }
 .choices button:hover { background: #d8ebf5; }
 .choices button[data-kind="custom"], .choices button[data-kind="followup"] { background: transparent; }
 .references { font-size: 11px; display: flex; gap: 8px 16px; flex-wrap: wrap; margin: 7px 0; max-height: 34px; overflow: auto; }
@@ -149,6 +169,30 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, select:focus-visi
 .credit { flex-shrink: 0; font-size: 10px; color: var(--feather); text-align: center; padding: 7px 12px; line-height: 1.6; }
 .credit a { margin-left: 10px; color: inherit; }
 
+/* REQ-060: independent snapshots keep the composer interactive during a scene change. */
+::view-transition {
+    pointer-events: none;
+    clip-path: inset(var(--scene-clip-top, 0px) 0 var(--scene-clip-bottom, 0px) 0);
+}
+::view-transition-group(*) { animation-duration: var(--scene-duration); animation-timing-function: var(--scene-ease); }
+::view-transition-old(campus-content), ::view-transition-old(campus-title), ::view-transition-old(campus-photo) {
+    animation: scene-depart 200ms ease both; mix-blend-mode: normal;
+}
+::view-transition-new(campus-content) { animation: text-arrive var(--scene-duration) var(--scene-ease) 80ms both; mix-blend-mode: normal; }
+::view-transition-new(campus-title) { animation: text-arrive 440ms var(--scene-ease) 40ms both; mix-blend-mode: normal; }
+::view-transition-new(campus-photo) { animation: photo-arrive var(--scene-duration) var(--scene-ease) 70ms both; mix-blend-mode: normal; }
+::view-transition-old(campus-avatar) { display: none; }
+::view-transition-new(campus-avatar) { animation: none; mix-blend-mode: normal; }
+.scene-panel[data-motion="fallback"] #sceneContent > * { animation: text-arrive var(--scene-duration) var(--scene-ease) both; }
+.scene-panel[data-motion="fallback"] #sceneContent > :nth-child(n+2) { animation-delay: 70ms; }
+.scene-panel[data-motion="fallback"] li { animation: text-arrive 460ms var(--scene-ease) 110ms both; }
+.scene-panel[data-motion="fallback"] li:nth-child(n+2) { animation-delay: 160ms; }
+@keyframes text-arrive { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes scene-depart { to { opacity: 0; } }
+@keyframes photo-arrive {
+    from { opacity: 0; clip-path: inset(0 0 10% 0 round 18px); }
+    to { opacity: 1; clip-path: inset(0 round 18px); }
+}
 @keyframes speaking { 50% { transform: translateY(-3px) rotate(-.5deg); } }
 @media (max-width: 650px) {
     .brand { padding: 17px 20px 10px; }
@@ -164,7 +208,7 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, select:focus-visi
     .has-scene .character { max-height: 90px; }
     .has-scene .speech-status { font-size: 10px; max-height: 31px; overflow: hidden; }
     .scene-panel { padding: 20px 0 0; }
-    .scene-panel h1 { font-size: 26px; padding-right: 87px; min-height: 55px; margin-bottom: 10px; }
+    .scene-panel h1 { font-size: 26px; padding-right: 87px; min-height: 95px; margin-bottom: 10px; }
     .scene-panel p { font-size: 13px; }
     .scene-photo img { max-height: 260px; }
     .conversation { padding: 11px 18px 10px; max-height: 65dvh; }
@@ -191,4 +235,6 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, select:focus-visi
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+    ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+    .scene-photo img { clip-path: none; }
 }

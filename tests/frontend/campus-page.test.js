@@ -173,8 +173,10 @@ test('library destination does not mute but confirmed physical arrival immediate
 test('old photo load and error cannot replace newer photo, floorplan never becomes backdrop',async()=>{
     const p=page();await flush();p.send('图书馆');await flush();p.chats()[0].resolve(response(turn(1)));await flush();
     const old=p.images[0];p.send('月亮湖');await flush();p.chats()[1].resolve(response(turn(2,'pingleyuan-moon-lake')));await flush();
-    p.images[1].onload();const background=p.nodes.get('sceneBackdrop').style.backgroundImage;old.onload();old.onerror();
-    assert.equal(p.nodes.get('sceneBackdrop').style.backgroundImage,background);assert.match(background,/moon-lake/);assert.equal(p.images.length,2);
+    p.images[1].onload();p.tick(16);
+    const layers=p.nodes.get('sceneBackdrop').children, background=layers.find(n=>n.style.opacity==='1').style.backgroundImage;
+    old.onload();old.onerror();p.tick(16);
+    assert.equal(layers.find(n=>n.style.opacity==='1').style.backgroundImage,background);assert.match(background,/moon-lake/);assert.equal(p.images.length,2);
 });
 test('new conversation and tab background clear simulated offers and stale sampling',async()=>{
     const p=page();await flush();p.click('demoDining');await flush();p.hide();p.tick(1000);p.show();assert.equal(p.nodes.get('proactiveOffer').hidden,true);

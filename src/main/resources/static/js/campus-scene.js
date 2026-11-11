@@ -51,25 +51,79 @@
         });
         container.appendChild(details); return container;
     }
-    /** Scene epoch invalidates load/error callbacks before replacing DOM or background. */
+    /** REQ-060: render catalog scenes with interruptible transitions and epoch-owned backgrounds. */
     function create(options) {
-        var catalog = options.catalog, epoch = 0;
+        var catalog = options.catalog, epoch = 0, displayedEpoch = 0, activeTransition = null, backgroundIndex = 0;
         var stage = document.getElementById('campusStage'), panel = document.getElementById('scenePanel');
         var content = document.getElementById('sceneContent'), backdrop = document.getElementById('sceneBackdrop');
+        var backgroundLayers = [element('div', null, 'scene-backdrop-layer'), element('div', null, 'scene-backdrop-layer')];
+        backgroundLayers.forEach(function (layer) { backdrop.appendChild(layer); });
+        backdrop.style.backgroundImage = '';
+        function invalidate(discardImages) {
+            epoch++;
+            if (discardImages) displayedEpoch = 0;
+            if (activeTransition) { activeTransition.skipTransition(); activeTransition = null; }
+            return epoch;
+        }
+        function clipSnapshots() {
+            var bounds = stage.getBoundingClientRect();
+            document.documentElement.style.setProperty('--scene-clip-top', Math.max(0, bounds.top) + 'px');
+            document.documentElement.style.setProperty('--scene-clip-bottom', Math.max(0, root.innerHeight - bounds.bottom) + 'px');
+        }
+        /** Skip only animation on interruption. A delayed browser update still needs its epoch check. */
+        function transition(update, own) {
+            var committed = false;
+            var animated = typeof document.startViewTransition === 'function' && !document.hidden
+                && !root.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            function commit() {
+                if (epoch !== own || committed) return;
+                committed = true; panel.dataset.motion = animated ? 'view' : 'fallback'; update();
+                if (animated) clipSnapshots();
+            }
+            if (!animated) { commit(); return; }
+            try {
+                clipSnapshots();
+                var current = document.startViewTransition(commit); activeTransition = current;
+                current.ready.catch(function () { animated = false; if (epoch === own) panel.dataset.motion = 'fallback'; });
+                current.finished.catch(function () {}).then(function () { if (activeTransition === current) activeTransition = null; });
+            } catch (_) { animated = false; commit(); }
+        }
+        function showBackground(path, own) {
+            if (displayedEpoch !== own) return;
+            if (!path) { backgroundLayers.forEach(function (layer) { layer.style.opacity = '0'; }); return; }
+            backgroundIndex = 1 - backgroundIndex;
+            var next = backgroundLayers[backgroundIndex], previous = backgroundLayers[1 - backgroundIndex];
+            next.style.transition = 'none'; next.style.opacity = '0'; next.style.backgroundImage = 'url("' + path + '")';
+            void next.offsetWidth;
+            root.requestAnimationFrame(function () {
+                if (displayedEpoch !== own) return;
+                next.style.transition = ''; next.style.opacity = '1'; previous.style.opacity = '0';
+            });
+        }
         function place(id) { return catalog.places.find(function (p) { return p.id === id; }); }
         function photoFor(p) { return catalog.assets.find(function (a) { return a.placeId === p.id && a.kind === 'photo'; }); }
         function photo(asset, own, background) {
             var figure = element('figure', null, 'scene-photo'), img = element('img');
-            img.alt = asset.alt; img.loading = 'lazy'; img.src = asset.path; figure.appendChild(img);
+            img.alt = asset.alt; img.loading = 'lazy'; figure.appendChild(img);
+            if (background) figure.style.viewTransitionName = 'campus-photo';
             var caption = element('figcaption', asset.alt + '。');
             caption.appendChild(link('官方来源', asset.sourceUrl));
             if (asset.placeId && /dining/.test(asset.placeId)) caption.appendChild(element('span', ' 官方介绍配图，拍摄时间未标明。当前菜品和价格请查看现场公示。'));
             figure.appendChild(caption);
-            img.addEventListener('error', function () { if (epoch === own) { img.hidden = true; caption.textContent = '实景暂时未能加载，可以继续查看地点资料。'; } });
+            // These handlers own only their image, including a retained KEEP_SCENE after a new request.
+            function revealPhoto() { img.classList.add('is-ready'); }
+            img.addEventListener('load', function () {
+                // A pending photo fades in after its snapshot is removed, avoiding a final-frame pop.
+                if (activeTransition) activeTransition.finished.then(revealPhoto, revealPhoto);
+                else revealPhoto();
+            });
+            img.addEventListener('error', function () { img.hidden = true; caption.textContent = '实景暂时未能加载，可以继续查看地点资料。'; });
+            img.src = asset.path;
+            if (img.complete && img.naturalWidth) revealPhoto();
             if (background) {
                 var loader = new Image();
-                loader.onload = function () { if (epoch === own) backdrop.style.backgroundImage = 'url("' + asset.path + '")'; };
-                loader.onerror = function () { if (epoch === own) backdrop.style.backgroundImage = ''; };
+                loader.onload = function () { showBackground(asset.path, own); };
+                loader.onerror = function () { showBackground(null, own); };
                 loader.src = asset.path;
             }
             return figure;
@@ -101,11 +155,10 @@
             area.appendChild(element('p', '外部地图搜索结果请先核对，再选择导航。', 'scene-meta'));
             return area;
         }
-        function render(turn) {
+        function renderContent(turn, own) {
             var action = turn.sceneAction || {};
-            if (action.type === 'KEEP_SCENE') return;
-            if (action.type === 'RETURN_STAGE') { clear(); return; }
-            var own = ++epoch; backdrop.style.backgroundImage = ''; content.replaceChildren(); stage.scrollTop = 0;
+            displayedEpoch = own;
+            content.replaceChildren(); stage.scrollTop = 0;
             var places = (action.placeIds || []).map(place).filter(Boolean), p = places[0];
             stage.classList.add('has-scene'); panel.hidden = false;
             var task = catalog.tasks.find(function (t) { return t.id === action.taskId; });
@@ -135,9 +188,25 @@
                 });
                 content.appendChild(list); content.appendChild(element('p', '营业时段、价格和当前供应待核实。评分资料待补充。', 'scene-meta'));
             } else if (p) content.appendChild(detailsFor(p, own, turn.context || {}, action.type === 'SHOW_ROUTE'));
+            if (!p || !photoFor(p) || action.type === 'SHOW_MAP' || action.type === 'SHOW_WEATHER' || action.type === 'SHOW_DINING') showBackground(null, own);
         }
-        function clear() { epoch++; backdrop.style.backgroundImage = ''; content.replaceChildren(); stage.scrollTop = 0; panel.hidden = true; stage.classList.remove('has-scene'); }
-        return {render:render, clear:clear, invalidate:function () { epoch++; }, place:place};
+        /** Atomically update scene and reply. No animation callback may write after invalidate/clear. */
+        function render(turn, updateDialogue) {
+            var action = turn.sceneAction || {}, own = invalidate();
+            if (action.type === 'KEEP_SCENE') { if (updateDialogue) updateDialogue(); return; }
+            if (action.type === 'RETURN_STAGE') { clear(updateDialogue); return; }
+            transition(function () { renderContent(turn, own); if (updateDialogue) updateDialogue(); }, own);
+        }
+        function clear(updateDialogue) {
+            var own = invalidate(true);
+            transition(function () {
+                displayedEpoch = own;
+                showBackground(null, own); content.replaceChildren(); stage.scrollTop = 0;
+                panel.hidden = true; stage.classList.remove('has-scene');
+                if (updateDialogue) updateDialogue();
+            }, own);
+        }
+        return {render:render, clear:clear, invalidate:invalidate, place:place};
     }
     root.CampusScene = {create:create, element:element, link:link};
 })(window);
