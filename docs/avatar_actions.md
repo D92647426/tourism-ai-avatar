@@ -37,3 +37,5 @@
 | 侧身学习 | 馋嘴期待 |
 |---|---|
 | ![学习](screenshots/campus-actions-study.png) | ![馋嘴](screenshots/campus-actions-hungry.png) |
+
+实际IAB的340×566窗口还暴露过人物被问候及对话挤到零高度的问题。紧凑竖屏已采用整页滚动和最小人物区域，复测人物区域199px、无横向溢出，输入区可向下滚动访问。

@@ -312,6 +312,16 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, select:focus-visi
     .lab-map .campus-map { height: 300px; }
     .credit { padding-bottom: max(7px, env(safe-area-inset-bottom)); }
 }
+/* REQ-065: keep the character visible in compact portrait previews. */
+@media (max-width: 650px) and (max-height: 700px) {
+    body { height: auto; min-height: 100dvh; overflow: auto; }
+    .campus-stage { min-height: 280px; flex: none; }
+    .campus-stage:not(.has-scene) .avatar { height: 280px; width: 100%; }
+    .campus-stage:not(.has-scene) .character { min-height: 170px; }
+    .greeting { font-size: 17px; line-height: 1.5; }
+    .conversation { max-height: none; overflow: visible; }
+    .has-scene { min-height: 240px; max-height: 55dvh; overflow-y: auto; }
+}
 @media (max-height: 550px) {
     body { height: auto; min-height: 100dvh; overflow: auto; }
     .campus-stage { min-height: 230px; max-height: 55vh; }
