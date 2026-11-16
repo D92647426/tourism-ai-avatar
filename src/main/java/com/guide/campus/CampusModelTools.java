@@ -57,10 +57,13 @@ final class CampusModelTools {
             case "preview_route":
                 ObjectNode route = mapper.createObjectNode();
                 route.set("destination", place(text(args, "destinationId"), campus));
-                String origin = context.path("position").path("placeId").asText("");
-                if (catalog.place(origin) != null) route.set("origin", catalog.place(origin));
-                route.put("status", origin.isEmpty() ? "origin-required" : "address-preview");
-                route.put("notice", "当前提供地址预览。建筑入口坐标、距离、耗时与逐步路线待核验。物理位置由设备采样或用户确认。");
+                JsonNode origin = context.path("position");
+                ObjectNode knownOrigin = catalog.place(origin.path("placeId").asText(""));
+                boolean hasOrigin = CampusRequestValidation.hasRouteOrigin(origin);
+                if (knownOrigin != null) route.set("origin", knownOrigin);
+                else if (hasOrigin) route.set("origin", origin.deepCopy());
+                route.put("status", hasOrigin ? "address-preview" : "origin-required");
+                route.put("notice", "当前提供地址预览与WGS84方向参考。建筑入口坐标、距离、耗时与步行路网待核验。物理位置由设备采样或用户确认，模拟位置明确标记。");
                 return route;
             case "get_weather":
                 if (context.path("simulated").asBoolean() && context.path("weather").isObject()) return context.path("weather").deepCopy();

@@ -51,6 +51,33 @@ class CampusAssistantTest {
         assertEquals("pingleyuan-fourth-teaching", library.path("context").path("position").path("placeId").asText());
     }
 
+    @Test void coordinateOriginsPreviewAddressesWithoutInventingStartingBuildings() {
+        for (String source : java.util.Arrays.asList("simulated", "demo", "geolocation", "gps")) {
+            service.start(session);
+            boolean simulated = java.util.Arrays.asList("simulated", "demo").contains(source);
+            ObjectNode environment = mapper.createObjectNode().put("simulated", simulated);
+            ObjectNode position = environment.putObject("position").put("source", source).put("timestamp", 1700000000000L)
+                    .put("latitude", 39.875123456).put("longitude", 116.481654321).put("accuracy", 6.5);
+            ObjectNode route = ask("平乐园图书馆怎么走", environment);
+            assertEquals("SHOW_ROUTE", route.path("sceneAction").path("type").asText());
+            assertEquals("pingleyuan-library", route.path("sceneAction").path("placeIds").path(0).asText());
+            assertEquals(position, route.path("context").path("position"));
+            assertFalse(route.path("context").path("position").has("placeId"));
+            assertFalse(route.path("context").has("routePending"));
+            assertTrue(route.path("reply").asText().contains("39.875123, 116.481654"));
+            assertTrue(route.path("reply").asText().contains(simulated ? "虚拟位置" : "当前位置"));
+            assertTrue(route.path("reply").asText().contains("待核验"));
+        }
+    }
+
+    @Test void missingCoordinateAndPlaceOriginStillAsksForTheStartingPoint() {
+        ObjectNode route = ask("平乐园图书馆怎么走", mapper.createObjectNode().putNull("position"));
+        assertEquals("KEEP_SCENE", route.path("sceneAction").path("type").asText());
+        assertTrue(route.path("reply").asText().contains("起点"));
+        assertTrue(route.path("context").path("routePending").asBoolean());
+        assertFalse(route.path("context").hasNonNull("position"));
+    }
+
     @Test void leavingLibraryAreaClearsPhysicalEvidenceAndKeepsTheTopic() {
         ask("平乐园图书馆");
         ObjectNode inside = ask("我在多媒体阅览区");

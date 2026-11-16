@@ -259,7 +259,7 @@ POST `/api/speech/synthesize`，登录+CSRF，JSON对象只允许text/speed，te
 
 `GET /api/campus/context`，服务函数 `CampusAssistantService.current`，Cookie拥有独立校园会话。无请求参数，首次访问建立会话。响应示例 `{"conversationId":"session-uuid","contextRevision":0,"campusId":null,"placeId":null,"serverTime":"2026-11-09T11:00:00Z","timezone":"Asia/Shanghai"}`。后续可带 `taskId/audience/position/simulated/hour/time/weather/routePending` 等本次条件，字段是否存在以已提交状态为准。[快照读取](../src/main/java/com/guide/campus/CampusAssistantService.java#L37)
 
-`context.placeId` 表示浏览主题或导航目的地。`context.position.placeId` 表示物理位置声明，位置携带 `source/timestamp`，可选WGS84 `latitude/longitude/accuracy`。用户说“我已经在图书馆内”时记录 `confirmed`、地点ID和确认时点。馆外、门口、附近或明确离馆清除旧物理证据为 `position:null`，保留主题和目的地。离线规则限定句首或标点子句起始的当前声明，馆外后缀支持可选“的”和空白。“等我进入图书馆再静音”等未来条件、假设与意向语句保持原物理证据时点。模型增强回答沿用同一应用位置边界。[位置语义](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L259)
+`context.placeId` 表示浏览主题或导航目的地。`context.position.placeId` 表示物理位置声明，位置携带 `source/timestamp`，可选WGS84 `latitude/longitude/accuracy`。用户说“我已经在图书馆内”时记录 `confirmed`、地点ID和确认时点。馆外、门口、附近或明确离馆清除旧物理证据为 `position:null`，保留主题和目的地。离线规则限定句首或标点子句起始的当前声明，馆外后缀支持可选“的”和空白。“等我进入图书馆再静音”等未来条件、假设与意向语句保持原物理证据时点。模型增强回答沿用同一应用位置边界。[位置语义](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L266)
 
 ## API-054c 校园聊天
 
@@ -310,16 +310,30 @@ time/dataTime按请求供应商Asia/Shanghai参数解释，fetchedAt为UTC。sta
 
 ### API-054 内部陪伴快照与最终业务语义
 
-`CampusCompanion.update(snapshot)` 可选 `environmentRevision`，类型为非负安全整数。省略时保留旧调用方的 `contextRevision` 变化即清除物理证据规则。提供时，普通服务端轮次变化只撤销旧气泡归属，物理环境版本变化才重建停留证据。适配器在会话、校区、地点或来源、真实/模拟、开关及前后台边界增加该版本，GPS新采样和普通聊天保持版本。环境版本单调增加，较新环境允许服务端轮次从0重新开始，迟到旧环境被拒绝，同环境再检查轮次单调性。该字段只用于页面内部规则调用，HTTP有界context仍按既有字段验证。[物理版本](../src/main/resources/static/js/campus-environment.js#L22)、[兼容处理](../src/main/resources/static/js/campus-companion.js#L151)
+`CampusCompanion.update(snapshot)` 可选 `environmentRevision`，类型为非负安全整数。省略时保留旧调用方的 `contextRevision` 变化即清除物理证据规则。提供时，普通服务端轮次变化只撤销旧气泡归属，物理环境版本变化才重建停留证据。适配器在会话、校区、地点或来源、真实/模拟、开关及前后台边界增加该版本，GPS新采样和普通聊天保持版本。环境版本单调增加，较新环境允许服务端轮次从0重新开始，迟到旧环境被拒绝，同环境再检查轮次单调性。该字段只用于页面内部规则调用，HTTP有界context仍按既有字段验证。[物理版本](../src/main/resources/static/js/campus-environment.js#L23)、[兼容处理](../src/main/resources/static/js/campus-companion.js#L151)
 
-真实模式开启陪伴且已有用户确认地点时，20秒后出现“我仍在这里”，UI每秒刷新保证按钮在20～21秒内可用。点击复核页面身份、地点、模式与忙态，并记录新的 `source=confirmed` 时点。定时刷新与GPS保持原确认时间。首次有效确认后至少20秒的再次确认与30秒停留可产生邀约，开启前的确认或过期证据需要重新建立两份有效确认。[按钮入口](../src/main/resources/static/js/campus-environment.js#L167)、[真实页面顺序回归](../tests/frontend/campus-page.test.js#L7)
+真实模式开启陪伴且已有用户确认地点时，20秒后出现“我仍在这里”，UI每秒刷新保证按钮在20～21秒内可用。点击复核页面身份、地点、模式与忙态，并记录新的 `source=confirmed` 时点。定时刷新与GPS保持原确认时间。首次有效确认后至少20秒的再次确认与30秒停留可产生邀约，开启前的确认或过期证据需要重新建立两份有效确认。[按钮入口](../src/main/resources/static/js/campus-environment.js#L231)、[真实页面顺序回归](../tests/frontend/campus-page.test.js#L7)
 
-最终通过工具与目录验证的资源场景统一写入业务上下文和建议。新地点或新事项替换旧业务，多餐厅候选清除唯一目的地，选中实际返回的 `choices[].message` 后建立新目的地。明确查看无关地点照片时切换浏览与导航目标并清除旧事项。当前业务地点照片，或已知library-area借用父馆外观时保留事项和具体服务区目标。相同业务的模型增强继续当前事项，KEEP_SCENE、SHOW_WEATHER和RETURN_STAGE保留业务条件。物理位置只由明确声明或终端证据更新。[最终协调](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L137)、[实际HTTP模型回归](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L138)
+最终通过工具与目录验证的资源场景统一写入业务上下文和建议。新地点或新事项替换旧业务，多餐厅候选清除唯一目的地，选中实际返回的 `choices[].message` 后建立新目的地。明确查看无关地点照片时切换浏览与导航目标并清除旧事项。当前业务地点照片，或已知library-area借用父馆外观时保留事项和具体服务区目标。相同业务的模型增强继续当前事项，KEEP_SCENE、SHOW_WEATHER和RETURN_STAGE保留业务条件。物理位置只由明确声明或终端证据更新。[最终协调](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L144)、[实际HTTP模型回归](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L163)
 
 ## API-060 前端场景提交接口
 
-REQ-060。`CampusScene.create(options)` 返回 `render(turn, updateDialogue?)`、`clear(updateDialogue?)`、`invalidate(discardImages?)`及既有地点查询。turn沿用校园对话响应，updateDialogue为可选零参数函数，在当前轮次场景DOM更新时调用一次，用于一起提交回复、来源和建议。render和clear返回undefined，原生快照路径异步调用更新，CSS降级路径同步调用。invalidate递增内部epoch并跳过当前动画，返回新epoch供模块内部隔离使用。可选布尔discardImages默认false，true时同时撤销已显示场景的图片归属，clear和离页使用true。普通提问保留当前场景图片加载能力，KEEP_SCENE可继续呈现同一图片。[实现](../src/main/resources/static/js/campus-scene.js#L194)、[页面调用](../src/main/resources/static/js/campus.js#L71)
+REQ-060。`CampusScene.create(options)` 返回 `render(turn, updateDialogue?)`、`clear(updateDialogue?)`、`invalidate(discardImages?)`及既有地点查询。turn沿用校园对话响应，updateDialogue为可选零参数函数，在当前轮次场景DOM更新时调用一次，用于一起提交回复、来源和建议。render和clear返回undefined，原生快照路径异步调用更新，CSS降级路径同步调用。invalidate递增内部epoch并跳过当前动画，返回新epoch供模块内部隔离使用。可选布尔discardImages默认false，true时同时撤销已显示场景的图片归属，clear和离页使用true。普通提问保留当前场景图片加载能力，KEEP_SCENE可继续呈现同一图片。[实现](../src/main/resources/static/js/campus-scene.js#L206)、[页面调用](../src/main/resources/static/js/campus.js#L72)
 
 KEEP_SCENE直接更新对话并保留当前内容及滚动。RETURN_STAGE调用clear。请求开始、取消、新对话及离页撤销旧轮次，原生快照即使迟到也必须通过epoch核对。快照捕获失败回CSS渐显，图片失败更新所属图注。浏览器skipTransition仍会执行关联更新，所有权核对负责拒绝旧回调。[回归](../tests/frontend/campus-motion.test.js#L35)、[浏览器语义](https://developer.mozilla.org/en-US/docs/Web/API/ViewTransition/skipTransition)
 
 验证命令为 `node --test tests/frontend/campus-motion.test.js tests/frontend/campus-page.test.js`。预期15项动效回归及原有校园页面回归全部通过。
+
+## API-061 前端虚拟定位与地图
+
+`CampusEnvironment.applyVirtualPosition(input)`返回Promise<boolean>。input包含有效campusId，hour为0～23整数，minute为0～59整数，可选placeId须属于所选校区。至少有地点或成对有效latitude/longitude，后者须有非负有限accuracy。非法输入抛Error且保留当前状态，异步边界取消或过期返回false，成功返回true。例 `await env.applyVirtualPosition({campusId:'pingleyuan',latitude:39.8741,longitude:116.4762,accuracy:20,hour:12,minute:0})`。
+
+`advanceSimulation(seconds=30)`接受1～3600安全整数，手动推进并为同一点产生新样本，暂停、失效或非法参数返回false。`exitSimulation()`沿用退出边界并返回Promise<boolean>。snapshot新增campusId，可选onEnvironment(snapshot)在update末提供深拷贝，既有position/simulated/hour/time/weather继续沿用校园HTTP上下文字段。HTTP顶层campusId由页面payload传递。
+
+[环境实现](../src/main/resources/static/js/campus-environment.js#L155)、[样本推进](../src/main/resources/static/js/campus-environment.js#L173)、[23项环境回归](../tests/frontend/campus-virtual-position.test.js#L23)。
+
+`CampusMap.create({campus,catalog,environment?,targetPlaceId?,onSelect?,onChoice?})`返回element、ready、update(snapshot)、setPreview(position)、refresh()、destroy()。ready完成地图准备，destroy撤销迟到初始化。onSelect提供用户点选坐标及可选显式参考地点ID，onChoice进入既有普通问答。背景位置更新保持当前地图视图。
+
+[地图接口](../src/main/resources/static/js/campus-map.js#L34)、[地图回归](../tests/frontend/campus-map.test.js#L19)、[正常面板入口](../tests/frontend/campus-location-lab.test.js#L17)。
+
+API-061坐标起点沿用POST /api/campus/chat。有效position含placeId或有限范围合法latitude/longitude时，可返回SHOW_ROUTE。纯坐标起点保留source/timestamp/accuracy，六位WGS84展示来源，模拟上下文显示虚拟位置。preview_route工具继续使用origin字段，目录起点返回原地点对象，坐标起点返回位置副本并给出status=address-preview。未知起点仍origin-required，非法坐标仍400。实例HTTP验证已加入[校园冒烟](../scripts/smoke_teacher_project.py#L76)。[统一起点判定](../src/main/java/com/guide/campus/CampusRequestValidation.java#L134)、[本地路线](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L106)、[模型工具](../src/main/java/com/guide/campus/CampusModelTools.java#L57)。

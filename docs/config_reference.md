@@ -138,12 +138,12 @@ REQ-047内部调用参数：GuideChatRequest.create 的 requireCorrectionOn400�
 | 模型工具与总期限 | 代码常量，3轮/每轮6次/20000ms | 超限回本地，工作池4线程加8等待项 | [校园编排](../src/main/java/com/guide/campus/CampusModelOrchestrator.java#L18)、[并发测试](../src/test/java/com/guide/campus/CampusConcurrencyTest.java#L16) |
 | 前台陪伴规则 | 代码初值，位置30秒/40米，停留30秒，两采样间隔20秒 | 气泡有效60秒、冷却10分钟，进入100米/离开150米需要核验区域 | [纯规则](../src/main/resources/static/js/campus-companion.js#L16)、[规则测试](../tests/frontend/campus-companion.test.js#L40) |
 
-校园名称、欢迎语与配色由校园页面维护，公开配置中的景区显示字段仅供旧页面使用。校园页面默认regions为空，建筑入口未核验时采用明确确认或模拟。模拟时钟加速30秒，天气固定晴18℃，退出会清除模拟条件并重新定位。[环境适配](../src/main/resources/static/js/campus-environment.js#L120)
+校园名称、欢迎语与配色由校园页面维护，公开配置中的景区显示字段仅供旧页面使用。校园页面默认regions为空，建筑入口未核验时采用明确确认或模拟。模拟时钟加速30秒，天气固定晴18℃，退出会清除模拟条件并重新定位。[环境适配](../src/main/resources/static/js/campus-environment.js#L180)
 
 改校园目录或上述代码常量后运行 `mvn -o -DforkCount=0 verify`、`node --test tests/frontend/*.test.js` 和隔离HTTP冒烟。供应商配置、模型Key、真实地图和设备权限另外按 [运行手册](campus_demo_runbook.md#L1)验证。
 
 
-内部可选 `CampusCompanion` 快照字段 `environmentRevision` 为非负安全整数，默认省略以兼容原轮次清空行为。页面自动维护物理环境版本，普通轮次仅撤销旧邀约。真实确认复核间隔固定20秒，复核按钮在可见、已开启、非模拟且空闲时提供。更改版本边界会影响停留连续性和旧邀约归属，需运行真实页面与纯模块回归。[适配器](../src/main/resources/static/js/campus-environment.js#L22)、[兼容回归](../tests/frontend/campus-companion.test.js#L19)
+内部可选 `CampusCompanion` 快照字段 `environmentRevision` 为非负安全整数，默认省略以兼容原轮次清空行为。页面自动维护物理环境版本，普通轮次仅撤销旧邀约。真实确认复核间隔固定20秒，复核按钮在可见、已开启、非模拟且空闲时提供。更改版本边界会影响停留连续性和旧邀约归属，需运行真实页面与纯模块回归。[适配器](../src/main/resources/static/js/campus-environment.js#L23)、[兼容回归](../tests/frontend/campus-companion.test.js#L19)
 
 ## REQ-060 转场参数
 
@@ -158,4 +158,20 @@ REQ-047内部调用参数：GuideChatRequest.create 的 requireCorrectionOn400�
 | 回复及建议 | CSS时间，420ms / 380ms，建议间隔35ms | 回复渐显，建议从80ms到255ms依次呈现，过长会延后按钮可见 |
 | prefers-reduced-motion | 系统媒体偏好，随设备设置 | reduce时即时提交、关闭入场动画与裁切过渡，完整内容可直接读取 |
 
-[变量初值](../src/main/resources/static/css/campus.css#L10)、[舞台边界计算](../src/main/resources/static/js/campus-scene.js#L68)、[动效与降级](../src/main/resources/static/css/campus.css#L172)、[对应回归](../tests/frontend/campus-motion.test.js#L92)。
+[变量初值](../src/main/resources/static/css/campus.css#L10)、[舞台边界计算](../src/main/resources/static/js/campus-scene.js#L69)、[动效与降级](../src/main/resources/static/css/campus.css#L214)、[对应回归](../tests/frontend/campus-motion.test.js#L92)。
+
+## REQ-061 地图与模拟参数
+
+| 字段或参数 | 类型与默认值 | 用途、风险与验证 |
+|---|---|---|
+| Leaflet版本 | 固定字符串1.9.4 | 本地依赖，升级后验证公开API、几何初始化与手机操作 |
+| 地图minZoom/maxZoom/zoomSnap | 数值3/21/0.25 | 全域查看、局部缩放及适合校园形状的初始视图，变更后检查移动端 |
+| scrollWheelZoom | 布尔false | 页面滚轮用于滚动，地图提供双指与缩放按钮 |
+| reference文件 | GeoJSON/JSON，打包路径固定 | 校内参考轮廓与地点，变更需校验WGS84、来源、入口状态和目录关联 |
+| update脚本--timeout | 正有限数，30秒 | 官方OSM API超时，失败保留原输出 |
+| update脚本--source-file | 可选路径，默认下载 | 使用已下载XML离线生成 |
+| update脚本--catalog/--output/--points-output | 可选文件路径，默认打包目录及两份地图文件 | 输入与两个输出须为不同路径，写入失败恢复原文件 |
+| 虚拟精度及模拟时钟 | 非负有限accuracy、hour0～23、minute0～59 | 显式测试参数，正式定位源与模拟源按快照标记 |
+| 模拟推进 | 安全整数秒，默认30，范围1～3600 | 同点新采样，未知或暂停位置需重新应用 |
+
+[地图参数](../src/main/resources/static/js/campus-map.js#L110)、[CLI参数](../scripts/update_campus_map.py#L276)、[模拟参数](../src/main/resources/static/js/campus-environment.js#L155)。验证命令及出错检查见[地图手册](campus_map_lab.md#L44)。

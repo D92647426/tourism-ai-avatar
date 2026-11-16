@@ -101,6 +101,49 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, select:focus-visi
 .map-preview svg { display: block; width: 100%; height: 190px; }
 .map-caption { font-size: 12px; line-height: 1.7; color: var(--feather); }
 .map-preview iframe { width: 100%; height: 300px; border: 0; margin-top: 10px; }
+.campus-map-panel { margin: 18px 0; }
+.campus-map-panel > h2 { margin: 0 0 12px; }
+.campus-map {
+    position: relative; isolation: isolate; z-index: 0; width: 100%; height: 340px;
+    border: 1px solid #c4d3dc; border-radius: 14px; background: #e9f0ed; font-family: inherit;
+}
+.campus-map .leaflet-tooltip { font-family: inherit; font-size: 11px; color: var(--ink); }
+.campus-map:focus-visible { outline: 3px solid #327fa7; outline-offset: 3px; }
+.campus-map .leaflet-popup-content { font-family: inherit; line-height: 1.7; }
+.campus-map .leaflet-popup-content p { font-size: 12px; margin: 8px 0; }
+.campus-map .leaflet-popup-content button { font-size: 12px; min-height: 34px; padding: 6px 10px; }
+.map-position { font-size: 12px; line-height: 1.7; color: var(--feather); }
+.campus-map-panel > a { font-size: 11px; }
+.map-online { margin-top: 12px; font-size: 12px; color: var(--feather); }
+.map-online summary { cursor: pointer; padding: 7px 0; }
+.map-online iframe { display: block; width: 100%; height: 300px; border: 0; margin-top: 10px; }
+.location-lab {
+    color: var(--ink); background: var(--paper); width: min(1100px, calc(100vw - 36px));
+    max-height: calc(100dvh - 36px); overflow-y: auto; border: 1px solid #b6cad9;
+    border-radius: 20px; padding: 24px; box-shadow: 0 24px 80px #183b6630;
+}
+.location-lab::backdrop { background: #183b665c; }
+.lab-heading { display: flex; align-items: start; justify-content: space-between; gap: 15px; }
+.lab-heading h2 { font-size: 25px; margin: 0; font-weight: 600; }
+.lab-heading p { font-size: 13px; line-height: 1.7; color: var(--feather); margin: 7px 0 0; }
+.lab-layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr); gap: 26px; margin-top: 20px; }
+.lab-map .campus-map { height: 410px; }
+.lab-map .campus-map-panel { margin-top: 0; }
+.lab-map .campus-map-panel h2 { font-size: 16px; }
+.lab-form { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.lab-form label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--feather); min-width: 0; }
+.lab-form input, .lab-form select {
+    border: 1px solid #b3c7d8; border-radius: 9px; background: #fff; color: var(--ink);
+    font: inherit; font-size: 14px; width: 100%; min-width: 0; min-height: 40px; padding: 8px 10px;
+}
+.lab-form input:focus-visible { outline: 3px solid #327fa7; outline-offset: 2px; }
+.lab-coordinates { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+.lab-help, .lab-status { font-size: 12px; line-height: 1.7; margin: 0; color: var(--feather); }
+.lab-status { min-height: 40px; }
+.lab-secondary { background: #edf4f8; border-color: #c4d3dc; color: var(--ink); }
+.lab-secondary:hover { background: #d8ebf5; }
+.lab-active { margin: 0; padding: 12px; font-size: 13px; line-height: 1.7; border: 1px solid #c4d3dc; border-radius: 10px; }
+.lab-active[data-simulated="true"] { color: #864b11; background: #fff1dc; border-color: #e4c398; }
 .route-address { border-left: 3px solid var(--sky); padding-left: 14px; margin: 16px 0; }
 .scene-actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 16px 0; }
 .scene-actions a { font-size: 13px; }
@@ -225,6 +268,11 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, select:focus-visi
     .has-scene .proactive-offer { margin-top: 15px; }
     .place-list { grid-template-columns: 1fr; }
     .map-preview svg { height: 160px; }
+    .campus-map { height: 290px; }
+    .location-lab { width: calc(100vw - 16px); max-height: calc(100dvh - 16px); padding: 16px; border-radius: 15px; }
+    .lab-layout { grid-template-columns: minmax(0,1fr); gap: 18px; }
+    .lab-heading h2 { font-size: 21px; }
+    .lab-map .campus-map { height: 300px; }
     .credit { padding-bottom: max(7px, env(safe-area-inset-bottom)); }
 }
 @media (max-height: 550px) {

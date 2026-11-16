@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.Locale;
 
 /** REQ-054/055: deterministic catalog-backed answers, including offline campus disambiguation. */
 final class CampusLocalAnswers {
@@ -102,10 +103,16 @@ final class CampusLocalAnswers {
             String target = context.path("placeId").asText("");
             ObjectNode destination = catalog.place(target);
             if (destination != null) {
-                if (!context.path("position").hasNonNull("placeId")) {
+                JsonNode position = context.path("position");
+                if (!CampusRequestValidation.hasRouteOrigin(position)) {
                     reply(turn, "目的地仍是" + destination.path("name").asText() + "。请告诉我当前起点，可以说“我在四教”。");
                 } else {
-                    reply(turn, "从" + catalog.place(context.path("position").path("placeId").asText()).path("name").asText()
+                    String origin;
+                    if (position.hasNonNull("placeId")) origin = catalog.place(position.path("placeId").asText()).path("name").asText();
+                    else origin = String.format(Locale.ROOT, "%s（WGS84 %.6f, %.6f）",
+                            context.path("simulated").asBoolean() ? "虚拟位置" : "当前位置",
+                            position.path("latitude").asDouble(), position.path("longitude").asDouble());
+                    reply(turn, "从" + origin
                             + "前往" + destination.path("name").asText() + "。目的地地址为" + destination.path("address").asText()
                             + "。当前预览包含地点和地址，入口坐标与步行路线待核验。");
                     ((ObjectNode) turn.path("sceneAction")).put("type", "SHOW_ROUTE");

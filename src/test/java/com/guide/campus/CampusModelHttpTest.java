@@ -80,6 +80,31 @@ class CampusModelHttpTest {
         }
     }
 
+    @Test void modelReceivesCoordinateOriginAndCanReturnAnAddressPreview() throws Exception {
+        for (String source : Arrays.asList("simulated", "demo", "geolocation", "gps")) {
+            List<JsonNode> requests = new ArrayList<>();
+            ObjectNode position = mapper.createObjectNode().put("source", source).put("timestamp", 1700000000000L)
+                    .put("latitude", 39.875123456).put("longitude", 116.481654321).put("accuracy", 6.5);
+            ObjectNode route = runProvider(n -> n == 1 ? toolMessage("preview_route", "{\"destinationId\":\"pingleyuan-library\"}", n)
+                    : finalMessage("{\"reply\":\"从已提供的位置查看图书馆地址，建筑入口及步行路网待核验。\",\"sceneAction\":{\"type\":\"SHOW_ROUTE\",\"placeIds\":[\"pingleyuan-library\"],\"taskId\":null}}"),
+                    requests, (service, session) -> {
+                        ObjectNode input = service.current(session).put("requestId", "coordinate-route").put("message", "平乐园图书馆怎么走");
+                        input.putObject("context").put("simulated", Arrays.asList("simulated", "demo").contains(source)).set("position", position.deepCopy());
+                        return service.chat(session, input);
+                    });
+            assertEquals("deepseek", route.path("mode").asText());
+            assertEquals("SHOW_ROUTE", route.path("sceneAction").path("type").asText());
+            assertEquals(2, requests.size());
+            JsonNode messages = requests.get(1).path("messages");
+            JsonNode tool = mapper.readTree(messages.path(messages.size() - 1).path("content").asText());
+            assertEquals("address-preview", tool.path("status").asText());
+            assertEquals(position, tool.path("origin"));
+            assertEquals(position, route.path("context").path("position"));
+            assertFalse(route.path("context").path("position").has("placeId"));
+            assertEquals("pingleyuan-library", route.path("context").path("placeId").asText());
+        }
+    }
+
     @Test void unknownActionRetainsTextWithoutActivatingAnUntrustedScene() throws Exception {
         ObjectNode result = runProvider(n -> n == 1 ? toolMessage("get_place", "{\"placeId\":\"pingleyuan-library\"}", n)
                 : finalMessage("{\"reply\":\"有效文字。\",\"sceneAction\":{\"type\":\"EXECUTE_JS\"},\"references\":[{\"url\":\"https://evil.example\"}]}"), new ArrayList<>(), false);

@@ -52,4 +52,25 @@ class CampusControllerTest {
         mvc.perform(post("/api/campus/chat").session(session).cookie(cookie).header("X-XSRF-TOKEN", cookie.getValue())
                 .contentType("application/json").content("[]")).andExpect(status().isBadRequest());
     }
+
+    @Test void invalidCoordinateOriginsRemainBadRequestsWithoutChangingSessionContext() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        MvcResult current = mvc.perform(get("/api/campus/context").session(session)).andExpect(status().isOk()).andReturn();
+        ObjectNode request = (ObjectNode) mapper.readTree(current.getResponse().getContentAsByteArray());
+        Cookie cookie = current.getResponse().getCookie("XSRF-TOKEN");
+        request.put("requestId", "invalid-coordinate-route").put("message", "平乐园图书馆怎么走");
+        request.putObject("context").put("simulated", true).putObject("position")
+                .put("source", "simulated").put("timestamp", 1700000000000L).put("latitude", 39.875).put("longitude", 116.481).put("accuracy", 5);
+        for (String invalid : new String[]{"range", "pair", "accuracy"}) {
+            ObjectNode bad = request.deepCopy();
+            ObjectNode badPosition = (ObjectNode) bad.path("context").path("position");
+            if ("range".equals(invalid)) badPosition.put("latitude", 91);
+            else if ("pair".equals(invalid)) badPosition.remove("longitude");
+            else badPosition.put("accuracy", -1);
+            mvc.perform(post("/api/campus/chat").session(session).cookie(cookie).header("X-XSRF-TOKEN", cookie.getValue())
+                    .contentType("application/json").content(bad.toString())).andExpect(status().isBadRequest());
+        }
+        mvc.perform(get("/api/campus/context").session(session)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.contextRevision").value(0)).andExpect(jsonPath("$.position").doesNotExist());
+    }
 }

@@ -35,7 +35,7 @@ $env:JAVA_HOME = 'C:/Program Files/Java/jdk-19'
 
 进入后燕小北居中问好，底部输入区自动展开。发送消息后人物移到侧边，办事、地点或地图在主场景显示。底部持续保留输入、建议、来源、回听和停止声音。当前建议面板共4～6项，校区选择含自定义入口。自定义聚焦输入框，继续追问沿用本次条件。
 
-“获取位置”会请求设备权限，拒绝后可输入校区和地标。“新对话”清除本次条件并回到人物舞台，等待中可取消或重试。重试保留请求身份，旧响应和旧选项受版本隔离。[页面入口](../src/main/resources/static/campus.html#L1)、[发送与提交](../src/main/resources/static/js/campus.js#L118)
+“获取位置”会请求设备权限，拒绝后可输入校区和地标。“新对话”清除本次条件并回到人物舞台，等待中可取消或重试。重试保留请求身份，旧响应和旧选项受版本隔离。[页面入口](../src/main/resources/static/campus.html#L1)、[发送与提交](../src/main/resources/static/js/campus.js#L119)
 
 ## 教师演示一　卡丢了
 
@@ -45,7 +45,7 @@ $env:JAVA_HOME = 'C:/Program Files/Java/jdk-19'
 4. 地图显示本部校区边界与地点资料。点击“在高德搜索这个地点”后再核对目标，建筑入口坐标、路网与步行耗时仍需现场核验。
 5. 输入“健身房在哪”，原办卡目的地清除。再次“带我过去”会要求补充目标。
 
-验证入口为 [事项回答](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L197)和[路线回归](../src/test/java/com/guide/campus/CampusAssistantTest.java#L39)。
+验证入口为 [事项回答](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L204)和[路线回归](../src/test/java/com/guide/campus/CampusAssistantTest.java#L39)。
 
 ## 教师演示二　图书馆有什么可做
 
@@ -55,7 +55,7 @@ $env:JAVA_HOME = 'C:/Program Files/Java/jdk-19'
 4. 输入“我已经在图书馆内”，状态显示已确认在逸夫图书馆，按钮显示“安静环境已静音”，当前外放停止。
 5. 输入“我在图书馆外面”，位置恢复未确认，声音按用户原设置恢复。图书馆主题和导航目的地继续保留。输入“如果我在图书馆”或“我想去图书馆”仅更新对话内容。
 
-离线位置规则识别句首或标点子句起始的明确当前声明，如“我在”“我到了”“我已经进入”。规则复用目录别名，支持“图书馆的外面/门口”清除馆内确认，“等我进入图书馆再静音”等未来条件保持原物理证据及时间戳。确认只记录地点ID、来源和确认时点。模型可增强意图与回答，物理位置仍由应用规则和显式终端快照处理。[馆内外识别](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L259)、[状态接入](../src/main/resources/static/js/campus-environment.js#L147)
+离线位置规则识别句首或标点子句起始的明确当前声明，如“我在”“我到了”“我已经进入”。规则复用目录别名，支持“图书馆的外面/门口”清除馆内确认，“等我进入图书馆再静音”等未来条件保持原物理证据及时间戳。确认只记录地点ID、来源和确认时点。模型可增强意图与回答，物理位置仍由应用规则和显式终端快照处理。[馆内外识别](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L266)、[状态接入](../src/main/resources/static/js/campus-environment.js#L209)
 
 ## 教师演示三　午间轻声邀约
 
@@ -65,7 +65,7 @@ $env:JAVA_HOME = 'C:/Program Files/Java/jdk-19'
 4. 选择实际食堂建议，进入对应地点预览，再按需查看路线。营业时段、价格和评分分别显示资料状态。
 5. 重新打开“情境演示”并点“退出模拟”。模拟事件与位置清除，页面重新请求真实定位。拒绝后当前位置未确认，找路会询问起点。
 
-“来到图书馆”使用同一模拟生命周期演示到馆用途。模拟仅用于课堂复现，正式陪伴需要页面可见、用户开启及有效位置证据。[模拟入口与退出](../src/main/resources/static/js/campus-environment.js#L120)、[陪伴规则](../src/main/resources/static/js/campus-companion.js#L16)
+“来到图书馆”使用同一模拟生命周期演示到馆用途。模拟仅用于课堂复现，正式陪伴需要页面可见、用户开启及有效位置证据。[模拟入口与退出](../src/main/resources/static/js/campus-environment.js#L180)、[陪伴规则](../src/main/resources/static/js/campus-companion.js#L16)
 
 ## 模型、声音与环境边界
 
@@ -131,14 +131,14 @@ HTTP脚本接收 `--jar`、`--java`、`--port`、`--timeout`，默认Java命令j
 
 ## 最终复审补齐的普通操作
 
-在补卡路线中直接问“图书馆怎么走”切换到图书馆，随后“补卡怎么走”重新按当前校区及人群选择办卡窗口。“我在四教”继续只作为实际起点。模型推荐餐厅后直接点击实际返回的餐厅选项，后续“带我过去”使用选中的餐厅。[导航顺序](../src/test/java/com/guide/campus/CampusAssistantTest.java#L75)、[HTTP模型闭环](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L138)
+在补卡路线中直接问“图书馆怎么走”切换到图书馆，随后“补卡怎么走”重新按当前校区及人群选择办卡窗口。“我在四教”继续只作为实际起点。模型推荐餐厅后直接点击实际返回的餐厅选项，后续“带我过去”使用选中的餐厅。[导航顺序](../src/test/java/com/guide/campus/CampusAssistantTest.java#L102)、[HTTP模型闭环](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L163)
 
-“我在多媒体阅览区”等馆内分区确认与图书馆一样进入静音。输入“我已经出馆了”清除实际地点，保留正在浏览的主题与目标。[离馆规则](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L270)、[页面静音](../tests/frontend/campus-page.test.js#L78)
+“我在多媒体阅览区”等馆内分区确认与图书馆一样进入静音。输入“我已经出馆了”清除实际地点，保留正在浏览的主题与目标。[离馆规则](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L277)、[页面静音](../tests/frontend/campus-page.test.js#L78)
 
 真实陪伴可先开启再声明“我在平乐园北区餐厅”，等待20秒，在位置状态旁点击“我仍在这里”。继续停留到首次有效确认满30秒，饭点出现气泡，点击接受后才发送正式问答。先声明后开启、后台恢复或证据过期时，请重新点击两次真实确认，两次相隔至少20秒，再满足30秒停留。每次点击都应符合当前实际位置，界面定时器仅刷新状态。草稿、请求、识别和播报期间复核与邀约暂缓。图书馆采用相同复核流程并保持静音。[显式复核和边界回归](../tests/frontend/campus-page.test.js#L7)、[证据时效规则](../src/main/resources/static/js/campus-companion.js#L78)
 
 
-补卡之后输入“看看图书馆实景”，浏览主题和后续导航目标切换为图书馆，旧补卡事项清除。再说“带我过去”先确认起点，输入“我在四教”后预览到图书馆的路线。当前业务地点照片，以及公共电脑等具体服务区借用父馆外观时，仍保留原服务区目标。[离线照片切换回归](../src/test/java/com/guide/campus/CampusAssistantTest.java#L149)、[模型原样增强回归](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L217)
+补卡之后输入“看看图书馆实景”，浏览主题和后续导航目标切换为图书馆，旧补卡事项清除。再说“带我过去”先确认起点，输入“我在四教”后预览到图书馆的路线。当前业务地点照片，以及公共电脑等具体服务区借用父馆外观时，仍保留原服务区目标。[离线照片切换回归](../src/test/java/com/guide/campus/CampusAssistantTest.java#L176)、[模型原样增强回归](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L242)
 
 
 根代理在非模拟模式使用人工地点声明，实际等待20秒后点击“我仍在这里”，到30秒停留后接收图书馆气泡，再接受并展开用途与实景。正式用户消息在接受后增加，馆内保持静音。该检查验证浏览器正常交互，手机实地GPS单独验收。[实际复核界面](screenshots/campus-real-recheck.png)
@@ -151,4 +151,10 @@ HTTP脚本接收 `--jar`、`--java`、`--port`、`--timeout`，默认Java命令j
 
 刷新校园页后，依次输入“我想看看平乐园逸夫图书馆的照片”和“看看月亮湖的照片”。可观察人物从中央移到侧边、场景淡入、照片裁切展开、回复与建议渐显。继续输入地图、天气或办事问题，体验不同页面之间的衔接，再点击“新对话”回到人物中央。
 
-主转场560ms，背景交叉淡入680ms。首次图片在加载及快照完成后渐显。浏览器提供原生View Transition时支持人物位置插值，其他浏览器采用CSS内容渐显。系统开启减少动态效果后直接呈现完整内容。[转场实现](../src/main/resources/static/js/campus-scene.js#L74)、[参数](../src/main/resources/static/css/campus.css#L10)、[验证入口](../tests/frontend/campus-motion.test.js#L17)。
+主转场560ms，背景交叉淡入680ms。首次图片在加载及快照完成后渐显。浏览器提供原生View Transition时支持人物位置插值，其他浏览器采用CSS内容渐显。系统开启减少动态效果后直接呈现完整内容。[转场实现](../src/main/resources/static/js/campus-scene.js#L75)、[参数](../src/main/resources/static/css/campus.css#L10)、[验证入口](../tests/frontend/campus-motion.test.js#L17)。
+
+## 地图与虚拟定位
+
+点击底部“地图测试”，选择图书馆或餐厅、设置时间并应用，推进30秒后返回对话。位置与时钟持续标为模拟，地图可缩放点选，并以参考点预览方向。后台恢复后重新应用，退出时恢复按权限定位。完整步骤、数据来源与检查见[地图测试手册](campus_map_lab.md#L1)。角色制作调研见[RuiC-2D及娘化形象](ruic2d_yanxiaobei_research.md#L1)。
+
+Windows重新打包时可停止正在使用构建JAR的本机预览，或复制到独立运行目录启动副本。当前18089预览运行target/campus-demo/app.jar，构建输出位于target/ai-guide-1.0.0.jar。[已知占用排查](error_traceability.md#L56)、[地图验收](campus_map_lab.md#L44)。

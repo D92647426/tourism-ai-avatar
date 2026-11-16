@@ -9,3 +9,7 @@
 - 校园范围来自 [OpenStreetMap way 33617299](https://www.openstreetmap.org/way/33617299)，© OpenStreetMap contributors，适用 [ODbL](https://www.openstreetmap.org/copyright)。26 个边界点、数据时间与坐标系见 [pingleyuan-map-data.json](pingleyuan-map-data.json)。建筑入口均仍未核验。
 
 目录绑定、类型与描述由[校园目录接口](/api/campus/catalog)的资源记录维护。`character` 仅用于角色，`photo` 可用于场景背景，`floorplan` 仅用于同页布局展开。所有资源核对日期为 2026-11-09。
+
+## 2026-11-16 本部离线地图
+
+新增pingleyuan-features.geojson和campus-map-points.json，来自OSM官方map API，WGS84坐标，ODbL-1.0许可。每份文件保留fetchedAt、sourceUrl、sourceSha256与署名。共187个参考要素及14个匹配地点，入口核验状态为false。Leaflet1.9.4依赖与BSD-2-Clause许可在vendor/leaflet记录。具体来源和重建步骤见[地图手册](../../../../../../docs/campus_map_lab.md#L1)。
