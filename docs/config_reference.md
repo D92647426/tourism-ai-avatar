@@ -144,3 +144,18 @@ REQ-047内部调用参数：GuideChatRequest.create 的 requireCorrectionOn400�
 
 
 内部可选 `CampusCompanion` 快照字段 `environmentRevision` 为非负安全整数，默认省略以兼容原轮次清空行为。页面自动维护物理环境版本，普通轮次仅撤销旧邀约。真实确认复核间隔固定20秒，复核按钮在可见、已开启、非模拟且空闲时提供。更改版本边界会影响停留连续性和旧邀约归属，需运行真实页面与纯模块回归。[适配器](../src/main/resources/static/js/campus-environment.js#L22)、[兼容回归](../tests/frontend/campus-companion.test.js#L19)
+
+## REQ-060 转场参数
+
+以下均为可选的页面内部样式参数，由打包CSS提供初值。
+
+| 字段 | 类型及默认值 | 作用、修改风险与验证 |
+|---|---|---|
+| --scene-duration | CSS时间，560ms | 场景、照片和人物位置插值主时长，过大会增加视觉等待。运行TEST-060并实际快速切换 |
+| --scene-ease | CSS曲线，cubic-bezier(.22,.68,.2,1) | 场景收尾节奏，修改后检查人物与内容衔接 |
+| --scene-clip-top / --scene-clip-bottom | CSS长度，0px回退，运行时取舞台边界 | 快照可见区域，避免盖住输入框。检查桌面和手机切换中间帧 |
+| 背景淡入 | CSS时间，680ms | 固定双图层透明度过渡，修改后检查预加载及迟到图片 |
+| 回复及建议 | CSS时间，420ms / 380ms，建议间隔35ms | 回复渐显，建议从80ms到255ms依次呈现，过长会延后按钮可见 |
+| prefers-reduced-motion | 系统媒体偏好，随设备设置 | reduce时即时提交、关闭入场动画与裁切过渡，完整内容可直接读取 |
+
+[变量初值](../src/main/resources/static/css/campus.css#L10)、[舞台边界计算](../src/main/resources/static/js/campus-scene.js#L68)、[动效与降级](../src/main/resources/static/css/campus.css#L172)、[对应回归](../tests/frontend/campus-motion.test.js#L92)。

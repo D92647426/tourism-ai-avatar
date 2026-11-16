@@ -296,3 +296,23 @@ F4另通过[错开UI时钟的实际页面回归](../tests/frontend/campus-page.t
 [unrelatedPhotoChangesCardDestinationBeforeRouting](../src/test/java/com/guide/campus/CampusAssistantTest.java#L149) 和 [modelEnhancingUnrelatedPhotoSeesTheNewDestinationAndClearedTask](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L217) 分别通过离线正常服务入口和真实HTTP供应商入口验证补卡→图书馆照片→未知起点→四教到图书馆路线。两项独立先RED再GREEN，模型增强前的上下文已切换。保留 [modelPhotoOfLibraryAreaPreservesItsServiceDestination](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L203) 的服务区目的地回归。失败先核对照片与业务地点的实际关联，最终动作与本地动作相同只用于判断建议是否需要重建。
 
 本次限定复审实跑 `mvn -o -DforkCount=0 verify` 共312项Java通过，Node285、数据坏样本44、voice3全部通过，结构、文档链接与含照片切换路线的18090隔离JAR HTTP检查通过。
+
+## TEST-060 场景转场与连续交互
+
+对应REQ-060和[#65](https://github.com/D92647426/tourism-ai-avatar/issues/65)。运行 `node --test tests/frontend/campus-motion.test.js tests/frontend/campus-page.test.js`。
+
+| 回归 | 入口与预期 |
+|---|---|
+| 场景与回复同步 | [scene and reply commit together](../tests/frontend/campus-motion.test.js#L17)，内容共同更新，输入框焦点保留，快照按舞台边界裁切 |
+| 快速中断、新对话及离页 | [interrupting an uncaptured turn](../tests/frontend/campus-motion.test.js#L35)、[new conversation](../tests/frontend/campus-motion.test.js#L49)、[page exit](../tests/frontend/campus-motion.test.js#L61)，旧回调执行后也无法覆盖新轮次 |
+| 保留场景及返回舞台 | [KEEP_SCENE](../tests/frontend/campus-motion.test.js#L69)、[RETURN_STAGE](../tests/frontend/campus-motion.test.js#L80)，滚动、回复与图片归属符合动作 |
+| 减少动态效果及捕获失败 | [三种即时路径](../tests/frontend/campus-motion.test.js#L92)、[捕获失败](../tests/frontend/campus-motion.test.js#L105)、[提前失败](../tests/frontend/campus-motion.test.js#L112)，完整渲染及CSS降级 |
+| 照片与背景 | [迟到加载及保留场景](../tests/frontend/campus-motion.test.js#L119)、[双图层](../tests/frontend/campus-motion.test.js#L133)，图片在快照移除后渐显，旧图片及旧RAF不会覆盖新背景 |
+
+2026年11月11日本机完整前端300项通过，其中15项为本轮动效回归。浏览器实际通过1440×1000、390×844、844×390、减少动态效果、快速往返及新对话。检查动画中间帧后修复快照盖住底部输入框的问题，手机及短横屏无横向溢出。动态结束通过标准输入执行只读DOM脚本轮询真实动画状态及照片透明度确认，浏览器错误记录为空。设备采用本机Chromium，手机为视口模拟。失败先检查epoch、快照完成时点及舞台裁切边界。
+
+完整验证沿用 `mvn -o -DforkCount=0 verify`、`node --test tests/frontend/*.test.js`、`python scripts/check_doc_links.py`、数据44项和voice3项，以及隔离JAR HTTP冒烟。
+
+TEST-060另覆盖[保留场景背景迟到](../tests/frontend/campus-motion.test.js#L145)及[离页撤销已提交照片](../tests/frontend/campus-motion.test.js#L156)。场景版本仅在场景提交时替换，普通提问后仍保留当前照片的加载能力。
+
+本轮最终完整复验Java312、前端300、数据坏样本44、voice3全部通过，文档链接及结构检查通过，隔离JAR景区与校园HTTP冒烟通过。18089运行包的三份前端资源逐字节匹配工作区，并完成打包版桌面及手机浏览器复验。

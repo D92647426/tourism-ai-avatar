@@ -164,3 +164,14 @@ API、配置与使用步骤见 [校园API](api_reference.md#L252)、[运行手�
 
 
 `CampusLocalAnswers.photoPlace` 共用当前地点照片及已知本部library-area父馆外观映射。照片意图在模型增强前更新浏览目标，最终协调按实际地点关联判定业务连续性。[照片映射](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L189)、[照片入口](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L59)
+
+## REQ-060 场景转场模块
+
+| 程序 | 职责 | 定位 |
+|---|---|---|
+| CampusScene.create / invalidate | 固定两张背景图层，撤销快照及图片回调归属 | [场景实例](../src/main/resources/static/js/campus-scene.js#L54) |
+| clipSnapshots / transition | 快照限定于舞台范围，原生转场与CSS降级共同提交当前轮次 | [转场](../src/main/resources/static/js/campus-scene.js#L68) |
+| showBackground / photo | 预加载后交叉淡入，首次加载在快照移除后渐显，错误只更新所属图片 | [图片](../src/main/resources/static/js/campus-scene.js#L91) |
+| render / clear | 场景动作与可选对话回调共同提交，KEEP_SCENE保留内容及滚动 | [提交](../src/main/resources/static/js/campus-scene.js#L194) |
+| campus.js render | 立即保存当前播报内容，再共同更新场景、回复、来源及建议 | [页面](../src/main/resources/static/js/campus.js#L71) |
+| campus.css | 人物位置插值、文字与照片入场、舞台裁切和减少动态效果 | [动效](../src/main/resources/static/css/campus.css#L172) |
