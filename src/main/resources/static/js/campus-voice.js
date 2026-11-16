@@ -5,11 +5,15 @@
         var byId = function (id) { return document.getElementById(id); };
         var settings = GuideVoiceSettings.normalize({}), muted = false, quiet = false, configEdited = false;
         var recognition = null, recognitionVersion = 0, recognitionRequested = false, recognitionTimer = null;
-        var local = GuideLocalSpeech.create({fetch:AuthGuard.apiFetch,Audio:root.Audio,URL:root.URL,AbortController:root.AbortController});
+        var local = GuideLocalSpeech.create({fetch:AuthGuard.apiFetch,Audio:root.Audio,URL:root.URL,AbortController:root.AbortController,
+            onAudio:function (audio) { return options.avatar && options.avatar.attachAudio(audio); }});
         var controller = GuideSpeech.create({synthesis:root.speechSynthesis,Utterance:root.SpeechSynthesisUtterance,
             nativeBridge:root.AndroidSpeech,localEngine:local,getSettings:function () { return settings; },
             selectVoice:function (voices,config) { return GuideVoiceSettings.choose(config,voices).voice; },
-            onMouth:function (value) { byId('avatar').classList.toggle('speaking',value); },
+            onMouth:function (value) {
+                byId('avatar').classList.toggle('speaking',value);
+                if (options.avatar) options.avatar.setSpeaking(value);
+            },
             onChange:function (state) {
                 var labels = {idle:'我在这里',listening:'正在听你说',thinking:'正在查找校园资料',queued:'正在准备声音',speaking:'正在讲给你听',paused:'声音已暂停',error:'可以继续阅读文字'};
                 var message = state.message;

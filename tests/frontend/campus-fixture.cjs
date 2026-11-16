@@ -44,7 +44,8 @@ function page(options = {}) {
     const documentEvents = new Element(), windowEvents = new Element();
     const document = {hidden:false, body:new Element(), documentElement:new Element(),
         getElementById:id => nodes.get(id) || null, createElement:tag => new Element(tag), createElementNS:(_,tag) => new Element(tag),
-        addEventListener:documentEvents.addEventListener.bind(documentEvents)};
+        addEventListener:documentEvents.addEventListener.bind(documentEvents),removeEventListener:documentEvents.removeEventListener.bind(documentEvents),
+        dispatchForTest:documentEvents.fire.bind(documentEvents)};
     if (options.viewTransitions) document.startViewTransition = update => {
         if (options.transitionThrows) throw new Error('snapshot unavailable');
         const ready = deferred(), finished = deferred();
@@ -65,22 +66,23 @@ function page(options = {}) {
         if (url === '/api/campus/catalog') return Promise.resolve(response(catalog));
         if (url === '/api/campus/context') return options.contextFetch ? options.contextFetch(contextReads++) : Promise.resolve(response(options.context || {conversationId:'conversation-1',contextRevision:0,campusId:null,placeId:null}));
         if (url === '/api/digital-human-config') return Promise.resolve(response(options.config || {}));
+        if (url === '/media/campus/yanxiaobei-avatar/rig.json') return Promise.resolve(response(JSON.parse(fs.readFileSync(path.join(root,'src/main/resources/static',url),'utf8'))));
         if (url.startsWith('/api/campus/weather')) return Promise.resolve(response(options.weather || {status:'unavailable',label:'北京市区参考天气'}));
         if (url.startsWith('/media/campus/') && /(?:\.json|\.geojson)$/.test(url)) return options.mapFetch ? options.mapFetch(url)
             : Promise.resolve(response(JSON.parse(fs.readFileSync(path.join(root,'src/main/resources/static',url),'utf8'))));
-        if (url === '/api/speech/synthesize') return Promise.resolve(response({},401));
+        if (url === '/api/speech/synthesize') return options.speechFetch ? options.speechFetch() : Promise.resolve(response({},401));
         const job = deferred(); requests.push({...job,url,options:opts,body:opts.body ? JSON.parse(opts.body) : {}}); return job.promise;
     }
     class TestDate extends Date { static now(){return now;} }
-    const context = vm.createContext({document,fetch,AbortController,URL,Image,Date:TestDate,console,L:options.Leaflet,
+    const context = vm.createContext({document,fetch,AbortController,URL,Image,Date:TestDate,console,L:options.Leaflet,MeshAvatar:options.MeshAvatar,AudioContext:options.AudioContext,
         setTimeout:time.setTimeout,clearTimeout:time.clearTimeout,
         navigator:{geolocation:{getCurrentPosition:(ok,bad) => geo.push({ok,bad}),
             watchPosition:(ok,bad) => { const watch={ok,bad,id:watches.length};watches.push(watch);return watch.id; },
             clearWatch:id => clearedWatches.push(id)}},
         innerHeight:1000,matchMedia:() => ({matches:!!options.reducedMotion}), SpeechRecognition:Recognition,
         speechSynthesis:synthesis,SpeechSynthesisUtterance:function(text){this.text=text;},Audio:options.Audio || function(){},
-        addEventListener:windowEvents.addEventListener.bind(windowEvents),localStorage:{getItem:()=>null,setItem(){}},location:{},
-        open:()=>{},requestAnimationFrame:fn=>time.setTimeout(fn,16),cancelAnimationFrame:time.clearTimeout});
+        addEventListener:windowEvents.addEventListener.bind(windowEvents),removeEventListener:windowEvents.removeEventListener.bind(windowEvents),localStorage:{getItem:()=>null,setItem(){}},location:{},
+        open:()=>{},requestAnimationFrame:fn=>time.setTimeout(()=>fn(now),16),cancelAnimationFrame:time.clearTimeout});
     context.window = context;
     for (const [,src] of html.matchAll(/<script\b[^>]*src="(\/js\/[^\"]+)"[^>]*>/g)) {
         const name = src.slice(4).split('?')[0]; vm.runInContext(fs.readFileSync(path.join(root,'src/main/resources/static/js',name),'utf8'),context,{filename:name});

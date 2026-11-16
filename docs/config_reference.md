@@ -175,3 +175,9 @@ REQ-047内部调用参数：GuideChatRequest.create 的 requireCorrectionOn400�
 | 模拟推进 | 安全整数秒，默认30，范围1～3600 | 同点新采样，未知或暂停位置需重新应用 |
 
 [地图参数](../src/main/resources/static/js/campus-map.js#L110)、[CLI参数](../scripts/update_campus_map.py#L276)、[模拟参数](../src/main/resources/static/js/campus-environment.js#L155)。验证命令及出错检查见[地图手册](campus_map_lab.md#L44)。
+
+## CFG-062 可动人物内部参数
+
+固定资源基址 `/media/campus/yanxiaobei-avatar/`，包含 rig.json 和 built 图层。默认转头最大7度，上下跟随3度，眼神水平0.8、垂直0.65，指数平滑系数9，发丝增益0.28，附属动作增益0.4。RuiC-2D 画布像素比上限2。上述数值为内部动画常量，调整后执行人物回归并检查桌面、手机与减少动态效果。
+
+[参数及资源加载](../src/main/resources/static/js/campus-avatar.js#L4)、[测试](../tests/frontend/campus-avatar.test.js#L1)。本轮沿用现有声线、音量、语速及登录配置。

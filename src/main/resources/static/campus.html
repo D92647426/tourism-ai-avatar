@@ -14,7 +14,10 @@
         <div id="sceneBackdrop" class="scene-backdrop" aria-hidden="true"></div>
         <section id="avatar" class="avatar" aria-label="燕小北">
             <div id="greeting" class="greeting">嗨，我是燕小北。<br>今天在校园里，想做些什么？</div>
-            <img class="character" src="/media/campus/yanxiaobei.png" alt="雨燕形象的燕小北向你问好" width="1353" height="1162">
+            <div class="character">
+                <img id="avatarFallback" class="character-fallback" src="/media/campus/yanxiaobei-avatar/source.png" alt="紫发羽翼的燕小北向你问好" width="1024" height="1536">
+                <canvas id="avatarCanvas" class="character-canvas" role="img" aria-label="会眨眼、跟随视线和开口说话的燕小北" hidden></canvas>
+            </div>
             <p id="speechStatus" class="speech-status" role="status">很高兴见到你</p>
         </section>
         <section id="scenePanel" class="scene-panel" aria-label="校园地点与事项" hidden>
@@ -56,7 +59,7 @@
             <details id="weatherDetails" class="weather-details"><summary>天气资料</summary><div id="weatherEvidence">天气资料暂未获取</div></details>
         </div>
     </section>
-    <footer class="credit">角色为 AI 辅助二维重建 <a href="/media/campus/SOURCES.md" target="_blank" rel="noopener noreferrer">素材来源</a></footer>
+    <footer class="credit">形象由表情素材重绘并绑定 <a href="/media/campus/SOURCES.md" target="_blank" rel="noopener noreferrer">素材来源</a></footer>
     <dialog id="locationLab" class="location-lab" aria-labelledby="locationLabTitle">
         <div class="lab-heading"><div><h2 id="locationLabTitle">地图与虚拟定位</h2><p>手动设置位置与时间，测试校园问答与陪伴。</p></div><button id="closeLocationLab" class="text-button" type="button" aria-label="关闭地图测试">关闭</button></div>
         <div class="lab-layout">
@@ -87,6 +90,8 @@
     <script src="/js/campus-scene.js"></script>
     <script src="/js/campus-environment.js"></script>
     <script src="/js/campus-location-lab.js"></script>
+    <script src="/vendor/ruic2d/mesh-avatar.js"></script>
+    <script src="/js/campus-avatar.js"></script>
     <script src="/js/campus-voice.js"></script>
     <script src="/js/campus.js"></script>
 </body>

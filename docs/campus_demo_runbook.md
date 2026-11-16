@@ -85,7 +85,7 @@ $env:JAVA_HOME = 'C:/Program Files/Java/jdk-19'
 - [事实核验与一卡通迁址来源](bjut_campus_research.md#L1)
 - [角色及实景来源记录](../src/main/resources/static/media/campus/SOURCES.md#L1)
 
-燕小北采用官方低清图AI辅助透明二维重建，完整prompt与生成方式留在素材记录，许可 `upstream-unspecified`。本部地图边界来自OpenStreetMap并带ODbL署名，官方布局图按自身来源打开。
+校园页当前使用《小北校园日常》素材重绘并经 RuiC-2D 绑定的人形，来源许可仍为 `upstream-unspecified`，原作者设定待核实。鼠标眼神跟随、声音口型与静态降级见[可动形象手册](campus_avatar.md#L1)。旧官方雨燕立绘的来源记录保留版本依据。本部地图边界来自OpenStreetMap并带ODbL署名，官方布局图按自身来源打开。
 
 ## 检查与证据
 

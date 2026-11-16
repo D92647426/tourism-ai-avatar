@@ -189,3 +189,7 @@ API、配置与使用步骤见 [校园API](api_reference.md#L252)、[运行手�
 详细交互和边界见[地图手册](campus_map_lab.md#L1)，数据参考图层与正式目录入口核验状态分别记录在各自文件。
 
 REQ-061的坐标起点由[hasRouteOrigin](../src/main/java/com/guide/campus/CampusRequestValidation.java#L134)统一判定，[本地回答](../src/main/java/com/guide/campus/CampusLocalAnswers.java#L106)、[模型工具](../src/main/java/com/guide/campus/CampusModelTools.java#L57)及[模型动作关系校验](../src/main/java/com/guide/campus/CampusModelOrchestrator.java#L157)共用规则。目录地点身份优先，纯坐标只用于地址和方向参考。
+
+## REQ-062 可动人物
+
+[CampusAvatar.create](../src/main/resources/static/js/campus-avatar.js#L9)管理模型、鼠标视线、待机、口型、音频采样和页面清理。[CampusVoice.create](../src/main/resources/static/js/campus-voice.js#L4)将真实 onMouth 回调交给人物，使用可选媒体观察器接入现有逐句角色语音。[测试](../tests/frontend/campus-avatar.test.js#L1)通过正常校园入口覆盖模型和语音边界。

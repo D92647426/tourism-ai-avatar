@@ -13,3 +13,9 @@
 ## 2026-11-16 本部离线地图
 
 新增pingleyuan-features.geojson和campus-map-points.json，来自OSM官方map API，WGS84坐标，ODbL-1.0许可。每份文件保留fetchedAt、sourceUrl、sourceSha256与署名。共187个参考要素及14个匹配地点，入口核验状态为false。Leaflet1.9.4依赖与BSD-2-Clause许可在vendor/leaflet记录。具体来源和重建步骤见[地图手册](../../../../../../docs/campus_map_lab.md#L1)。
+
+## 2026-11-16 可动人物
+
+校园页面现用 `yanxiaobei-avatar/source.png` 和同目录的 rig、built 图层。形象依据用户从微信《小北校园日常》提供的表情素材，通过内置 imagegen 重绘与差分生成，再使用 RuiC-2D 网格绑定。作者及素材授权状态仍为 upstream-unspecified，AI 生成的侧背细节包含推断。完整提示词与处理经过见[制作记录](yanxiaobei-avatar/制作记录.md#L1)。上方旧 `yanxiaobei.png` 记录保留原版本来源。
+
+RuiC-2D 采用提交 5f78bfb852154be71b4352fda6a3c2b759930597，Mesh Avatar 和 RuiC-2D 的 MIT 文本随 vendor/ruic2d 分发。运行库包含高刷新率短时间间隔推进修正，人物的眼睛及口型使用本轮生成图层。交互与回归见[可动形象手册](../../../../../../docs/campus_avatar.md#L1)。

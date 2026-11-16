@@ -18,9 +18,10 @@
         return {speak:function(text,settings,hooks){
             settings=settings||{};hooks=hooks||{};
             var parts=split(text),stopped=false,current=null,controller=options.AbortController?new options.AbortController():null;
-            var url=null,AudioCtor=options.Audio,urls=options.URL;
+            var url=null,AudioCtor=options.Audio,urls=options.URL,detachAudio=null;
             function valid(audio){return !stopped&&current===audio;}
             function release(){
+                if(detachAudio){try{detachAudio();}catch(e){}detachAudio=null;}
                 if(current){current.onplaying=current.onpause=current.onended=current.onerror=current.onwaiting=null;try{current.pause();if(current.removeAttribute)current.removeAttribute('src');else current.src='';current.load();}catch(e){}current=null;}
                 if(url){try{urls.revokeObjectURL(url);}catch(e){}url=null;}
             }
@@ -47,6 +48,8 @@
                 var next=request(index+1),audio;
                 try{
                     url=urls.createObjectURL(result.blob);audio=new AudioCtor();current=audio;audio.src=url;
+                    // REQ-062: optional observer must never prevent speech playback.
+                    if(options.onAudio){try{detachAudio=options.onAudio(audio);}catch(e){detachAudio=null;}}
                     audio.volume=Number.isFinite(settings.volume)?settings.volume:1;audio.preload='auto';
                     audio.onplaying=function(){if(valid(audio)&&hooks.start)hooks.start();};
                     audio.onpause=function(){if(valid(audio)&&!audio.ended&&hooks.pause)hooks.pause();};
