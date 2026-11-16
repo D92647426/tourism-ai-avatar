@@ -152,6 +152,10 @@ PR #66、#68与[PR #70](https://github.com/D92647426/tourism-ai-avatar/pull/70)�
 
 本轮[议题 #71](https://github.com/D92647426/tourism-ai-avatar/issues/71)归档三套v7透明原图、提示词和校验清单，分支为codex/yanxiaobei-v7-designs，发布与合并时点见议题关联记录。[设计入口](designs/yanxiaobei/v7/README.md#L1)、[资产回归](../tests/test_avatar_design_assets.py#L13)。后续校园资料、入口与路网、主动陪伴及团队真实协作继续沿用#55/#58～#63与#1～#3。
 
-## 2026-11-16 REQ-065 本地动作实现
+## 2026-11-16 REQ-064与REQ-065 换装及情境动作交付
 
-已完成全身跟随、六类动作、12套姿态和关键词/场景/手动触发。学习与用餐完成侧身调整，动作和语音、衣装、取消及新对话共用生命周期。验收包括386项前端、318项Java、9项人物资产与独立JAR冒烟。[实现和验收](avatar_actions.md#L1)。本轮代码保存于本地开发分支，后续设备验收覆盖实体手机、角色音色及长期性能。
+已完成v8人物比例细化、三套衣装切换与刷新恢复，以及全身跟随、六类动作、12套姿态和关键词/场景/手动触发。学习与用餐完成侧身调整，动作和语音、衣装、取消及新对话共用生命周期。紧凑竖屏人物区域、资源LF摘要及学习姿态绑定参数均已修复并加入回归。[换装实现](campus_avatar.md#L45)、[动作实现和验收](avatar_actions.md#L1)。
+
+本轮已推送codex/avatar-campus-actions并提交[PR #73](https://github.com/D92647426/tourism-ai-avatar/pull/73)，覆盖REQ-064与REQ-065的代码、资源、测试及文档。2026年11月16日重新执行386项前端、318项Java、9项人物资产、文档链接与独立JAR冒烟均通过，远端自动检查及合并状态以PR记录为准。后续设备验收覆盖实体手机、角色音色及长期性能。
+
+本轮提交项为PR #73。后续议题继续为[#55 主动陪伴](https://github.com/D92647426/tourism-ai-avatar/issues/55)、[#58 餐饮评分](https://github.com/D92647426/tourism-ai-avatar/issues/58)、[#59 入口与路网核验](https://github.com/D92647426/tourism-ai-avatar/issues/59)、[#60 其他校区](https://github.com/D92647426/tourism-ai-avatar/issues/60)、[#61 更多主动情境](https://github.com/D92647426/tourism-ai-avatar/issues/61)、[#62 默认入口与资料管理](https://github.com/D92647426/tourism-ai-avatar/issues/62)、[#63 父馆照片关联](https://github.com/D92647426/tourism-ai-avatar/issues/63)。团队#1～#3继续按真实协作记录推进。
