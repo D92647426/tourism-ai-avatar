@@ -16,6 +16,14 @@
 
 ## 2026-11-16 可动人物
 
-校园页面现用 `yanxiaobei-avatar/source.png` 和同目录的 rig、built 图层。形象依据用户从微信《小北校园日常》提供的表情素材，通过内置 imagegen 重绘与差分生成，再使用 RuiC-2D 网格绑定。作者及素材授权状态仍为 upstream-unspecified，AI 生成的侧背细节包含推断。完整提示词与处理经过见[制作记录](yanxiaobei-avatar/制作记录.md#L1)。上方旧 `yanxiaobei.png` 记录保留原版本来源。
+v1模型位于 `yanxiaobei-avatar/source.png` 和同目录的 rig、built 图层。形象依据用户从微信《小北校园日常》提供的表情素材，通过内置 imagegen 重绘与差分生成，再使用 RuiC-2D 网格绑定。作者及素材授权状态仍为 upstream-unspecified，AI 生成的侧背细节包含推断。完整提示词与处理经过见[制作记录](yanxiaobei-avatar/制作记录.md#L1)。
 
 RuiC-2D 采用提交 5f78bfb852154be71b4352fda6a3c2b759930597，Mesh Avatar 和 RuiC-2D 的 MIT 文本随 vendor/ruic2d 分发。运行库包含高刷新率短时间间隔推进修正，人物的眼睛及口型使用本轮生成图层。交互与回归见[可动形象手册](../../../../../../docs/campus_avatar.md#L1)。
+
+## v8换装运行资源
+
+校园页当前使用 `yanxiaobei-v8` 下的背带裤、兜帽衫和短袖三套可动模型。原图基于v7经内置ImageGen调整细腿、小鞋，并生成六张眼睛和口型差分。RuiC-2D在面部保护区内配准导入，原表情来源许可标记为 `upstream-unspecified`。[生成提示词](yanxiaobei-v8/prompts.json#L1)、[摘要清单](yanxiaobei-v8/manifest.json#L1)、[设计和差分来源](../../../../../../docs/designs/yanxiaobei/v8/README.md#L1)。
+
+## REQ-065 情境姿态
+
+`yanxiaobei-actions`包含三套衣装的学习、用餐、思考、期待共12张内置ImageGen透明原图及RuiC-2D派生绑定。学习和用餐使用三分之四侧身，生成文件名、各阶段完整提示词与dsh-pet 0.3.8参考分类均有记录。[提示词](yanxiaobei-actions/prompts.json#L1)、[摘要](yanxiaobei-actions/manifest.json#L1)、[使用及构建](../../../../../../docs/avatar_actions.md#L1)。

@@ -193,3 +193,13 @@ REQ-055限定复审补齐无关地点照片切换后的导航闭环。同业务�
 ## REQ-063 v7角色设计定稿与归档
 
 对应[议题 #71](https://github.com/D92647426/tourism-ai-avatar/issues/71)。按用户确认保存背带裤、兜帽衫和短袖T恤三套1254×1254透明原图、完整生成提示词及SHA-256清单，并通过PR合并供小组共享。[设计入口](designs/yanxiaobei/v7/README.md#L1)、[TEST-063](../tests/test_avatar_design_assets.py#L1)。
+
+## REQ-064 v8细腿小鞋与校园形象切换
+
+用户要求在已确认Q版造型基础上收细腿部、缩小鞋子，并在校园助手中自选形象。实现三套透明原图与独立可动模型，右上角衣橱支持切换及本机偏好恢复。切换采用新画布准备与版本提交，连续操作、加载失败、销毁及正在播报均沿用同一个角色生命周期。
+
+[形象与范围](campus_avatar.md#L45)、[运行时切换](../src/main/resources/static/js/campus-avatar.js#L179)、[衣橱界面](../src/main/resources/static/js/campus-appearance.js#L7)、[TEST-064入口回归](../tests/frontend/campus-avatar.test.js#L183)、[资产回归](../tests/test_avatar_v8_assets.py#L12)。
+
+## REQ-065 全身跟随与情境动作
+
+按用户给出的dsh-pet示例选取学习、用餐、思考、馋嘴、庆祝与疑惑，三套衣装共12套关键姿态。学习及用餐采用侧身构图，加入全身位移、倾斜、后翼与重心动画，跟随用户关键词和结构化场景，并提供8秒手动预览、自动开关及取消边界。[动作说明](avatar_actions.md#L1)、[选择与控制](../src/main/resources/static/js/campus-avatar-actions.js#L14)、[模型加载](../src/main/resources/static/js/campus-avatar.js#L193)、[TEST-065](../tests/frontend/campus-avatar.test.js#L282)。

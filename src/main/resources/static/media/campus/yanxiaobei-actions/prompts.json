@@ -1,0 +1,111 @@
+{
+  "requirement": "REQ-065",
+  "tool": "built-in image_gen",
+  "reference": {
+    "name": "dsh-pet",
+    "version": "0.3.8",
+    "repository": "https://github.com/PC2005-cloud/dsh-pet",
+    "selection": [
+      "思考冒泡",
+      "忙碌点按",
+      "吃白饭",
+      "吃长寿面",
+      "雀跃庆祝",
+      "垂头叹气冒汗"
+    ]
+  },
+  "sources": {
+    "overalls": {
+      "study": "exec-d8c0e997-f68d-4d3f-a9e8-a27940cb2056.png",
+      "dining": "exec-cb8277fe-1db4-4567-9448-5aae84bd8a7c.png",
+      "thinking": "exec-0352003f-813b-4a65-b6fe-61b1261b0c7f.png",
+      "hungry": "exec-e573ad72-c85c-4c2f-abbc-3355943e1af7.png"
+    },
+    "hoodie": {
+      "study": "exec-e9753ba3-3a9f-4afb-be9f-47acb8b55add.png",
+      "dining": "exec-84a1998a-5757-4ea0-a8c7-b5f39fd876e3.png",
+      "thinking": "exec-b83fdb47-9a98-42b1-bae5-f6c7fad65a7b.png",
+      "hungry": "exec-87109698-9ca7-40d9-bcaf-8f7c57cb34dc.png"
+    },
+    "tshirt": {
+      "study": "exec-9cf2291e-20c2-4da0-8a7f-cd7d04256ca2.png",
+      "dining": "exec-f87f7923-c1f3-4dd8-83bc-770ad157caad.png",
+      "thinking": "exec-ef919449-b693-42e2-8d4c-1890a1370486.png",
+      "hungry": "exec-34aa55e6-81de-48b3-86bb-970451132058.png"
+    }
+  },
+  "prompts": [
+    {
+      "outfit": "overalls",
+      "action": "study",
+      "basePrompt": "Use case: identity-preserve. Edit target is this approved Yan Xiaobei v8 transparent front-facing chibi in blue OVERALLS. Create the study key pose for her animated campus assistant. Place her behind a small natural wooden study desk in the foreground. On the desk show an open textbook with simple unlettered pages, a slim blue laptop with an open screen angled slightly to the side, and a pencil. Her hands naturally rest on the keyboard and near the book, visibly studying. Desk and props are contained below y=820, its front hides most lower legs. Keep her head and face at their original exact image coordinates. Preserve exact character identity, two-head-tall proportion, narrowed chin, simplified pointed purple hair, large curled ahoge plus small curl, B clip and white flower, compact dark grey folded feather wings, overalls outfit colors, thin short legs and petite sneakers. This will be mesh-rigged with blinking and speech. Preserve the original head silhouette, scale, eye and mouth positions exactly, eyes open and neutral unless the requested hungry expression. Center full character and all props within the same 1254x1254 composition. Clean cel-shaded sticker illustration matching input. Real transparent background, no ground shadow, no background scene, no additional character, no writing outside original costume logos, no watermark.",
+      "sideRefinement": "Use case: precise-object-edit. Edit the attached Yan Xiaobei overalls study pose. Turn her head AND upper torso about 20 degrees toward screen-left, a gentle three-quarter view looking down toward the laptop and open textbook. The side view must visibly change the symmetry of her cheeks, bangs and eye sizes, with both eyes still visible. Preserve all established character design, outfit, large curled ahoge, small curl, B clip and white flower, dark compact rear wings, two-head chibi proportion and petite feet. Preserve the existing desk, book, laptop, pencil or noodles, bowl and chopsticks as appropriate. Keep the head center at roughly the same location, do not shrink the head, keep a comfortable natural pose and the same 1254x1254 full-character composition. Same cel-shaded illustration with true transparent background, no scene, no ground shadow, no watermark, no new text."
+    },
+    {
+      "outfit": "overalls",
+      "action": "dining",
+      "basePrompt": "Use case: identity-preserve. Edit target is this approved Yan Xiaobei v8 transparent front-facing chibi in blue OVERALLS. Create the dining key pose for her animated campus assistant. Have her hold a little blue-and-white bowl of warm noodles at chest-to-waist height with one hand, using chopsticks in the other hand, enjoying campus lunch. Draw a few noodles, an egg and green vegetables, tiny subtle steam. No table is necessary. Both arms visibly bend and lift around the bowl. Keep the head and facial features at the exact original image coordinates. Preserve exact character identity, two-head-tall proportion, narrowed chin, simplified pointed purple hair, large curled ahoge plus small curl, B clip and white flower, compact dark grey folded feather wings, overalls outfit colors, thin short legs and petite sneakers. This will be mesh-rigged with blinking and speech. Preserve the original head silhouette, scale, eye and mouth positions exactly, eyes open and neutral unless the requested hungry expression. Center full character and all props within the same 1254x1254 composition. Clean cel-shaded sticker illustration matching input. Real transparent background, no ground shadow, no background scene, no additional character, no writing outside original costume logos, no watermark.",
+      "sideRefinement": "Use case: precise-object-edit. Edit the attached Yan Xiaobei overalls dining pose. Turn her head AND upper torso about 15 degrees toward screen-right, a gentle three-quarter view looking toward her bowl and lifted noodles. The side view must visibly change the symmetry of her cheeks, bangs and eye sizes, with both eyes still visible. Preserve all established character design, outfit, large curled ahoge, small curl, B clip and white flower, dark compact rear wings, two-head chibi proportion and petite feet. Preserve the existing desk, book, laptop, pencil or noodles, bowl and chopsticks as appropriate. Keep the head center at roughly the same location, do not shrink the head, keep a comfortable natural pose and the same 1254x1254 full-character composition. Same cel-shaded illustration with true transparent background, no scene, no ground shadow, no watermark, no new text."
+    },
+    {
+      "outfit": "overalls",
+      "action": "thinking",
+      "basePrompt": "Use case: identity-preserve. Edit target is this approved Yan Xiaobei v8 transparent front-facing chibi in blue OVERALLS. Create the thinking key pose for her animated campus assistant. Change her body gesture to thoughtfully resting one hand under the chin, the other hand resting near the waist. The chin hand stays below the mouth and does not obscure eyes or lips. A small loose cluster of three soft thought-bubble dots floats beside her left shoulder, never covering the face. Keep the head and facial features at the exact original image coordinates. Preserve exact character identity, two-head-tall proportion, narrowed chin, simplified pointed purple hair, large curled ahoge plus small curl, B clip and white flower, compact dark grey folded feather wings, overalls outfit colors, thin short legs and petite sneakers. This will be mesh-rigged with blinking and speech. Preserve the original head silhouette, scale, eye and mouth positions exactly, eyes open and neutral unless the requested hungry expression. Center full character and all props within the same 1254x1254 composition. Clean cel-shaded sticker illustration matching input. Real transparent background, no ground shadow, no background scene, no additional character, no writing outside original costume logos, no watermark.",
+      "sideRefinement": null
+    },
+    {
+      "outfit": "overalls",
+      "action": "hungry",
+      "basePrompt": "Use case: identity-preserve. Edit target is this approved Yan Xiaobei v8 transparent front-facing chibi in blue OVERALLS. Create the hungry key pose for her animated campus assistant. Give her an eager food-loving expression and a short cute shiny pale-blue saliva droplet at the corner of her smiling mouth, extending a little below the mouth. Both hands are clasped hopefully near her upper chest. Do not give her a bowl or food, only the expectant gesture. Keep the same eye size and purple irises without stars, and the facial feature coordinates exactly aligned to input. Preserve exact character identity, two-head-tall proportion, narrowed chin, simplified pointed purple hair, large curled ahoge plus small curl, B clip and white flower, compact dark grey folded feather wings, overalls outfit colors, thin short legs and petite sneakers. This will be mesh-rigged with blinking and speech. Preserve the original head silhouette, scale, eye and mouth positions exactly, eyes open and neutral unless the requested hungry expression. Center full character and all props within the same 1254x1254 composition. Clean cel-shaded sticker illustration matching input. Real transparent background, no ground shadow, no background scene, no additional character, no writing outside original costume logos, no watermark.",
+      "sideRefinement": null
+    },
+    {
+      "outfit": "hoodie",
+      "action": "study",
+      "basePrompt": "Use case: identity-preserve. IMAGE 1 is the EDIT TARGET, Yan Xiaobei in the approved study pose. IMAGE 2 is the OUTFIT REFERENCE. Change only the clothing of Image 1 into exactly the cream hoodie with blue hood and cuffs, navy shorts of Image 2. Keep the complete study action, props, hands, body gesture, face, mouth, drool if present, head size, positions and 1254x1254 composition of Image 1. Precisely preserve purple hair, large curled ahoge and small curl, B hair clip and white flower, dark compact folded rear feather wings, purple eyes without stars, narrow chin and petite feet. Same cel-shaded sticker illustration, genuinely transparent background. No scene, ground shadow, added people, watermark or new text. Output one character and its existing action props only.",
+      "sideRefinement": "Use case: precise-object-edit. Edit the attached Yan Xiaobei hoodie study pose. Turn her head AND upper torso about 20 degrees toward screen-left, a gentle three-quarter view looking down toward the laptop and open textbook. The side view must visibly change the symmetry of her cheeks, bangs and eye sizes, with both eyes still visible. Preserve all established character design, outfit, large curled ahoge, small curl, B clip and white flower, dark compact rear wings, two-head chibi proportion and petite feet. Preserve the existing desk, book, laptop, pencil or noodles, bowl and chopsticks as appropriate. Keep the head center at roughly the same location, do not shrink the head, keep a comfortable natural pose and the same 1254x1254 full-character composition. Same cel-shaded illustration with true transparent background, no scene, no ground shadow, no watermark, no new text."
+    },
+    {
+      "outfit": "hoodie",
+      "action": "dining",
+      "basePrompt": "Use case: identity-preserve. IMAGE 1 is the EDIT TARGET, Yan Xiaobei in the approved dining pose. IMAGE 2 is the OUTFIT REFERENCE. Change only the clothing of Image 1 into exactly the cream hoodie with blue hood and cuffs, navy shorts of Image 2. Keep the complete dining action, props, hands, body gesture, face, mouth, drool if present, head size, positions and 1254x1254 composition of Image 1. Precisely preserve purple hair, large curled ahoge and small curl, B hair clip and white flower, dark compact folded rear feather wings, purple eyes without stars, narrow chin and petite feet. Same cel-shaded sticker illustration, genuinely transparent background. No scene, ground shadow, added people, watermark or new text. Output one character and its existing action props only.",
+      "sideRefinement": "Use case: precise-object-edit. Edit the attached Yan Xiaobei hoodie dining pose. Turn her head AND upper torso about 15 degrees toward screen-right, a gentle three-quarter view looking toward her bowl and lifted noodles. The side view must visibly change the symmetry of her cheeks, bangs and eye sizes, with both eyes still visible. Preserve all established character design, outfit, large curled ahoge, small curl, B clip and white flower, dark compact rear wings, two-head chibi proportion and petite feet. Preserve the existing desk, book, laptop, pencil or noodles, bowl and chopsticks as appropriate. Keep the head center at roughly the same location, do not shrink the head, keep a comfortable natural pose and the same 1254x1254 full-character composition. Same cel-shaded illustration with true transparent background, no scene, no ground shadow, no watermark, no new text."
+    },
+    {
+      "outfit": "hoodie",
+      "action": "thinking",
+      "basePrompt": "Use case: identity-preserve. IMAGE 1 is the EDIT TARGET, Yan Xiaobei in the approved thinking pose. IMAGE 2 is the OUTFIT REFERENCE. Change only the clothing of Image 1 into exactly the cream hoodie with blue hood and cuffs, navy shorts of Image 2. Keep the complete thinking action, props, hands, body gesture, face, mouth, drool if present, head size, positions and 1254x1254 composition of Image 1. Precisely preserve purple hair, large curled ahoge and small curl, B hair clip and white flower, dark compact folded rear feather wings, purple eyes without stars, narrow chin and petite feet. Same cel-shaded sticker illustration, genuinely transparent background. No scene, ground shadow, added people, watermark or new text. Output one character and its existing action props only.",
+      "sideRefinement": null
+    },
+    {
+      "outfit": "hoodie",
+      "action": "hungry",
+      "basePrompt": "Use case: identity-preserve. IMAGE 1 is the EDIT TARGET, Yan Xiaobei in the approved hungry pose. IMAGE 2 is the OUTFIT REFERENCE. Change only the clothing of Image 1 into exactly the cream hoodie with blue hood and cuffs, navy shorts of Image 2. Keep the complete hungry action, props, hands, body gesture, face, mouth, drool if present, head size, positions and 1254x1254 composition of Image 1. Precisely preserve purple hair, large curled ahoge and small curl, B hair clip and white flower, dark compact folded rear feather wings, purple eyes without stars, narrow chin and petite feet. Same cel-shaded sticker illustration, genuinely transparent background. No scene, ground shadow, added people, watermark or new text. Output one character and its existing action props only.",
+      "sideRefinement": null
+    },
+    {
+      "outfit": "tshirt",
+      "action": "study",
+      "basePrompt": "Use case: identity-preserve. IMAGE 1 is the EDIT TARGET, Yan Xiaobei in the approved study pose. IMAGE 2 is the OUTFIT REFERENCE. Change only the clothing of Image 1 into exactly the white short-sleeved blue-trimmed T-shirt with B and swift logo, royal-blue shorts of Image 2. Keep the complete study action, props, hands, body gesture, face, mouth, drool if present, head size, positions and 1254x1254 composition of Image 1. Precisely preserve purple hair, large curled ahoge and small curl, B hair clip and white flower, dark compact folded rear feather wings, purple eyes without stars, narrow chin and petite feet. Same cel-shaded sticker illustration, genuinely transparent background. No scene, ground shadow, added people, watermark or new text. Output one character and its existing action props only.",
+      "sideRefinement": "Use case: precise-object-edit. Edit the attached Yan Xiaobei tshirt study pose. Turn her head AND upper torso about 20 degrees toward screen-left, a gentle three-quarter view looking down toward the laptop and open textbook. The side view must visibly change the symmetry of her cheeks, bangs and eye sizes, with both eyes still visible. Preserve all established character design, outfit, large curled ahoge, small curl, B clip and white flower, dark compact rear wings, two-head chibi proportion and petite feet. Preserve the existing desk, book, laptop, pencil or noodles, bowl and chopsticks as appropriate. Keep the head center at roughly the same location, do not shrink the head, keep a comfortable natural pose and the same 1254x1254 full-character composition. Same cel-shaded illustration with true transparent background, no scene, no ground shadow, no watermark, no new text."
+    },
+    {
+      "outfit": "tshirt",
+      "action": "dining",
+      "basePrompt": "Use case: identity-preserve. IMAGE 1 is the EDIT TARGET, Yan Xiaobei in the approved dining pose. IMAGE 2 is the OUTFIT REFERENCE. Change only the clothing of Image 1 into exactly the white short-sleeved blue-trimmed T-shirt with B and swift logo, royal-blue shorts of Image 2. Keep the complete dining action, props, hands, body gesture, face, mouth, drool if present, head size, positions and 1254x1254 composition of Image 1. Precisely preserve purple hair, large curled ahoge and small curl, B hair clip and white flower, dark compact folded rear feather wings, purple eyes without stars, narrow chin and petite feet. Same cel-shaded sticker illustration, genuinely transparent background. No scene, ground shadow, added people, watermark or new text. Output one character and its existing action props only.",
+      "sideRefinement": "Use case: precise-object-edit. Edit the attached Yan Xiaobei tshirt dining pose. Turn her head AND upper torso about 15 degrees toward screen-right, a gentle three-quarter view looking toward her bowl and lifted noodles. The side view must visibly change the symmetry of her cheeks, bangs and eye sizes, with both eyes still visible. Preserve all established character design, outfit, large curled ahoge, small curl, B clip and white flower, dark compact rear wings, two-head chibi proportion and petite feet. Preserve the existing desk, book, laptop, pencil or noodles, bowl and chopsticks as appropriate. Keep the head center at roughly the same location, do not shrink the head, keep a comfortable natural pose and the same 1254x1254 full-character composition. Same cel-shaded illustration with true transparent background, no scene, no ground shadow, no watermark, no new text."
+    },
+    {
+      "outfit": "tshirt",
+      "action": "thinking",
+      "basePrompt": "Use case: identity-preserve. IMAGE 1 is the EDIT TARGET, Yan Xiaobei in the approved thinking pose. IMAGE 2 is the OUTFIT REFERENCE. Change only the clothing of Image 1 into exactly the white short-sleeved blue-trimmed T-shirt with B and swift logo, royal-blue shorts of Image 2. Keep the complete thinking action, props, hands, body gesture, face, mouth, drool if present, head size, positions and 1254x1254 composition of Image 1. Precisely preserve purple hair, large curled ahoge and small curl, B hair clip and white flower, dark compact folded rear feather wings, purple eyes without stars, narrow chin and petite feet. Same cel-shaded sticker illustration, genuinely transparent background. No scene, ground shadow, added people, watermark or new text. Output one character and its existing action props only.",
+      "sideRefinement": null
+    },
+    {
+      "outfit": "tshirt",
+      "action": "hungry",
+      "basePrompt": "Use case: identity-preserve. IMAGE 1 is the EDIT TARGET, Yan Xiaobei in the approved hungry pose. IMAGE 2 is the OUTFIT REFERENCE. Change only the clothing of Image 1 into exactly the white short-sleeved blue-trimmed T-shirt with B and swift logo, royal-blue shorts of Image 2. Keep the complete hungry action, props, hands, body gesture, face, mouth, drool if present, head size, positions and 1254x1254 composition of Image 1. Precisely preserve purple hair, large curled ahoge and small curl, B hair clip and white flower, dark compact folded rear feather wings, purple eyes without stars, narrow chin and petite feet. Same cel-shaded sticker illustration, genuinely transparent background. No scene, ground shadow, added people, watermark or new text. Output one character and its existing action props only.",
+      "sideRefinement": null
+    }
+  ]
+}

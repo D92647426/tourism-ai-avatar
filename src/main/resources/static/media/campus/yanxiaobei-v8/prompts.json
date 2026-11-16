@@ -1,0 +1,19 @@
+{
+  "version": "v8",
+  "tool": "built-in image_gen",
+  "requirement": "REQ-064",
+  "outputs": [
+    {
+      "id": "overalls",
+      "prompt": "Use case: precise-object-edit.\nAsset type: transparent full-body 2D character artwork for a campus assistant animated avatar.\nEdit target: the attached v7 overalls character.\nEdit only the legs, socks and shoes below the shorts. Make each leg approximately 22 percent slimmer and each sneaker approximately 20 percent smaller, keeping the stance naturally balanced. Keep the legs short and chibi, with the same overall character height and approximately two-head-tall proportions. Socks follow the slimmer legs. The new feet should be neat, petite rounded sneakers matching the original blue-white-yellow design.\nPreserve the exact face, purple eyes without stars, narrowed chin, pointed simplified purple hair, large curled ahoge and small curl, B hair clip and white flower, compact dark folded rear feather wings, blue overalls, upper body, pose, lighting and linework.\nFull frontal centered pose, same composition and framing as the input. Clean opaque character and genuinely transparent background, no shadow, no scenery, no additional character, no caption, no watermark.\nMaintain the established sticker-like cel-shaded illustration style. This is a small targeted proportion refinement."
+    },
+    {
+      "id": "hoodie",
+      "prompt": "Use case: precise-object-edit. Asset type: full-body transparent 2D campus character avatar. Image 1 is the EDIT TARGET in cream hoodie with blue hood, cuffs and navy shorts. Image 2 is the approved slimmer-leg/smaller-foot OVERALLS reference. Refine only the legs, socks and shoes below the shorts of Image 1 to match Image 2's thinner legs and petite feet. Each leg about 22% slimmer, sneakers about 20% smaller than the original, same short chibi height and balanced frontal stance. Retain the complete cream hoodie with blue hood, cuffs and navy shorts outfit of Image 1. Precisely preserve the face and purple eyes without yellow stars, narrow chin, simplified pointed purple hair, large curled ahoge and small curl, gold B hair clip and white flower, compact dark folded feather wings, upper-body pose, linework, palette and cel shading. Same centered frontal framing, genuinely transparent background, no added props, no ground shadow, no lettering outside the existing costume design, no watermark. Output one character in this outfit only."
+    },
+    {
+      "id": "tshirt",
+      "prompt": "Use case: precise-object-edit. Asset type: full-body transparent 2D campus character avatar. Image 1 is the EDIT TARGET in white blue-trimmed short-sleeve T-shirt and blue shorts. Image 2 is the approved slimmer-leg/smaller-foot OVERALLS reference. Refine only the legs, socks and shoes below the shorts of Image 1 to match Image 2's thinner legs and petite feet. Each leg about 22% slimmer, sneakers about 20% smaller than the original, same short chibi height and balanced frontal stance. Retain the complete white blue-trimmed short-sleeve T-shirt and blue shorts outfit of Image 1. Precisely preserve the face and purple eyes without yellow stars, narrow chin, simplified pointed purple hair, large curled ahoge and small curl, gold B hair clip and white flower, compact dark folded feather wings, upper-body pose, linework, palette and cel shading. Same centered frontal framing, genuinely transparent background, no added props, no ground shadow, no lettering outside the existing costume design, no watermark. Output one character in this outfit only."
+    }
+  ]
+}

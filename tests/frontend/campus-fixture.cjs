@@ -24,6 +24,12 @@ function page(options = {}) {
         append(...children) { children.forEach(c => this.appendChild(c)); }
         replaceChildren(...children) { this._text = ''; this.children = []; this.append(...children); }
         remove() { if (this.parentElement) this.parentElement.children = this.parentElement.children.filter(c => c !== this); }
+        replaceWith(child) {
+            child.remove();
+            const parent = this.parentElement;
+            parent.children[parent.children.indexOf(this)] = child; child.parentElement = parent;
+            this.parentElement = null; if (child.id) nodes.set(child.id,child);
+        }
         contains(node) { return node === this || this.children.some(c => c.contains(node)); }
         setAttribute(k,v) { this.attributes[k] = String(v); if (k === 'class') this.className = v; }
         getAttribute(k) { return this.attributes[k] ?? null; }
@@ -41,6 +47,7 @@ function page(options = {}) {
         if (node.attributes.value !== undefined) node.value = node.attributes.value;
         nodes.set(node.id,node);
     }
+    nodes.get('characterHost').append(nodes.get('avatarFallback'),nodes.get('avatarCanvas'));
     const documentEvents = new Element(), windowEvents = new Element();
     const document = {hidden:false, body:new Element(), documentElement:new Element(),
         getElementById:id => nodes.get(id) || null, createElement:tag => new Element(tag), createElementNS:(_,tag) => new Element(tag),
@@ -56,7 +63,11 @@ function page(options = {}) {
             skipTransition() { this.skipped = true; ready.reject(new Error('skipped')); if (committed) finished.resolve(); }};
         transitions.push(transition); return transition;
     };
-    class Image { constructor(){images.push(this);} }
+    class Image {
+        set src(value){this._src=value; if (!/\/yanxiaobei-(?:v8|actions)\//.test(value) && !images.includes(this)) images.push(this);}
+        get src(){return this._src;}
+        decode(){return options.portraitDecode ? options.portraitDecode(this.src) : Promise.resolve();}
+    }
     class Recognition { constructor(){recognitions.push(this);} start(){ if(this.onstart)this.onstart(); } stop(){} abort(){} }
     const voiceEvents = new Element();
     const synthesis = {getVoices:() => options.voices || [{lang:'zh-CN',voiceURI:'test-zh',name:'中文'}], speak:u => utterances.push(u), cancel:() => stops++, addEventListener:voiceEvents.addEventListener.bind(voiceEvents),removeEventListener:voiceEvents.removeEventListener.bind(voiceEvents)};
@@ -66,7 +77,8 @@ function page(options = {}) {
         if (url === '/api/campus/catalog') return Promise.resolve(response(catalog));
         if (url === '/api/campus/context') return options.contextFetch ? options.contextFetch(contextReads++) : Promise.resolve(response(options.context || {conversationId:'conversation-1',contextRevision:0,campusId:null,placeId:null}));
         if (url === '/api/digital-human-config') return Promise.resolve(response(options.config || {}));
-        if (url === '/media/campus/yanxiaobei-avatar/rig.json') return Promise.resolve(response(JSON.parse(fs.readFileSync(path.join(root,'src/main/resources/static',url),'utf8'))));
+        if (/^\/media\/campus\/yanxiaobei-(?:v8\/[a-z]+|actions\/[a-z]+\/[a-z]+)\/rig.json$/.test(url)) return options.avatarFetch ? options.avatarFetch(url)
+            : Promise.resolve(response(JSON.parse(fs.readFileSync(path.join(root,'src/main/resources/static',url),'utf8'))));
         if (url.startsWith('/api/campus/weather')) return Promise.resolve(response(options.weather || {status:'unavailable',label:'北京市区参考天气'}));
         if (url.startsWith('/media/campus/') && /(?:\.json|\.geojson)$/.test(url)) return options.mapFetch ? options.mapFetch(url)
             : Promise.resolve(response(JSON.parse(fs.readFileSync(path.join(root,'src/main/resources/static',url),'utf8'))));
@@ -79,9 +91,9 @@ function page(options = {}) {
         navigator:{geolocation:{getCurrentPosition:(ok,bad) => geo.push({ok,bad}),
             watchPosition:(ok,bad) => { const watch={ok,bad,id:watches.length};watches.push(watch);return watch.id; },
             clearWatch:id => clearedWatches.push(id)}},
-        innerHeight:1000,matchMedia:() => ({matches:!!options.reducedMotion}), SpeechRecognition:Recognition,
+        innerHeight:1000,matchMedia:query => ({matches:query.includes('max-width') ? !!options.mobile : !!options.reducedMotion}), SpeechRecognition:Recognition,
         speechSynthesis:synthesis,SpeechSynthesisUtterance:function(text){this.text=text;},Audio:options.Audio || function(){},
-        addEventListener:windowEvents.addEventListener.bind(windowEvents),removeEventListener:windowEvents.removeEventListener.bind(windowEvents),localStorage:{getItem:()=>null,setItem(){}},location:{},
+        addEventListener:windowEvents.addEventListener.bind(windowEvents),removeEventListener:windowEvents.removeEventListener.bind(windowEvents),localStorage:options.storage || {getItem:()=>null,setItem(){}},location:{},
         open:()=>{},requestAnimationFrame:fn=>time.setTimeout(()=>fn(now),16),cancelAnimationFrame:time.clearTimeout});
     context.window = context;
     for (const [,src] of html.matchAll(/<script\b[^>]*src="(\/js\/[^\"]+)"[^>]*>/g)) {

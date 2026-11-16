@@ -1,0 +1,29 @@
+{
+  "version": "v8",
+  "outputs": [
+    {
+      "id": "eyes_closed",
+      "prompt": "Use case: precise-object-edit. This is an animation expression DIFFERENCE of the attached transparent 1254x1254 character. Change only BOTH EYES to naturally CLOSED eyes for a blink, with thin gently curved dark eyelash lines. No iris and no white eyeball remains visible. Keep the mouth closed smiling. Preserve all other pixels, face position, face size, full-body centered frontal pose, slim short legs, small shoes, all costume and hair, ahoge, wings, B clip, white flower, original palette and line art. Output full-body character with exactly the same framing, scale and dimensions as the input, fully transparent background, no ground shadow. This will be registered and masked into the original drawing by a character rig pipeline. Do not add other objects, labels, panel layouts or watermarks."
+    },
+    {
+      "id": "eyes_half",
+      "prompt": "Use case: precise-object-edit. This is an animation expression DIFFERENCE of the attached transparent 1254x1254 character. Change only BOTH EYES to HALF CLOSED eyes for the middle of a blink. Upper eyelids cover roughly the top half of each purple iris. Retain the lower iris and small visible white portions. Keep the mouth closed smiling. Preserve all other pixels, face position, face size, full-body centered frontal pose, slim short legs, small shoes, all costume and hair, ahoge, wings, B clip, white flower, original palette and line art. Output full-body character with exactly the same framing, scale and dimensions as the input, fully transparent background, no ground shadow. This will be registered and masked into the original drawing by a character rig pipeline. Do not add other objects, labels, panel layouts or watermarks."
+    },
+    {
+      "id": "mouth_a",
+      "prompt": "Use case: precise-object-edit. This is an animation expression DIFFERENCE of the attached transparent 1254x1254 character. Change only the small closed smiling MOUTH into a natural open A vowel speaking mouth, small vertical oval, dark warm interior and a small pink tongue. No teeth emphasis. Both eyes remain open exactly as input. Preserve all other pixels, face position, face size, full-body centered frontal pose, slim short legs, small shoes, all costume and hair, ahoge, wings, B clip, white flower, original palette and line art. Output full-body character with exactly the same framing, scale and dimensions as the input, fully transparent background, no ground shadow. This will be registered and masked into the original drawing by a character rig pipeline. Do not add other objects, labels, panel layouts or watermarks."
+    },
+    {
+      "id": "mouth_a_half",
+      "prompt": "Use case: precise-object-edit. This is an animation expression DIFFERENCE of the attached transparent 1254x1254 character. Change only the MOUTH to a HALF OPEN A vowel speaking mouth, a small warm dark oval around 40 pixels wide and 23 pixels high, tiny pink tongue. Remove the original closed mouth curve completely. Both eyes remain open as input. Preserve all other pixels, face position, face size, full-body centered frontal pose, slim short legs, small shoes, costume and hair, ahoge, wings, B clip, white flower, palette and line art. Output full-body character with exactly the same framing, scale and dimensions as the input and genuine transparent background. This will be registered and masked into the original drawing by a character rig pipeline. No ground shadow, other objects, labels, panels or watermark."
+    },
+    {
+      "id": "mouth_i",
+      "prompt": "Use case: precise-object-edit. This is an animation expression DIFFERENCE of the attached transparent 1254x1254 character. Change only the MOUTH to a small narrow horizontally open I vowel speaking mouth, about 45 pixels wide and 15 pixels high, tiny hint of light upper teeth and dark warm interior. Remove the original closed mouth curve completely. Both eyes remain open as input. Preserve all other pixels, face position, face size, full-body centered frontal pose, slim short legs, small shoes, costume and hair, ahoge, wings, B clip, white flower, palette and line art. Output full-body character with exactly the same framing, scale and dimensions as the input and genuine transparent background. This will be registered and masked into the original drawing by a character rig pipeline. No ground shadow, other objects, labels, panels or watermark."
+    },
+    {
+      "id": "mouth_o",
+      "prompt": "Use case: precise-object-edit. This is an animation expression DIFFERENCE of the attached transparent 1254x1254 character. Change only the MOUTH to a small ROUND O vowel speaking mouth, about 26 pixels wide and 34 pixels high, dark warm interior and tiny pink tongue. Remove the original closed mouth curve completely. Both eyes remain open as input. Preserve all other pixels, face position, face size, full-body centered frontal pose, slim short legs, small shoes, costume and hair, ahoge, wings, B clip, white flower, palette and line art. Output full-body character with exactly the same framing, scale and dimensions as the input and genuine transparent background. This will be registered and masked into the original drawing by a character rig pipeline. No ground shadow, other objects, labels, panels or watermark."
+    }
+  ]
+}

@@ -64,3 +64,9 @@
 触发：真实网页第一句播放成功，第二句含AI时工作进程返回502。根因：上游切换中英文分词，离线尝试下载fasttext大模型，且Windows中文路径下小模型加载失败。修复：配音副本中AI读作“人工智能”，其他拉丁字母按中文名称逐字拼读；不更改显示正文或聊天记录。位置 [spoken_text](../scripts/local_voice_server.py#L1)，回归 [WorkerTest](../tests/test_local_voice_server.py#L1)。当前是中文语音方案，不声称已实现自然英语发音。
 
 2026-11-16地图改进复现ERR-032-001，临时预览直接占用了构建JAR。停止已核验的临时进程后完整verify通过，最终预览使用独立JAR副本。[构建与运行步骤](campus_demo_runbook.md#L1)。
+
+## ERR-065 学习姿态被运行库拒绝
+
+触发为在衣橱选择桌前学习，图像与rig均返回200但模型未提交。真实浏览器调用createMeshAvatar后parseRig抛出 `Invalid rig`，具体字段为 `rig.appendages[0].duration: must not exceed period`。键盘手部period为0.75秒，运行库采用的默认duration超过该周期。
+
+处理为在[学习手部绑定](../scripts/build_campus_avatar_actions.py#L72)显式设置duration为0.55秒，重建三套学习rig并刷新摘要。新增[真实运行库schema回归](../tests/frontend/campus-avatar-assets.test.js#L11)，覆盖12套动作及3套待机绑定。真实浏览器随后逐套加载通过，错误记录为空。失败时优先核对实际消费端schema及默认值。

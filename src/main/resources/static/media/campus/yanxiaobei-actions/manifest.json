@@ -1,0 +1,689 @@
+{
+  "requirement": "REQ-065",
+  "role": "contextual-mesh-poses",
+  "outfits": [
+    "overalls",
+    "hoodie",
+    "tshirt"
+  ],
+  "poses": [
+    "study",
+    "dining",
+    "thinking",
+    "hungry"
+  ],
+  "files": [
+    {
+      "file": "overalls/study/built/base.png",
+      "sha256": "d0ac37d7ceff4e77808fdc3d248827615c19cb32dac47402d7da91e177a2d1ae"
+    },
+    {
+      "file": "overalls/study/built/eye0_ball.png",
+      "sha256": "0f4e6bc057ce05c995902d42b81bfc3f4896e841f23e2dc1262852ce72ec3e39"
+    },
+    {
+      "file": "overalls/study/built/eye0_crease.png",
+      "sha256": "360a728f6a9ece2defad7863ee939591823b6d6f7bc1e9404a9674a86d90b1c2"
+    },
+    {
+      "file": "overalls/study/built/eye0_lash.png",
+      "sha256": "cc64500bfff26f377c7d8fbd8e9619be8586dbda7074086af085cb3778d1ad85"
+    },
+    {
+      "file": "overalls/study/built/eye0_low.png",
+      "sha256": "b4f8eab8e3cb5d90e103a8ede7bf9c6d54184a9cb74b1bc4e250e990fc2e5dab"
+    },
+    {
+      "file": "overalls/study/built/eye1_ball.png",
+      "sha256": "2e6e79165aa441e5eeafc3f188eded5d46881eb1a3f8bafaa6d2ce7695282303"
+    },
+    {
+      "file": "overalls/study/built/eye1_crease.png",
+      "sha256": "bc7b3a95f7a23e91055d7a6f37037268c64016da627126320d53af97b612d1a7"
+    },
+    {
+      "file": "overalls/study/built/eye1_lash.png",
+      "sha256": "3c189d57f84bc35a5f5544d4e15ed92c09c93ce06b4e175d07b5c1f2ed41f26b"
+    },
+    {
+      "file": "overalls/study/built/eye1_low.png",
+      "sha256": "090c7e00c6d90ab8f70e71848d6967fba47fab5e2f2b4b9c79b0539644caca96"
+    },
+    {
+      "file": "overalls/study/built/hairmask.png",
+      "sha256": "de53aae4b6fc8542f4a62bd83e45533b5d6aad0cdc3f78b4b999f9ff8953a42a"
+    },
+    {
+      "file": "overalls/study/built/layers.json",
+      "sha256": "49fbc5b55f774a6d01b541412c4096cac749e75a52464520d422e5e8e57d3f64"
+    },
+    {
+      "file": "overalls/study/built/sprites/sprites.json",
+      "sha256": "87ffeae0c5cf701ef095547184884af5acad05f9decd3cddb7b48c25d7875976"
+    },
+    {
+      "file": "overalls/study/rig.json",
+      "sha256": "59b3fe23801af0c01609b0e2409b893646025b37f30f622b829973c9daa061ea"
+    },
+    {
+      "file": "overalls/study/source.png",
+      "sha256": "c4c61f35bb016cd164526261d55ed0c79ef95766a59130f74f14248ac22ebe74"
+    },
+    {
+      "file": "overalls/dining/built/base.png",
+      "sha256": "86120f432dea2133f16c323e6fad9aaa6f61e544365c85b6e263fec09ab786eb"
+    },
+    {
+      "file": "overalls/dining/built/eye0_ball.png",
+      "sha256": "de1b11b7f9d4d9e688a7e8fbf157b74a3dfc09cf37e5a89286add62338a5b839"
+    },
+    {
+      "file": "overalls/dining/built/eye0_crease.png",
+      "sha256": "e534513a21e3308ecdb5b76a1a07d97ab47c6b81b05dec66c6ec65fd92cce837"
+    },
+    {
+      "file": "overalls/dining/built/eye0_lash.png",
+      "sha256": "739e33796652bc055f636f9d3b0a1a5466eb09e20bf64f28d984336099817093"
+    },
+    {
+      "file": "overalls/dining/built/eye0_low.png",
+      "sha256": "119e677ab455e2c1454e77864532142ad376998bb23e19eb9c78970f4087d031"
+    },
+    {
+      "file": "overalls/dining/built/eye1_ball.png",
+      "sha256": "20ff7d799d18cc3770affac7b503807c0fed7ff0b083e0c0472e2fc99fad0d0c"
+    },
+    {
+      "file": "overalls/dining/built/eye1_crease.png",
+      "sha256": "03ab5d1db832f10ce45ae101c6fe76ac2d32c73bdb76473b55cb5b686ab862d1"
+    },
+    {
+      "file": "overalls/dining/built/eye1_lash.png",
+      "sha256": "3fad0bb097460f87caf6cb84aec0c8cb7702a535f4bc82d57c9f98b6734694b7"
+    },
+    {
+      "file": "overalls/dining/built/eye1_low.png",
+      "sha256": "e84b243b8bef4c588cddcf39fe130effdc9d3c4fbd22517e0dc2df73f909992b"
+    },
+    {
+      "file": "overalls/dining/built/hairmask.png",
+      "sha256": "d82532caf03498248cc654db317a9b3ed23cac3d63f4e6cb12440ab145ca3ed2"
+    },
+    {
+      "file": "overalls/dining/built/layers.json",
+      "sha256": "6341aeecbaecf6f62553923b61e84dbe8182644d57f78a673cc0c11692aee279"
+    },
+    {
+      "file": "overalls/dining/built/sprites/sprites.json",
+      "sha256": "250120629b5849c0b88858924b40fce1fc7cd991f3eda42f7824ba9085d1a1e1"
+    },
+    {
+      "file": "overalls/dining/rig.json",
+      "sha256": "9b0d3588c57b532973d3f3f5553e9ee6b1b4a0691e10c6a35d93da2d5559502f"
+    },
+    {
+      "file": "overalls/dining/source.png",
+      "sha256": "9853b5662bd949201122ea046e7675de9373f73e8ab821656b34eda3ec4839ab"
+    },
+    {
+      "file": "overalls/thinking/built/base.png",
+      "sha256": "019e6a3840fe2f253b8e1507996143014ea318519dd78a8c2ae56ad738ce7243"
+    },
+    {
+      "file": "overalls/thinking/built/eye0_ball.png",
+      "sha256": "a692c4a03cc92c4e4350f17bcb70a975e82a2a924b4cffaf78008a3a66016c50"
+    },
+    {
+      "file": "overalls/thinking/built/eye0_crease.png",
+      "sha256": "9531e363eb269d355737e8a27373b2366937f1d0faa44974a1d553db0d1e57bc"
+    },
+    {
+      "file": "overalls/thinking/built/eye0_lash.png",
+      "sha256": "dd444598df44ff0394d37bdbbbd5a07722b99a024805a2dcd1b0119c45574195"
+    },
+    {
+      "file": "overalls/thinking/built/eye0_low.png",
+      "sha256": "19176a269e441fcd8eb7d144658d019a4e603e62e6736ca9f690312a5e07695f"
+    },
+    {
+      "file": "overalls/thinking/built/eye1_ball.png",
+      "sha256": "4656032a40c1bf9e9ea44046794be30e72aafc83df9433dc13a9a46c3bf7a67d"
+    },
+    {
+      "file": "overalls/thinking/built/eye1_crease.png",
+      "sha256": "d8e7bf2419f138c3983705fa14fcab9659c51996d9081423c170c2bde2f03a60"
+    },
+    {
+      "file": "overalls/thinking/built/eye1_lash.png",
+      "sha256": "0c279c9a85164d86e20132bf52eb91758c5301a2038cee723c09948ef00a330d"
+    },
+    {
+      "file": "overalls/thinking/built/eye1_low.png",
+      "sha256": "0074823a664121833c4faf837de9df93eef68361e2b8de16e965968c5a074eea"
+    },
+    {
+      "file": "overalls/thinking/built/hairmask.png",
+      "sha256": "eddb7972523439a8406e54dfa3f6354bbf7d255edf8467ec530fec1ecb2589bf"
+    },
+    {
+      "file": "overalls/thinking/built/layers.json",
+      "sha256": "ba81c023c3482f930f737e405c4f21037d379611cd195963bb40edb4f335192c"
+    },
+    {
+      "file": "overalls/thinking/built/sprites/sprites.json",
+      "sha256": "3258d8b9269f30abe4c66523fb01660992923299236316ee3659e86302e6a98a"
+    },
+    {
+      "file": "overalls/thinking/rig.json",
+      "sha256": "ace3b63cbdbe130a0306965eb17c7a9c47ecba0255390e025a1a7feb7a178cd8"
+    },
+    {
+      "file": "overalls/thinking/source.png",
+      "sha256": "18e7a02162d3ea75750b98f39aece8eb525eca4529b67b0a53851f22a1d4c511"
+    },
+    {
+      "file": "overalls/hungry/built/base.png",
+      "sha256": "8f6e06897d12a08f45790fcb21e6699db91c6f530077ddd0771c256f19de7244"
+    },
+    {
+      "file": "overalls/hungry/built/eye0_ball.png",
+      "sha256": "a32eeae3b16af83eabc22e0b2aad84dc9a4159ca6f6def7982a562781f34b86f"
+    },
+    {
+      "file": "overalls/hungry/built/eye0_crease.png",
+      "sha256": "b28ad89520961f69a6f288f201cdb356a6923f1bb323c98218c21420abb4bb2c"
+    },
+    {
+      "file": "overalls/hungry/built/eye0_lash.png",
+      "sha256": "7577a8d210419239982bd3bc827715131859b5101cba48494b6eac84b3cc5cb8"
+    },
+    {
+      "file": "overalls/hungry/built/eye0_low.png",
+      "sha256": "439824123f14badbcf3bdf03bb9581d70fdff758d5f461c6bae3ead045b6cb11"
+    },
+    {
+      "file": "overalls/hungry/built/eye1_ball.png",
+      "sha256": "54905c14b99c99cd8fa6571f2adaadaae0a72fd498458f1c6f841818a3c5f871"
+    },
+    {
+      "file": "overalls/hungry/built/eye1_crease.png",
+      "sha256": "bf6b713bad20efb79bcb2420010d7e6da63d717f6ff95cb41fdfd247ddc5c8c1"
+    },
+    {
+      "file": "overalls/hungry/built/eye1_lash.png",
+      "sha256": "a326310cd8071e186db18d48348883df09f19f1280efba03eef4422cbb98f955"
+    },
+    {
+      "file": "overalls/hungry/built/eye1_low.png",
+      "sha256": "836df52a1990fc4225da2ae95338059b9e3e627e75b6fdc33cae834a7c9c7aa9"
+    },
+    {
+      "file": "overalls/hungry/built/hairmask.png",
+      "sha256": "2a3d215b40828ee25756da992bfce0f044084995dd7c6115c919f519f695b76a"
+    },
+    {
+      "file": "overalls/hungry/built/layers.json",
+      "sha256": "fc3a3172b55ead3c79153c950ec4a1e7bf90ad558f99f38e17c44e3a423fe21d"
+    },
+    {
+      "file": "overalls/hungry/built/sprites/sprites.json",
+      "sha256": "3258d8b9269f30abe4c66523fb01660992923299236316ee3659e86302e6a98a"
+    },
+    {
+      "file": "overalls/hungry/rig.json",
+      "sha256": "ace3b63cbdbe130a0306965eb17c7a9c47ecba0255390e025a1a7feb7a178cd8"
+    },
+    {
+      "file": "overalls/hungry/source.png",
+      "sha256": "aa2a27595a2fb2d92b1bd6b848279b6842d66046a07edb03ef05098499b195ca"
+    },
+    {
+      "file": "hoodie/study/built/base.png",
+      "sha256": "a2affb7a0f9e30b0867240e4a000e509eff602d6b2ec479c084610018860f313"
+    },
+    {
+      "file": "hoodie/study/built/eye0_ball.png",
+      "sha256": "13820c9365b184562b3b13be28d418f9e9bcf3ac24be5188d0d46c984672894c"
+    },
+    {
+      "file": "hoodie/study/built/eye0_crease.png",
+      "sha256": "c943f0b85ebc653385acd1cea38a0b42edea8b2fc1d9757dfbc69e9c74f21720"
+    },
+    {
+      "file": "hoodie/study/built/eye0_lash.png",
+      "sha256": "06a3b5c0da2d5a352988c96b2d2d194637adc0f424d77e63567a0f2cf9b19a2a"
+    },
+    {
+      "file": "hoodie/study/built/eye0_low.png",
+      "sha256": "ffb4de83f556a990c7b5f6ed2d0ffc9cbb950c3f44246ae4e98dd49fd1c40801"
+    },
+    {
+      "file": "hoodie/study/built/eye1_ball.png",
+      "sha256": "3978c1b2292217a9d1f8ee4864ec62b354ab204823c5dbba046b4d31b20dd7fd"
+    },
+    {
+      "file": "hoodie/study/built/eye1_crease.png",
+      "sha256": "50426a93a0fea3b2a75227e4c65388190de3f41fa5dc0a39ea0d0972b0745f38"
+    },
+    {
+      "file": "hoodie/study/built/eye1_lash.png",
+      "sha256": "8ec573ac597442a0e6ed85cc78fe50102c95b9981577d55bb2d4cf8eaaf9deb0"
+    },
+    {
+      "file": "hoodie/study/built/eye1_low.png",
+      "sha256": "398ee7412dc855e34167749358203603d1de2499a50355e6f495f633ceef8d95"
+    },
+    {
+      "file": "hoodie/study/built/hairmask.png",
+      "sha256": "8dc0479756c447b6cbda489b2ef0870e1ee737f5c060a623c2f59599860560dd"
+    },
+    {
+      "file": "hoodie/study/built/layers.json",
+      "sha256": "5897b6e39ccb3f3186872051f3f65d5e21aeebc14a9114948dc0f13146895399"
+    },
+    {
+      "file": "hoodie/study/built/sprites/sprites.json",
+      "sha256": "db20dd63475c7b8793c23a9ada9d6905c98f82224f5d28a5b915d4c2c170ba21"
+    },
+    {
+      "file": "hoodie/study/rig.json",
+      "sha256": "3e20ba9e5371885a0368cc2ae458801b7d149f155c2faadaccfc84a2c3ed73cf"
+    },
+    {
+      "file": "hoodie/study/source.png",
+      "sha256": "0b341769f308b33e9e46be50f15e865e00d4746a3e36e723db0942f2c60dc559"
+    },
+    {
+      "file": "hoodie/dining/built/base.png",
+      "sha256": "9ad899160fafa770ba096d545b20e163fe41e7b46c67e7731946d2bca31147fc"
+    },
+    {
+      "file": "hoodie/dining/built/eye0_ball.png",
+      "sha256": "ad755a599a615ca2209f7ffc33adb2322b903f69015421c7ecc850ee13241e56"
+    },
+    {
+      "file": "hoodie/dining/built/eye0_crease.png",
+      "sha256": "c2153f77e11087fcb078ae38527fa83bef29791e3700e30cc87fec4405a66d0f"
+    },
+    {
+      "file": "hoodie/dining/built/eye0_lash.png",
+      "sha256": "b54b03cd2914b552aec6579fc124370ea6439008cc00180d2e9e0c33dcbe5f49"
+    },
+    {
+      "file": "hoodie/dining/built/eye0_low.png",
+      "sha256": "2570b121b9c2a837924727108f40326af7fac0ab234c20add3add8d671885107"
+    },
+    {
+      "file": "hoodie/dining/built/eye1_ball.png",
+      "sha256": "b7f166e6bdd8c92d280b6c15a1be8fbcdd81121ed316baa1370e842da2fdf7dd"
+    },
+    {
+      "file": "hoodie/dining/built/eye1_crease.png",
+      "sha256": "04d69cd2c440e62e4f6f8cadac164c4145c2882afb487eb1c777ade762ea1cf2"
+    },
+    {
+      "file": "hoodie/dining/built/eye1_lash.png",
+      "sha256": "68953f034e3afd885efb783594c13a94009fb185b5f881d1f044dc001f3d6686"
+    },
+    {
+      "file": "hoodie/dining/built/eye1_low.png",
+      "sha256": "cc6e794e1da3365a18aae703fbc78ae9123446b61cff40b3e7f2262d6e10fb7a"
+    },
+    {
+      "file": "hoodie/dining/built/hairmask.png",
+      "sha256": "bafec0c045de20951784b8d976614110ce5b1f23b925ee185b118186b7f024c2"
+    },
+    {
+      "file": "hoodie/dining/built/layers.json",
+      "sha256": "236026d68148ddc0369b155a8ad744e0c4b18d95ec26894743a47d4d83bbd3ed"
+    },
+    {
+      "file": "hoodie/dining/built/sprites/sprites.json",
+      "sha256": "80650f5667abeea28708ab2ae1673ee0ff44dbfb6061e5193c0082d6925ac842"
+    },
+    {
+      "file": "hoodie/dining/rig.json",
+      "sha256": "0b46e732dae5ef6ac6d635b795a642d309feeb1164961e01dbf63689f68cc4f3"
+    },
+    {
+      "file": "hoodie/dining/source.png",
+      "sha256": "d921f6a4676bcbfbf53a8b93fd41dd8455f109cb770d30733447fc97994ee384"
+    },
+    {
+      "file": "hoodie/thinking/built/base.png",
+      "sha256": "ce15b87883a813039733850ff77895669875de128d3f035f617c20de3af744a9"
+    },
+    {
+      "file": "hoodie/thinking/built/eye0_ball.png",
+      "sha256": "6cc08885647d9e6485335b8a81a1d144dcd487a943eeed9eb60d5c3da347b313"
+    },
+    {
+      "file": "hoodie/thinking/built/eye0_crease.png",
+      "sha256": "1c07cae8b19ca872e8ab69c851cf37d2f2d55be50dd0d8ecd104e8866d386118"
+    },
+    {
+      "file": "hoodie/thinking/built/eye0_lash.png",
+      "sha256": "f53067b235082af5dabff8d3a1b6c5c53ea69c787b45ecc9a179942c124e3a8c"
+    },
+    {
+      "file": "hoodie/thinking/built/eye0_low.png",
+      "sha256": "0dc13d8b1755e25720972593e90e731434375ca8c6b080f9fa2b8ec38e51766e"
+    },
+    {
+      "file": "hoodie/thinking/built/eye1_ball.png",
+      "sha256": "ccac340c0c566f8d8ff0075fb29a99ba9e4e65db48ab6fc2f519503262ce4a1d"
+    },
+    {
+      "file": "hoodie/thinking/built/eye1_crease.png",
+      "sha256": "835375dfbd4ee996469465c17c89406898da04dda916d75f101511e4495540db"
+    },
+    {
+      "file": "hoodie/thinking/built/eye1_lash.png",
+      "sha256": "171abeba68bd5f0fac89f80eea86b3f0beb637b90e73807f3f2f461ebec795ca"
+    },
+    {
+      "file": "hoodie/thinking/built/eye1_low.png",
+      "sha256": "fee5adec2bc259b6e1bc327f78e74bdbefad1139fc1d4f3f9e83260ab4a50bac"
+    },
+    {
+      "file": "hoodie/thinking/built/hairmask.png",
+      "sha256": "63a7a3a87118a3fbd726f0bd1689b6f33a46c5400ae9c3b61d76a6b4d4dceb58"
+    },
+    {
+      "file": "hoodie/thinking/built/layers.json",
+      "sha256": "fd96016cb11c46a29dbcc44709e73467673e715a838480c4940813fb8e9fac66"
+    },
+    {
+      "file": "hoodie/thinking/built/sprites/sprites.json",
+      "sha256": "3258d8b9269f30abe4c66523fb01660992923299236316ee3659e86302e6a98a"
+    },
+    {
+      "file": "hoodie/thinking/rig.json",
+      "sha256": "ace3b63cbdbe130a0306965eb17c7a9c47ecba0255390e025a1a7feb7a178cd8"
+    },
+    {
+      "file": "hoodie/thinking/source.png",
+      "sha256": "149d50a015a5563f0e922bff9b04d9785b4a7d07b2b1733b0003ff8477681307"
+    },
+    {
+      "file": "hoodie/hungry/built/base.png",
+      "sha256": "3fedf4d2c8452e69072f3e3011565851e2fdd36c11c15bc3b355d7394ca0a3f9"
+    },
+    {
+      "file": "hoodie/hungry/built/eye0_ball.png",
+      "sha256": "1a02275cb0d2877e16fe67a969b8f6daa0719b498117b007e1daebe000f4a902"
+    },
+    {
+      "file": "hoodie/hungry/built/eye0_crease.png",
+      "sha256": "49e360e4f13fd8643e827ac560eda64239a45389cb015d3ef470a16fe3707af2"
+    },
+    {
+      "file": "hoodie/hungry/built/eye0_lash.png",
+      "sha256": "619e2b9a224287b263be3445860175323eaa947ea63bda50cf92ac4b56ea643f"
+    },
+    {
+      "file": "hoodie/hungry/built/eye0_low.png",
+      "sha256": "e83b56d37247e2e823749238fc611dfdd7c73494de88345c71ed1490834d10c1"
+    },
+    {
+      "file": "hoodie/hungry/built/eye1_ball.png",
+      "sha256": "39b109515fcbae7f24101808aadbb42bedb1d9bf3eb871a882aff7d4643335b6"
+    },
+    {
+      "file": "hoodie/hungry/built/eye1_crease.png",
+      "sha256": "e724c343ebd8dcb373b056eaad824a22fc2f01a40863f2d210431a9fd2d21d7f"
+    },
+    {
+      "file": "hoodie/hungry/built/eye1_lash.png",
+      "sha256": "5769cec6b54d4895a0541f2dea81cdaca51278b5166478ecbba7aa37cd0044bb"
+    },
+    {
+      "file": "hoodie/hungry/built/eye1_low.png",
+      "sha256": "b1f8e7233cc1f50318666cb454151435433f03edfb6268e2c2384511cd6d0959"
+    },
+    {
+      "file": "hoodie/hungry/built/hairmask.png",
+      "sha256": "a157aea1586b8c62397daa3edd90f3f00ceb631b5d86f5d84df3609f949d5edd"
+    },
+    {
+      "file": "hoodie/hungry/built/layers.json",
+      "sha256": "8e19835d18e684e00da27a46a722591b11204c85f5d8126604911aa855fc0363"
+    },
+    {
+      "file": "hoodie/hungry/built/sprites/sprites.json",
+      "sha256": "3258d8b9269f30abe4c66523fb01660992923299236316ee3659e86302e6a98a"
+    },
+    {
+      "file": "hoodie/hungry/rig.json",
+      "sha256": "ace3b63cbdbe130a0306965eb17c7a9c47ecba0255390e025a1a7feb7a178cd8"
+    },
+    {
+      "file": "hoodie/hungry/source.png",
+      "sha256": "39d48b99203af875137be2b75e2790930baba2b49968f8b55c4aa1cc73f4a519"
+    },
+    {
+      "file": "tshirt/study/built/base.png",
+      "sha256": "adf77dac4eb30f567e956fc2b6e54538ee826259c1a027a1bb00025341eb8d29"
+    },
+    {
+      "file": "tshirt/study/built/eye0_ball.png",
+      "sha256": "f5cff5ac792e446e1ddda28a6cc8458bd136df834a6f907bd7aaf1d7d8e52a39"
+    },
+    {
+      "file": "tshirt/study/built/eye0_crease.png",
+      "sha256": "c2153f77e11087fcb078ae38527fa83bef29791e3700e30cc87fec4405a66d0f"
+    },
+    {
+      "file": "tshirt/study/built/eye0_lash.png",
+      "sha256": "b5ef0c2fd5e331a6cb5145209e3d9acfa9bbcb7f1afc5ec309a78309daf4d6c5"
+    },
+    {
+      "file": "tshirt/study/built/eye0_low.png",
+      "sha256": "17810e02d3a6c8c79892142d1f0ec74c612427a49b215372a564f3e8b11bcebc"
+    },
+    {
+      "file": "tshirt/study/built/eye1_ball.png",
+      "sha256": "669217e1570f26543cd0babfee39b62a0662ea46ca73fdfeb4c5c84b0e5ecbd2"
+    },
+    {
+      "file": "tshirt/study/built/eye1_crease.png",
+      "sha256": "5ec97a1c9686afc55b79080a1b628fa899379dc82955750f9efe6d0bb95e19f6"
+    },
+    {
+      "file": "tshirt/study/built/eye1_lash.png",
+      "sha256": "03ff0633d1146213037d4751ea2a6376aa989407dc6b844b93f9fe9966e4f5ce"
+    },
+    {
+      "file": "tshirt/study/built/eye1_low.png",
+      "sha256": "30129dc42ecede0665068f9b856a0d46e2340a3e959e9b8595feee5bc4599fc2"
+    },
+    {
+      "file": "tshirt/study/built/hairmask.png",
+      "sha256": "4d407c6010865c871537a09a44fb179f8d83a792f5e55e5f5068653f19caecd7"
+    },
+    {
+      "file": "tshirt/study/built/layers.json",
+      "sha256": "f105134b846187000ef109851a7b8cd76ff0ebe40e38e8f6b767c723c90d4e08"
+    },
+    {
+      "file": "tshirt/study/built/sprites/sprites.json",
+      "sha256": "2102ccc3937a07c54eac930e18bfc671fce69ee269ef807eeb5ab7cd27f47ab0"
+    },
+    {
+      "file": "tshirt/study/rig.json",
+      "sha256": "00bda7a23448c205dd804676e2b454032fd25558ac52636debb1afacd6e17c38"
+    },
+    {
+      "file": "tshirt/study/source.png",
+      "sha256": "028b502f3520da553e56fc6474ea245d9b18a4f980f48f27ffab73a4732b9b59"
+    },
+    {
+      "file": "tshirt/dining/built/base.png",
+      "sha256": "2609bdae453e1ae0736f662cedfc0241827a5819a77b6d940bfd46f32087875a"
+    },
+    {
+      "file": "tshirt/dining/built/eye0_ball.png",
+      "sha256": "831d6917a7ecb586b2bfcf6aa86355d53a6585e4ce3246aa37195362e7824d4c"
+    },
+    {
+      "file": "tshirt/dining/built/eye0_crease.png",
+      "sha256": "2081170350199193b734f50d7b8718a92174277ae1b273f6e4e04063ca598a37"
+    },
+    {
+      "file": "tshirt/dining/built/eye0_lash.png",
+      "sha256": "728188fe3206fa847e360ea313b196f7df73eb0b295e6451d224be0db0da9a90"
+    },
+    {
+      "file": "tshirt/dining/built/eye0_low.png",
+      "sha256": "b82736d0df42527d02268e103a82156c5b4ad11a5ea8e8113da843f10eafa4b3"
+    },
+    {
+      "file": "tshirt/dining/built/eye1_ball.png",
+      "sha256": "60b68aff77cbbaf624cfd6c0d8fcf2f2ae1768ed213c5d9b1f55519548efc3cc"
+    },
+    {
+      "file": "tshirt/dining/built/eye1_crease.png",
+      "sha256": "8a413adae2c511b3f35a63e273c7270766e9cc9bf8198639d44783517b8d4af8"
+    },
+    {
+      "file": "tshirt/dining/built/eye1_lash.png",
+      "sha256": "75c0dc9f42a02fbd13414b85464b66df37dffe218db36b8c904733f83217ff76"
+    },
+    {
+      "file": "tshirt/dining/built/eye1_low.png",
+      "sha256": "1acf03a93d26c44122ed84e7abf0c25291bb3ce119564f24ca13ff2704456e9f"
+    },
+    {
+      "file": "tshirt/dining/built/hairmask.png",
+      "sha256": "b2c41bd6a88fcfd212d22217c442b31ddd892f551997ad16cc3621e230eff500"
+    },
+    {
+      "file": "tshirt/dining/built/layers.json",
+      "sha256": "3c81c336817ec617f88170d6b5b66cce5d236c57f1b9b779f92c8a2d67de1f79"
+    },
+    {
+      "file": "tshirt/dining/built/sprites/sprites.json",
+      "sha256": "93276c80e13fe0be0d2bd2c269bb30e7f414ba3452d645ce2c6f4642169add72"
+    },
+    {
+      "file": "tshirt/dining/rig.json",
+      "sha256": "428910b94e852e2cb5f11841455c9832b1eb048d1137a3b6b78311416a91efff"
+    },
+    {
+      "file": "tshirt/dining/source.png",
+      "sha256": "ff6a7327d8e42d45e740787af886c07ac3df1a5ce9ae7464b563b483e2e37f43"
+    },
+    {
+      "file": "tshirt/thinking/built/base.png",
+      "sha256": "fd0d24fde05600a391a4cf939107f16507aefd992ab81cadef3acecf0569f473"
+    },
+    {
+      "file": "tshirt/thinking/built/eye0_ball.png",
+      "sha256": "559d5b55955f75ad09b29af51e91c53223eddbdfb9f0694c9df2bbf1cb84d8c0"
+    },
+    {
+      "file": "tshirt/thinking/built/eye0_crease.png",
+      "sha256": "1824e71e2c99dccc5097b3d44daaa8b67d6aa44338f8e09a46c92adc8e3a3777"
+    },
+    {
+      "file": "tshirt/thinking/built/eye0_lash.png",
+      "sha256": "538d01959a54ceabfe73d13ad8acb21d7caffb33ee1954d43288c19369d26d99"
+    },
+    {
+      "file": "tshirt/thinking/built/eye0_low.png",
+      "sha256": "f9d5d6a22107609a54a5561494ee5f883ec7f07752157cebee18e2726876439f"
+    },
+    {
+      "file": "tshirt/thinking/built/eye1_ball.png",
+      "sha256": "df9103b2400ea0aee932e762e316bdff754f618df91d60bb96a5c0ec9b127fd4"
+    },
+    {
+      "file": "tshirt/thinking/built/eye1_crease.png",
+      "sha256": "f7783de332523d94c48b7cd5996f58dcfb2c977ec339aa5b46c48c0e199c23cc"
+    },
+    {
+      "file": "tshirt/thinking/built/eye1_lash.png",
+      "sha256": "569f885c5993f9b06755abb8f2eb88a35c42b287c3695617005c4a75c7b710a3"
+    },
+    {
+      "file": "tshirt/thinking/built/eye1_low.png",
+      "sha256": "1f566601df5bec0c9ab7315b6903a257661790a42e0afa17936746a316b6e1c4"
+    },
+    {
+      "file": "tshirt/thinking/built/hairmask.png",
+      "sha256": "9f7f428742faa552d832cf8a977e7e04d3a9414e2b0d965a0ce952d662d8fcda"
+    },
+    {
+      "file": "tshirt/thinking/built/layers.json",
+      "sha256": "ea2b16793bffafdc0b76e9479b010266f18a1d9b3cdd34e2d5249748335e5ce6"
+    },
+    {
+      "file": "tshirt/thinking/built/sprites/sprites.json",
+      "sha256": "3258d8b9269f30abe4c66523fb01660992923299236316ee3659e86302e6a98a"
+    },
+    {
+      "file": "tshirt/thinking/rig.json",
+      "sha256": "ace3b63cbdbe130a0306965eb17c7a9c47ecba0255390e025a1a7feb7a178cd8"
+    },
+    {
+      "file": "tshirt/thinking/source.png",
+      "sha256": "cb0c9c29a1b4b9a920a222bdf424d101e4f3743e71a7cfb58b3701dfe9583212"
+    },
+    {
+      "file": "tshirt/hungry/built/base.png",
+      "sha256": "02fa56df325e8d3f08293fa210e2f936325bdead10971f3604e6ec77b70a2a88"
+    },
+    {
+      "file": "tshirt/hungry/built/eye0_ball.png",
+      "sha256": "79e23b1009abadf099955f6470a6c365808f60671a473caffc384f2a56c4e1c1"
+    },
+    {
+      "file": "tshirt/hungry/built/eye0_crease.png",
+      "sha256": "f317eacb0b7d044538f9079e8cb0f507af59aef34e9c6b3f82013ab88c4d32b2"
+    },
+    {
+      "file": "tshirt/hungry/built/eye0_lash.png",
+      "sha256": "6632a367f49677da93416e4a0d1ab5be111521ce040b466d34a2f62f28c444d4"
+    },
+    {
+      "file": "tshirt/hungry/built/eye0_low.png",
+      "sha256": "b0dd87fba0be3387ed47d5dc476e527a2d0e1782855141339bb4c84d23ff9f0d"
+    },
+    {
+      "file": "tshirt/hungry/built/eye1_ball.png",
+      "sha256": "038a78f955492a7d59dc6e7d4ef6de4b1eac0d9dffcfea01493a88d0c6d6aa5f"
+    },
+    {
+      "file": "tshirt/hungry/built/eye1_crease.png",
+      "sha256": "ac7d11a69a939e4049340f020bf39a51ddb966b0b0d717cadb211e7ddeec5495"
+    },
+    {
+      "file": "tshirt/hungry/built/eye1_lash.png",
+      "sha256": "24e6d367ecb27e6d8207af4aeea18cb1582969943268fc833d96fbcb8e6585bb"
+    },
+    {
+      "file": "tshirt/hungry/built/eye1_low.png",
+      "sha256": "d5cef13684f5f171e2921e9e56a07b1f0f1d03673ab91be5e311f337dd3d909c"
+    },
+    {
+      "file": "tshirt/hungry/built/hairmask.png",
+      "sha256": "844172dab5a42fbba882256b28edcccccfc2f549be90b1f3a0d322fd28705dc0"
+    },
+    {
+      "file": "tshirt/hungry/built/layers.json",
+      "sha256": "312a9b03359497343457392722e857484f2f5bc84d83619b9339458ec5cb52cc"
+    },
+    {
+      "file": "tshirt/hungry/built/sprites/sprites.json",
+      "sha256": "3258d8b9269f30abe4c66523fb01660992923299236316ee3659e86302e6a98a"
+    },
+    {
+      "file": "tshirt/hungry/rig.json",
+      "sha256": "ace3b63cbdbe130a0306965eb17c7a9c47ecba0255390e025a1a7feb7a178cd8"
+    },
+    {
+      "file": "tshirt/hungry/source.png",
+      "sha256": "cddcaf857e86d91a730ae731ededcf5cb6b1d692a6aeb43cd3fec23890bab2cb"
+    }
+  ]
+}

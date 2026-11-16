@@ -1,0 +1,59 @@
+{
+  "requirement": "REQ-064",
+  "expressions": [
+    {
+      "asset": "eyes_closed",
+      "source": "imagegen",
+      "alignmentShift": [
+        -0.0724773034453392,
+        0.10103227198123932
+      ],
+      "outsideMaskChangedPixels": 0
+    },
+    {
+      "asset": "eyes_half",
+      "source": "imagegen",
+      "alignmentShift": [
+        -0.06558100879192352,
+        0.09894707053899765
+      ],
+      "outsideMaskChangedPixels": 0
+    },
+    {
+      "asset": "mouth_a",
+      "source": "imagegen",
+      "alignmentShift": [
+        -0.0057907383888959885,
+        0.09243666380643845
+      ],
+      "outsideMaskChangedPixels": 0
+    },
+    {
+      "asset": "mouth_a_half",
+      "source": "imagegen",
+      "alignmentShift": [
+        0.029625410214066505,
+        0.07761651277542114
+      ],
+      "outsideMaskChangedPixels": 0
+    },
+    {
+      "asset": "mouth_i",
+      "source": "imagegen",
+      "alignmentShift": [
+        -0.03226424753665924,
+        0.11579346656799316
+      ],
+      "outsideMaskChangedPixels": 0
+    },
+    {
+      "asset": "mouth_o",
+      "source": "imagegen",
+      "alignmentShift": [
+        -0.07372148334980011,
+        0.0414762943983078
+      ],
+      "outsideMaskChangedPixels": 0
+    }
+  ]
+}

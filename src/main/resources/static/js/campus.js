@@ -7,7 +7,10 @@
     var contextReadSequence = 0;
     var draftRevision = 0, lastSpeech = '嗨，我是燕小北。今天在校园里，想做些什么？';
     var welcomeTimer = null;
-    var avatar = CampusAvatar.create({canvas:byId('avatarCanvas'),fallback:byId('avatarFallback')});
+    var actions = null;
+    var avatar = CampusAvatar.create({canvas:byId('avatarCanvas'),fallback:byId('avatarFallback'),onChange:function () { if (actions) actions.refresh(); }});
+    var appearance = CampusAppearance.create({avatar:avatar});
+    actions = CampusAvatarActions.create({avatar:avatar,getCatalog:function () { return catalog; },closePanel:appearance.close});
     var nonce = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,9);
     async function api(path, body, signal) {
         var opts = body === undefined ? {} : {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)};
@@ -70,7 +73,7 @@
             }); target.appendChild(button);
         });
     }
-    function render(turn) {
+    function render(turn, message) {
         lastSpeech = turn.speech || turn.reply;
         scene.render(turn,function () {
             byId('campusReply').replaceChildren(CampusScene.element('span',turn.reply,'reply-text'));
@@ -78,6 +81,7 @@
             byId('greeting').textContent = '我陪你一起看看。';
             choices(turn.choices); byId('referenceLinks').replaceChildren();
             (turn.references || []).forEach(function (reference) { byId('referenceLinks').appendChild(CampusScene.link(reference.title,reference.url)); });
+            actions.complete(turn,message);
         });
     }
     function payload(message,origin) {
@@ -91,6 +95,7 @@
         var own = ++generation, controller = new AbortController();
         active = {attempt:attempt,controller:controller,owner:own}; failed = null;
         if (voice) voice.activity('thinking');
+        actions.begin(attempt.message);
         scene.invalidate(); byId('requestStatus').textContent = '正在查找校园资料…'; update();
         var timer = setTimeout(function () { if (active && active.owner === own) controller.abort(); },25000);
         try {
@@ -99,10 +104,11 @@
             if (turn.conversationId !== attempt.payload.conversationId || !Number.isInteger(turn.contextRevision) || turn.contextRevision <= attempt.payload.contextRevision) throw Error('invalid-turn');
             active = null;
             adopt(Object.assign({},turn.context,{conversationId:turn.conversationId,contextRevision:turn.contextRevision}));
-            render(turn); byId('requestStatus').textContent = ''; voice.activity('idle'); voice.speak(lastSpeech);
+            render(turn,attempt.message); byId('requestStatus').textContent = ''; voice.activity('idle'); voice.speak(lastSpeech);
         } catch (error) {
             if (!active || generation !== own || disposed) return;
             active = null; failed = attempt;
+            actions.failed();
             if (!byId('campusInput').value && draftRevision === attempt.draftRevision) byId('campusInput').value = attempt.message;
             byId('requestStatus').textContent = error.status === 409 ? '这条消息的状态正在同步，请稍后重试。' : '暂时没有收到回答。消息已保留，可以重试。';
             voice.activity('idle');
@@ -137,7 +143,7 @@
         if (barrier) { await barrier; return ready; }
         var task = active ? active.attempt : failed;
         generation++; if (active) active.controller.abort(); active = null;
-        if (voice) voice.stop(); if (scene) scene.invalidate();
+        if (voice) voice.stop(); if (scene) scene.invalidate(); actions.reset();
         if (!task || !task.payload && !task.payloadToCancel) { failed = null; update(); return ready; }
         task.payloadToCancel = task.payloadToCancel || task.payload;
         failed = task; ready = false;
@@ -158,6 +164,7 @@
         var own = ++generation; ready = false;
         if (active) active.controller.abort(); active = null; failed = null; barrier = null;
         voice.stop(); environment.reset(); scene.clear(); clearTimeout(welcomeTimer);
+        actions.reset();
         byId('campusChoices').replaceChildren(); byId('referenceLinks').replaceChildren(); byId('userMessage').hidden = true;
         byId('greeting').textContent = '下一段校园时光，想聊些什么？';
         byId('campusReply').textContent = '想去哪里，或有什么事要办？'; byId('replyMode').textContent = '';
@@ -226,7 +233,7 @@
         disposed = true; generation++; clearTimeout(welcomeTimer);
         if (active) { active.controller.abort(); api('/api/campus/cancel',{conversationId:active.attempt.payload.conversationId,requestId:active.attempt.payload.requestId}).catch(function () {}); }
         if (locationLab) locationLab.destroy(); if (voice) voice.destroy(); if (environment) environment.destroy(); if (scene) scene.destroy();
-        avatar.destroy();
+        actions.destroy(); appearance.destroy(); avatar.destroy();
     });
     welcomeTimer = setTimeout(function () { byId('conversation').hidden = false; byId('campusControls').hidden = false; },1400);
     update(); initialize();
