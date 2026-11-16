@@ -181,3 +181,11 @@ REQ-055限定复审补齐无关地点照片切换后的导航闭环。同业务�
 [#67](https://github.com/D92647426/tourism-ai-avatar/issues/67)。本部离线建筑道路图、位置与目标参考叠加、坐标起点地址/方向预览、独立地图测试面板、手动模拟时钟和样本推进。未知坐标保持资料状态，环境边界覆盖新对话、取消、后台及销毁。
 
 [使用与验收](campus_map_lab.md#L1)、[地图](../src/main/resources/static/js/campus-map.js#L34)、[面板](../src/main/resources/static/js/campus-location-lab.js#L5)、[环境](../src/main/resources/static/js/campus-environment.js#L155)、[数据生成](../scripts/update_campus_map.py#L145)。角色选型检索见[RuiC-2D与燕小北娘化调研](ruic2d_yanxiaobei_research.md#L1)。
+
+## REQ-062 可动燕小北接入校园助手
+
+对应[议题 #69](https://github.com/D92647426/tourism-ai-avatar/issues/69)。
+
+使用新形象替换校园舞台人物，鼠标视线平滑跟随并回正，播报、回听与真实声音状态联动口型。本地音频可按实际音量驱动，系统声音使用近似节奏。隐藏暂停、减少动态效果、静音闭口及同形象静态降级一并覆盖。
+
+[范围及验证](campus_avatar.md#L1)、[控制器](../src/main/resources/static/js/campus-avatar.js#L9)、[语音联动](../src/main/resources/static/js/campus-voice.js#L8)、[TEST-062](../tests/frontend/campus-avatar.test.js#L1)。

@@ -17,6 +17,24 @@ test('sentence splitting preserves content and bounds Unicode codepoints',()=>{
   const parts=local.split(text);assert.equal(parts.join(''),text.trim());assert.ok(parts.every(p=>Array.from(p).length<=32));
  }
 });
+
+test('optional audio observer attaches before playing and detaches once on cancel',async()=>{
+ const order=[];
+ class Audio{play(){order.push('play');return Promise.resolve();}pause(){}load(){}}
+ const engine=local.create({Audio,AbortController,URL:{createObjectURL:()=> 'blob:observed',revokeObjectURL(){}},
+  fetch:async()=>({ok:true,blob:async()=>new Blob(['wav'])}),
+  onAudio:audio=>{assert.ok(audio.src);order.push('attach');return ()=>order.push('detach');}});
+ const cancel=engine.speak('测试。',{},{});await flush();assert.deepEqual(order,['attach','play']);
+ cancel();cancel();assert.deepEqual(order,['attach','play','detach']);
+});
+
+test('an optional observer failure never interrupts existing audio playback',async()=>{
+ let played=0;
+ class Audio{play(){played++;return Promise.resolve();}pause(){}load(){}}
+ const engine=local.create({Audio,AbortController,URL:{createObjectURL:()=> 'blob:observer-error',revokeObjectURL(){}},
+  fetch:async()=>({ok:true,blob:async()=>new Blob(['wav'])}),onAudio:()=>{throw Error('analysis unavailable');}});
+ const cancel=engine.speak('测试。',{},{});await flush();assert.equal(played,1);cancel();
+});
 test('prefetch one sentence, real playing callbacks, cancel aborts and stale events do nothing',async()=>{
  const f=fixture();const cancel=f.engine.speak('第一句。第二句。',{volume:0,speechRate:0.75},f.hooks);await flush();
  assert.equal(f.requests.length,1);f.resolve(0);await flush();assert.equal(f.requests.length,2);

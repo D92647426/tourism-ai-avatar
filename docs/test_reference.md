@@ -333,3 +333,9 @@ TEST-060另覆盖[保留场景背景迟到](../tests/frontend/campus-motion.test
 TEST-061新增6项Java测试，覆盖[本地多种位置来源与缺起点](../src/test/java/com/guide/campus/CampusAssistantTest.java#L54)、[真实HTTP模型工具往返](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L83)、[无效坐标400与版本保持](../src/test/java/com/guide/campus/CampusControllerTest.java#L56)、[谓词边界](../src/test/java/com/guide/campus/CampusRequestValidationTest.java#L14)。兼容simulated、demo、gps及geolocation来源。
 
 2026年11月16日完整本机验收Java318、Node356、地图数据15、既有数据44、voice3全部通过，文档与结构校验通过，隔离JAR的旧景区和校园HTTP通过。运行包与工作区9份页面、脚本、样式及地图数据逐字节一致。实际Chromium通过桌面1440×1000、手机390×844、短横屏844×390、减少动态效果、原生时间输入、地图点击、地点及坐标起点路线、午间邀约、坐标极值、跨校区及退出复验，错误记录为空。手机为视口模拟，真实GPS及移动设备继续按手册验收。地图数据15项加入[CI工作流](../.github/workflows/checks.yml#L34)。
+
+## TEST-062 可动燕小北与语音联动
+
+REQ-062 的10项[人物入口回归](../tests/frontend/campus-avatar.test.js#L1)和2项[媒体观察器回归](../tests/frontend/local-speech.test.js#L1)执行 `node --test tests/frontend/campus-avatar.test.js tests/frontend/local-speech.test.js`。预期模型加载、双向视线与回正、真实播报开始、停止和旧回调隔离、暂停恢复和自然结束、馆内静音、新对话、减少动态效果、隐藏暂停、销毁、WebGL静态降级及实际音量口型均通过。失败先核对生命周期事件和模型数据，再核对 AudioContext 解锁与媒体资源。
+
+2026年11月16日最终前端368、Java318、地图15、数据44、语音3全部通过，隔离JAR的校园及旧景区HTTP通过。32份实际HTTP和JAR资源与工作区一致。真实Windows中文TTS回听与停止、真实WebAudio静音段、模型WebGL降级、桌面及手机尺寸、减少动态效果与自然眨眼已复查，详情见[人物验收记录](campus_avatar.md#L31)。
