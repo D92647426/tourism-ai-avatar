@@ -143,3 +143,5 @@ PR #51已合并，#50已完成关闭。用户已确认改为面向新生和访�
 本轮新增[#67](https://github.com/D92647426/tourism-ai-avatar/issues/67)，基于PR #66的转场分支开发codex/campus-map-lab，增加本部离线建筑道路地图、参考点、坐标起点预览和独立虚拟定位测试模块。开发及验证完成后在本节登记PR。
 
 #59继续负责入口与可通行路线的实地核验，#60继续扩充其他校区。#55/#58/#61/#62/#63及团队#1～#3按既有范围推进。#65/PR #66当前仍待合并。[本轮使用步骤](campus_map_lab.md#L1)、[形象调研](ruic2d_yanxiaobei_research.md#L1)。
+
+本轮已完成开发与本机验收，提交[PR #68](https://github.com/D92647426/tourism-ai-avatar/pull/68)。#67保持开放等待合并，当前PR目标为PR #66分支。Java318、Node356、地图数据15、既有数据44、voice3、文档与隔离HTTP通过；实际浏览器完成地图测试闭环，详细证据见[地图手册](campus_map_lab.md#L44)。自动检查以PR当次结果为准。
