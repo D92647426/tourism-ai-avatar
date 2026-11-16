@@ -52,7 +52,7 @@
     },
     {
       "file": "overalls/built/layers.json",
-      "sha256": "2e50a41bddee89864bfe633794fde7967da6cffbc2e372e73059690e80860170"
+      "sha256": "c20488aec93a88c09975800e92476155f4db832b5b9c6a92cae3eb6c9ce1f63d"
     },
     {
       "file": "overalls/built/sprites/eyes_closed_0.png",
@@ -88,15 +88,15 @@
     },
     {
       "file": "overalls/built/sprites/sprites.json",
-      "sha256": "6b5ce2453b253a97a64244f04e1d35d32f2d5476826326a5663a812bd6e89066"
+      "sha256": "e4a8ad98847999aa4a01f8aac6ce61674da2290d2c106a6b45167e25ae712536"
     },
     {
       "file": "overalls/import-report.json",
-      "sha256": "4ec14334b19127ab0384472fb929dfc5607e62eb51cc0342abb3606b720af118"
+      "sha256": "75898b423533b861b6a8a61e450dbab05d7609476d64b4d6cb0e3fc12fe02e85"
     },
     {
       "file": "overalls/rig.json",
-      "sha256": "f0b014f720e9472f1e782146eb5c3501bb89b0eab503f4a50c2d99999e5df76b"
+      "sha256": "3395fad6064fc42adda692f606e90c0055fc9f8d1cdcf0c69c9f1cdc868f2ae6"
     },
     {
       "file": "overalls/source.png",
@@ -144,7 +144,7 @@
     },
     {
       "file": "hoodie/built/layers.json",
-      "sha256": "60b0b71f3458c03c3c4c8423ded8f164261ce833c67e3530a40dc29ff6d8b83f"
+      "sha256": "27d952a1516e9e7f5b81f6ed5e19e504a1a5efb4836ee18cd16775da049b2302"
     },
     {
       "file": "hoodie/built/sprites/eyes_closed_0.png",
@@ -180,15 +180,15 @@
     },
     {
       "file": "hoodie/built/sprites/sprites.json",
-      "sha256": "6b5ce2453b253a97a64244f04e1d35d32f2d5476826326a5663a812bd6e89066"
+      "sha256": "e4a8ad98847999aa4a01f8aac6ce61674da2290d2c106a6b45167e25ae712536"
     },
     {
       "file": "hoodie/import-report.json",
-      "sha256": "4e2e21d5c93cc8cbd50c5a0ca4f72c75b692bb0a5708dc09e82428cd8cd4f9d0"
+      "sha256": "e7b78dc2f05b423c0e08b204f78226deeac829081a1126e3bde04e9635188a82"
     },
     {
       "file": "hoodie/rig.json",
-      "sha256": "f0b014f720e9472f1e782146eb5c3501bb89b0eab503f4a50c2d99999e5df76b"
+      "sha256": "3395fad6064fc42adda692f606e90c0055fc9f8d1cdcf0c69c9f1cdc868f2ae6"
     },
     {
       "file": "hoodie/source.png",
@@ -236,7 +236,7 @@
     },
     {
       "file": "tshirt/built/layers.json",
-      "sha256": "eb5c3f10c4b55b4dd31337ee1794b1c24f732095cc3c5431f670e742fe5f6240"
+      "sha256": "d62c83f467d2dfabef95f53410d18b972e953002fd8e806618d60cbd23ffd4e4"
     },
     {
       "file": "tshirt/built/sprites/eyes_closed_0.png",
@@ -272,15 +272,15 @@
     },
     {
       "file": "tshirt/built/sprites/sprites.json",
-      "sha256": "6b5ce2453b253a97a64244f04e1d35d32f2d5476826326a5663a812bd6e89066"
+      "sha256": "e4a8ad98847999aa4a01f8aac6ce61674da2290d2c106a6b45167e25ae712536"
     },
     {
       "file": "tshirt/import-report.json",
-      "sha256": "d79b7090183015fafcc250b242528ca6fc631c75b51f19d57b1e443567bb7314"
+      "sha256": "27e76a10354d2b3976477cf3f7590ccc7fe86344fbd5f97752b7f22db8f69840"
     },
     {
       "file": "tshirt/rig.json",
-      "sha256": "f0b014f720e9472f1e782146eb5c3501bb89b0eab503f4a50c2d99999e5df76b"
+      "sha256": "3395fad6064fc42adda692f606e90c0055fc9f8d1cdcf0c69c9f1cdc868f2ae6"
     },
     {
       "file": "tshirt/source.png",

@@ -18,6 +18,8 @@ class AvatarV8AssetsTest(unittest.TestCase):
             with self.subTest(file=item['file']):
                 self.assertNotIn('..', Path(item['file']).parts)
                 self.assertEqual(hashlib.sha256((ASSETS / item['file']).read_bytes()).hexdigest(), item['sha256'])
+                if item['file'].endswith('.json'):
+                    self.assertNotIn(b'\r\n', (ASSETS / item['file']).read_bytes())
 
     def test_each_model_has_square_rgba_portrait_and_complete_expression_layers(self):
         for outfit in ['overalls', 'hoodie', 'tshirt']:

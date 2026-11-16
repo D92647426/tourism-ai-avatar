@@ -19,7 +19,7 @@ OUTFITS = ("overalls", "hoodie", "tshirt")
 def write_json(path: Path, value: dict) -> None:
     """Write editable UTF-8 build metadata for REQ-064."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
 def make_rig(pipeline) -> dict:
@@ -98,6 +98,9 @@ def build(ruic: Path) -> None:
         report = art.import_assets(outfit, str(EXPRESSIONS))
         shutil.copy2(project / "rig.json", destination / "rig.json")
         shutil.copytree(project / "built", destination / "built", dirs_exist_ok=True)
+        # Git's text attributes use LF. Hash the exact bytes shared by every OS.
+        for metadata in destination.rglob('*.json'):
+            metadata.write_bytes(metadata.read_bytes().replace(b'\r\n', b'\n'))
         write_json(destination / "import-report.json", {"requirement": "REQ-064", "expressions": report})
         print(f"Built v8 {outfit}, {len(report)} protected expression imports")
     files = []
