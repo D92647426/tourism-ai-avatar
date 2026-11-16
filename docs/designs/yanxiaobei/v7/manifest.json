@@ -1,0 +1,46 @@
+{
+  "version": "v7",
+  "role": "character-design-artwork",
+  "recordedOn": "2026-11-16",
+  "generationTool": "built-in image_gen",
+  "source": "用户提供的微信《小北校园日常》表情素材及本轮逐步确认的设计图",
+  "authorStatus": "原表情作者与完整设定待核实",
+  "artworkLicense": "upstream-unspecified",
+  "approvedBasis": "保留v6收窄后的下巴，羽翼恢复v5深灰黑色，大呆毛与简化尖发束沿用。",
+  "files": [
+    {
+      "id": "overalls",
+      "label": "背带裤",
+      "file": "overalls.png",
+      "originalFilename": "燕小北-v7-背带裤.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGBA",
+      "sha256": "86384d65481e2d78185d4cd231e22e4e74be2644da88dbb7fa6cd074a7ae5c89"
+    },
+    {
+      "id": "hoodie",
+      "label": "兜帽衫",
+      "file": "hoodie.png",
+      "originalFilename": "燕小北-v7-兜帽衫.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGBA",
+      "sha256": "92b7c5588f58cfa5a071d41cb01c8914f6962cb33a9a49db945fe6ff1057dd50"
+    },
+    {
+      "id": "tshirt",
+      "label": "短袖T恤",
+      "file": "tshirt.png",
+      "originalFilename": "燕小北-v7-短袖T恤.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGBA",
+      "sha256": "ae63b6e14ad37671fbe212ac3d31f6f546c6a0fd2ec244644603119764be9506"
+    }
+  ],
+  "promptRecord": {
+    "file": "prompt-set.json",
+    "sha256": "2266c391d1a390c1cc9e07401beedd86f3fede53bb2079fbdc632a923eeff6a2"
+  }
+}

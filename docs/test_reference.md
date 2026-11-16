@@ -339,3 +339,7 @@ TEST-061新增6项Java测试，覆盖[本地多种位置来源与缺起点](../s
 REQ-062 的10项[人物入口回归](../tests/frontend/campus-avatar.test.js#L1)和2项[媒体观察器回归](../tests/frontend/local-speech.test.js#L1)执行 `node --test tests/frontend/campus-avatar.test.js tests/frontend/local-speech.test.js`。预期模型加载、双向视线与回正、真实播报开始、停止和旧回调隔离、暂停恢复和自然结束、馆内静音、新对话、减少动态效果、隐藏暂停、销毁、WebGL静态降级及实际音量口型均通过。失败先核对生命周期事件和模型数据，再核对 AudioContext 解锁与媒体资源。
 
 2026年11月16日最终前端368、Java318、地图15、数据44、语音3全部通过，隔离JAR的校园及旧景区HTTP通过。32份实际HTTP和JAR资源与工作区一致。真实Windows中文TTS回听与停止、真实WebAudio静音段、模型WebGL降级、桌面及手机尺寸、减少动态效果与自然眨眼已复查，详情见[人物验收记录](campus_avatar.md#L31)。
+
+## TEST-063 v7角色设计资产
+
+REQ-063的3项[设计资产回归](../tests/test_avatar_design_assets.py#L13)使用 `python -X utf8 -m unittest discover -s tests -p test_avatar_design_assets.py`。预期三套文件SHA-256、1254×1254八位RGBA PNG头、原衣装文件名、确认造型与四段完整提示词全部匹配。归档时用Pillow另验实际透明通道。检查失败先核对是否复制了最新v7原图，再核对manifest和prompt-set对应关系。[设计与来源](designs/yanxiaobei/v7/README.md#L1)。CI已加入同一命令。
