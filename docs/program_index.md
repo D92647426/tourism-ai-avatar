@@ -193,3 +193,7 @@ REQ-061的坐标起点由[hasRouteOrigin](../src/main/java/com/guide/campus/Camp
 ## REQ-062 可动人物
 
 [CampusAvatar.create](../src/main/resources/static/js/campus-avatar.js#L9)管理模型、鼠标视线、待机、口型、音频采样和页面清理。[CampusVoice.create](../src/main/resources/static/js/campus-voice.js#L4)将真实 onMouth 回调交给人物，使用可选媒体观察器接入现有逐句角色语音。[测试](../tests/frontend/campus-avatar.test.js#L1)通过正常校园入口覆盖模型和语音边界。
+
+## REQ-063 角色设计资产
+
+[v7设计入口](designs/yanxiaobei/v7/README.md#L1)索引三套透明PNG、来源、提示词及校验清单。[AvatarDesignAssetsTest](../tests/test_avatar_design_assets.py#L13)检查选定文件摘要、PNG头和生成记录，使用Python标准库运行。

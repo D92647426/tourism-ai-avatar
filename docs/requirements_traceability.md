@@ -189,3 +189,7 @@ REQ-055限定复审补齐无关地点照片切换后的导航闭环。同业务�
 使用新形象替换校园舞台人物，鼠标视线平滑跟随并回正，播报、回听与真实声音状态联动口型。本地音频可按实际音量驱动，系统声音使用近似节奏。隐藏暂停、减少动态效果、静音闭口及同形象静态降级一并覆盖。
 
 [范围及验证](campus_avatar.md#L1)、[控制器](../src/main/resources/static/js/campus-avatar.js#L9)、[语音联动](../src/main/resources/static/js/campus-voice.js#L8)、[TEST-062](../tests/frontend/campus-avatar.test.js#L1)。
+
+## REQ-063 v7角色设计定稿与归档
+
+对应[议题 #71](https://github.com/D92647426/tourism-ai-avatar/issues/71)。按用户确认保存背带裤、兜帽衫和短袖T恤三套1254×1254透明原图、完整生成提示词及SHA-256清单，并通过PR合并供小组共享。[设计入口](designs/yanxiaobei/v7/README.md#L1)、[TEST-063](../tests/test_avatar_design_assets.py#L1)。

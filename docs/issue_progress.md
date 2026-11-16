@@ -145,3 +145,9 @@ PR #51已合并，#50已完成关闭。用户已确认改为面向新生和访�
 #59继续负责入口与可通行路线的实地核验，#60继续扩充其他校区。#55/#58/#61/#62/#63及团队#1～#3按既有范围推进。#65/PR #66当前仍待合并。[本轮使用步骤](campus_map_lab.md#L1)、[形象调研](ruic2d_yanxiaobei_research.md#L1)。
 
 本轮已完成开发与本机验收，提交[PR #68](https://github.com/D92647426/tourism-ai-avatar/pull/68)。#67保持开放等待合并，当前PR目标为PR #66分支。Java318、Node356、地图数据15、既有数据44、voice3、文档与隔离HTTP通过；实际浏览器完成地图测试闭环，详细证据见[地图手册](campus_map_lab.md#L44)。自动检查以PR当次结果为准。
+
+## 2026-11-16 可动形象合并与v7设计归档
+
+PR #66、#68与[PR #70](https://github.com/D92647426/tourism-ai-avatar/pull/70)已合入main，对应#65、#67、#69已完成关闭。用户继续确认角色比例、发束、后翼颜色与下巴，并要求上传合并本轮设计。
+
+本轮[议题 #71](https://github.com/D92647426/tourism-ai-avatar/issues/71)归档三套v7透明原图、提示词和校验清单，分支为codex/yanxiaobei-v7-designs，发布与合并时点见议题关联记录。[设计入口](designs/yanxiaobei/v7/README.md#L1)、[资产回归](../tests/test_avatar_design_assets.py#L13)。后续校园资料、入口与路网、主动陪伴及团队真实协作继续沿用#55/#58～#63与#1～#3。

@@ -37,3 +37,7 @@
 无模拟脚本的浏览器确认本机Windows三种中文TTS可用，真实回听进入speaking，点击停止后声音与人物说话状态共同结束。受控系统语音事件验证4种口型，真实WebAudio测试音频验证响声开口和静音段闭口，静音段最大开合约0.00058。本地GPU角色音色和实体手机设备的音频质量继续按各自设备验收。
 
 [桌面预览](screenshots/campus-avatar-desktop.png)、[手机预览](screenshots/campus-avatar-mobile.png)。
+
+## v7 定稿与换装设计资产
+
+2026年11月16日归档三套角色设计图，采用收窄后的下巴、恢复的深灰黑色收拢后翼、大环形呆毛与简化尖发束。资产类型为 `character-design-artwork`，图像、完整提示词、原文件名和校验清单已集中保存。[三套设计稿](designs/yanxiaobei/v7/README.md#L1)、[议题 #71](https://github.com/D92647426/tourism-ai-avatar/issues/71)。
