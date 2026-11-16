@@ -47,7 +47,9 @@ test('pointer gaze eases towards both directions, ignores touch and returns to c
     move(1000,0);
     assert.ok(p.states.at(-1).gazeX > 0.7);
     assert.ok(p.states.at(-1).gazeY > 0.2);
-    assert.ok(p.states.at(-1).angleX <= 7);
+    assert.ok(p.states.at(-1).angleX <= 16);
+    assert.ok(p.states.at(-1).bodyAngleX > 3);
+    assert.notEqual(p.nodes.get('characterHost').style['--body-x'],'0.00px');
     move(0,800);
     assert.ok(p.states.at(-1).gazeX < -0.5);
     assert.ok(p.states.at(-1).gazeY < -0.5);
@@ -271,4 +273,109 @@ test('mobile wardrobe closes after a successful choice to reveal the full charac
     assert.equal(p.nodes.get('appearancePanel').hidden,true);
     assert.equal(p.nodes.get('appearanceToggle').getAttribute('aria-expanded'),'false');
     assert.equal(p.context.document.activeElement,p.nodes.get('appearanceToggle'));
+});
+
+function actionButton(p,id) {
+    return p.nodes.get('actionChoices').children.find(button=>button.dataset.action === id);
+}
+
+test('context classification handles positive intent, negation and explicit activity reset',async()=>{
+    const p = fixture(); await flush();
+    const cases = {'去图书馆学习':'study','想吃饭':'hungry','食堂有啥':'dining','好饿了':'hungry','思考一下':'thinking',
+        '谢谢你':'happy','找不到地方':'confused','不要学习':'idle','不吃饭':'idle','不去图书馆，去食堂':'dining','停止动作':'idle','随便聊聊':null};
+    for (const [message,want] of Object.entries(cases)) assert.equal(p.context.CampusAvatarActions.classify(message),want,message);
+    assert.equal(p.context.CampusAvatarActions.fromTurn({reply:'图书馆和餐厅',sceneAction:{type:'RETURN_STAGE'}},'你好',p.catalog),'idle');
+});
+
+test('normal study request, completed scene and generic followup preserve the study context',async()=>{
+    const p = fixture(); await flush();
+    p.send('图书馆学习'); await flush();
+    assert.equal(p.nodes.get('avatarCanvas').dataset.avatarAction,'study');
+    assert.match(p.models.at(-1).assetsBase,/\/yanxiaobei-actions\/overalls\/study\/built\/$/);
+    p.chats().at(-1).resolve(response(turn(1))); await flush();
+    p.send('再详细一点'); await flush();
+    assert.equal(p.nodes.get('avatarCanvas').dataset.avatarAction,'thinking');
+    p.chats().at(-1).resolve(response(turn(2,'pingleyuan-library',{sceneAction:{type:'KEEP_SCENE'}}))); await flush();
+    assert.equal(p.nodes.get('avatarCanvas').dataset.avatarAction,'study');
+});
+
+test('all twelve outfit poses use matching fallback portraits and independent bindings',async()=>{
+    const p = fixture(); await flush();
+    for (const outfit of ['overalls','hoodie','tshirt']) {
+        outfitButton(p,outfit).fire('click'); await flush();
+        for (const action of ['study','dining','thinking','hungry']) {
+            actionButton(p,action).fire('click'); await flush();
+            assert.equal(p.nodes.get('avatarCanvas').dataset.avatarAction,action);
+            assert.equal(p.nodes.get('avatarCanvas').dataset.appearance,outfit);
+            assert.match(p.nodes.get('avatarFallback').getAttribute('src'),new RegExp('/'+outfit+'/'+action+'/source.png$'));
+        }
+    }
+    assert.equal(p.nodes.get('characterHost').children.length,2);
+    assert.ok(p.models.slice(0,-1).every(model=>model.destroyed));
+});
+
+test('new request supersedes a manual preview and its timer cannot reset the new context',async()=>{
+    const p = fixture(); await flush(); actionButton(p,'dining').fire('click'); await flush();
+    p.send('我要去图书馆'); await flush();
+    p.chats().at(-1).resolve(response(turn(1))); await flush(); p.step(560); await flush();
+    assert.equal(p.nodes.get('avatarCanvas').dataset.avatarAction,'study');
+    assert.doesNotMatch(p.nodes.get('actionStatus').textContent,/手动预览/);
+});
+
+test('cancel and new conversation invalidate late contextual poses',async()=>{
+    for (const boundary of ['cancel','new']) {
+        const p = fixture(); await flush(); p.send('我想吃饭'); await flush(); const request = p.chats().at(-1);
+        p.click(boundary === 'cancel' ? 'cancelRequest' : 'newConversation'); await flush();
+        const reset = p.requests.find(item=>item.url===(boundary==='cancel'?'/api/campus/cancel':'/api/campus/new'));
+        reset.resolve(response({conversationId:boundary==='new'?'conversation-2':'conversation-1',contextRevision:1})); await flush();
+        request.resolve(response(turn(2))); await flush();
+        assert.equal(p.nodes.get('avatarCanvas').dataset.avatarAction,'idle',boundary);
+    }
+});
+
+test('manual preview expires, automatic mode can pause and mobile preview closes the panel',async()=>{
+    const p = fixture({mobile:true}); await flush(); p.click('appearanceToggle');
+    actionButton(p,'happy').fire('click'); await flush();
+    assert.equal(p.nodes.get('appearancePanel').hidden,true); p.step(510); await flush();
+    assert.equal(p.nodes.get('avatarCanvas').dataset.avatarAction,'idle');
+    p.click('actionAutoToggle'); p.send('我想学习'); await flush();
+    assert.equal(p.nodes.get('avatarCanvas').dataset.avatarAction,'idle');
+    p.click('actionAutoToggle'); await flush(); assert.equal(p.nodes.get('avatarCanvas').dataset.avatarAction,'study');
+});
+
+test('changing clothes while a pose is delayed keeps the last outfit and a truthful action status',async()=>{
+    const delayed = deferred(), p = fixture({modelLoad:s=>s.assetsBase.includes('/yanxiaobei-actions/overalls/study/') ? delayed.promise : Promise.resolve()});
+    await flush(); actionButton(p,'study').fire('click'); await flush(); outfitButton(p,'hoodie').fire('click'); await flush();
+    delayed.resolve(); await flush();
+    assert.equal(p.nodes.get('avatarCanvas').dataset.appearance,'hoodie');
+    assert.equal(p.nodes.get('avatarCanvas').dataset.avatarAction,'study');
+    assert.doesNotMatch(p.nodes.get('actionStatus').textContent,/暂未载入/);
+});
+
+test('pose resource failure keeps a working model and permits retry',async()=>{
+    let fail = true;
+    const p = fixture({modelLoad:s=>{if(fail && s.assetsBase.includes('/study/')) throw Error('pose unavailable');}}); await flush();
+    const original = p.models[0]; actionButton(p,'study').fire('click'); await flush();
+    assert.equal(p.nodes.get('avatarCanvas').dataset.avatarAction,'idle'); assert.equal(original.destroyed,false);
+    assert.match(p.nodes.get('actionStatus').textContent,/重试/);
+    fail = false; actionButton(p,'study').fire('click'); await flush();
+    assert.equal(p.nodes.get('avatarCanvas').dataset.avatarAction,'study');
+});
+
+test('side-pose speech and stop preserve genuine mouth events and desk motion stays bounded',async()=>{
+    const p = fixture(); await flush(); actionButton(p,'study').fire('click'); await flush(); p.step();
+    assert.equal(p.models.at(-1).parameters.mouthOpen,0);
+    p.context.document.dispatchForTest('pointermove',{clientX:1000,clientY:0,pointerType:'mouse'}); p.step();
+    assert.equal(p.nodes.get('characterHost').style['--body-x'],'0.00px');
+    p.click('replaySpeech'); p.utterances.at(-1).onstart(); p.step();
+    assert.ok(p.models.at(-1).parameters.mouthOpen > 0); p.click('stopSpeech');
+    assert.equal(p.models.at(-1).parameters.mouthOpen,0);
+});
+
+test('reduced motion, background and disposal govern contextual actions too',async()=>{
+    const p = fixture({reducedMotion:true}); await flush(); actionButton(p,'dining').fire('click'); await flush(); p.step();
+    assert.equal(p.nodes.get('avatarCanvas').dataset.avatarAction,'dining');
+    for (const key of ['angleX','angleY','angleZ','bodyAngleX','bodyAngleZ','breath']) assert.equal(p.models.at(-1).parameters[key],0,key);
+    p.hide(); const count = p.frames.length; p.step(); assert.equal(p.frames.length,count);
+    p.pagehide(); p.step(600); await flush(); assert.ok(p.models.every(model=>model.destroyed));
 });

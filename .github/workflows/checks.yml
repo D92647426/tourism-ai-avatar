@@ -34,6 +34,7 @@ jobs:
       - run: python -m unittest discover -s tests -p 'test_campus_map_data.py'
       - run: python -m unittest discover -s tests -p 'test_avatar_design_assets.py'
       - run: python -m unittest discover -s tests -p 'test_avatar_v8_assets.py'
+      - run: python -m unittest discover -s tests -p 'test_avatar_action_assets.py'
       - run: python -m unittest discover -s tests -p 'test_local_voice_server.py'
       - run: python scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar
       - uses: actions/setup-node@v4

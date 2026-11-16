@@ -58,6 +58,13 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, select:focus-visi
 .appearance-option img { display: block; width: 100%; height: 145px; object-fit: contain; }
 .appearance-option span { font-size: 14px; line-height: 1.6; }
 .appearance-status { margin: 18px 0 0; color: var(--feather); font-size: 12px; line-height: 1.7; }
+.action-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 20px; border-top: 1px solid var(--line); padding-top: 12px; }
+.action-heading h3 { font-size: 15px; margin: 0; }
+.action-heading .text-button { min-height: 44px; padding: 8px; }
+.action-heading button[aria-pressed="true"] { color: var(--ink); font-weight: 600; }
+.action-choices { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.action-choices button { min-height: 44px; padding: 9px 12px; background: #e8eef4; color: var(--ink); font-size: 13px; }
+.action-choices button:hover, .action-choices button[aria-pressed="true"] { background: #d2e6f5; }
 .appearance-pending { opacity: 0; }
 .character-arriving { animation: character-arrive 240ms ease-out; }
 @keyframes character-arrive { from { opacity: .4; } to { opacity: 1; } }
@@ -79,6 +86,8 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, select:focus-visi
     position: relative; width: 100%; height: min(440px, 43vh);
     flex: 1; min-height: 0; max-height: 440px;
     filter: drop-shadow(0 18px 18px #183b6610);
+    transform: translate(var(--body-x, 0px), var(--body-y, 0px)) rotate(var(--body-roll, 0deg));
+    transform-origin: 50% 92%;
 }
 .character-fallback, .character-canvas { display: block; width: 100%; height: 100%; object-fit: contain; }
 .character-canvas { position: absolute; inset: 0; pointer-events: none; }

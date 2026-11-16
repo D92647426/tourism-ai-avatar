@@ -249,7 +249,7 @@ def verify_campus(base: str) -> dict:
     assert b"campus" in fetch(base + "/campus.html")
     for resource in ("/css/campus.css", "/js/campus.js", "/js/campus-scene.js", "/js/campus-companion.js",
                      "/js/campus-environment.js", "/js/campus-voice.js", "/js/campus-map.js",
-                     "/js/campus-location-lab.js", "/js/campus-avatar.js", "/js/campus-appearance.js",
+                     "/js/campus-location-lab.js", "/js/campus-avatar.js", "/js/campus-appearance.js", "/js/campus-avatar-actions.js",
                      "/vendor/ruic2d/mesh-avatar.js", "/vendor/leaflet/leaflet.js", "/vendor/leaflet/leaflet.css",
                      "/vendor/leaflet/LICENSE"):
         assert fetch(base + resource), resource
@@ -259,6 +259,11 @@ def verify_campus(base: str) -> dict:
     assert avatar_manifest["outfits"] == ["overalls", "hoodie", "tshirt"]
     for item in avatar_manifest["files"]:
         assert hashlib.sha256(fetch(base + avatar_base + item["file"])).hexdigest() == item["sha256"], item["file"]
+    action_base = "/media/campus/yanxiaobei-actions/"
+    action_manifest = call(action_base + "manifest.json")
+    assert action_manifest["poses"] == ["study", "dining", "thinking", "hungry"]
+    for item in action_manifest["files"]:
+        assert hashlib.sha256(fetch(base + action_base + item["file"])).hexdigest() == item["sha256"], item["file"]
     map_features = call("/media/campus/pingleyuan-features.geojson")
     map_points = call("/media/campus/campus-map-points.json")
     assert map_features["type"] == "FeatureCollection" and len(map_features["features"]) >= 150

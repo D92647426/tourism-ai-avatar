@@ -64,7 +64,7 @@ function page(options = {}) {
         transitions.push(transition); return transition;
     };
     class Image {
-        set src(value){this._src=value; if (!value.includes('/yanxiaobei-v8/') && !images.includes(this)) images.push(this);}
+        set src(value){this._src=value; if (!/\/yanxiaobei-(?:v8|actions)\//.test(value) && !images.includes(this)) images.push(this);}
         get src(){return this._src;}
         decode(){return options.portraitDecode ? options.portraitDecode(this.src) : Promise.resolve();}
     }
@@ -77,7 +77,7 @@ function page(options = {}) {
         if (url === '/api/campus/catalog') return Promise.resolve(response(catalog));
         if (url === '/api/campus/context') return options.contextFetch ? options.contextFetch(contextReads++) : Promise.resolve(response(options.context || {conversationId:'conversation-1',contextRevision:0,campusId:null,placeId:null}));
         if (url === '/api/digital-human-config') return Promise.resolve(response(options.config || {}));
-        if (/^\/media\/campus\/yanxiaobei-v8\/[a-z]+\/rig.json$/.test(url)) return options.avatarFetch ? options.avatarFetch(url)
+        if (/^\/media\/campus\/yanxiaobei-(?:v8\/[a-z]+|actions\/[a-z]+\/[a-z]+)\/rig.json$/.test(url)) return options.avatarFetch ? options.avatarFetch(url)
             : Promise.resolve(response(JSON.parse(fs.readFileSync(path.join(root,'src/main/resources/static',url),'utf8'))));
         if (url.startsWith('/api/campus/weather')) return Promise.resolve(response(options.weather || {status:'unavailable',label:'北京市区参考天气'}));
         if (url.startsWith('/media/campus/') && /(?:\.json|\.geojson)$/.test(url)) return options.mapFetch ? options.mapFetch(url)

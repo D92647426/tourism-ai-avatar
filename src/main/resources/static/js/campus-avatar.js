@@ -3,6 +3,7 @@
 (function (root) {
     'use strict';
     var ASSET_BASE = '/media/campus/yanxiaobei-v8/';
+    var ACTION_BASE = '/media/campus/yanxiaobei-actions/';
     var STORAGE_KEY = 'campus.avatar.appearance.v1';
     var APPEARANCES = [
         {id:'overalls',label:'背带裤'}, {id:'hoodie',label:'兜帽衫'}, {id:'tshirt',label:'短袖'}
@@ -24,6 +25,10 @@
         var pointer = null, gaze = {x:0,y:0}, visible = true, parameters = {}, faceCentre = null;
         var context = null, audioTap = null, observer = null;
         var abort = null, loadVersion = 0, loading = false, appearance = savedAppearance(), remembered = true;
+        var action = 'idle', pose = 'idle', desiredAppearance = appearance, desiredAction = 'idle', actionTime = 0;
+        function getState() { return {ready:!!model && canvas.dataset.avatarState === 'ready',appearance:appearance,action:action,
+            requestedAction:desiredAction,loading:loading,remembered:remembered,speaking:speaking,parameters:Object.assign({},parameters)}; }
+        function emit() { if (options.onChange) options.onChange(getState()); }
         function remember(id) {
             try { root.localStorage.setItem(STORAGE_KEY,id); remembered = true; }
             catch (_) { remembered = false; }
@@ -34,6 +39,8 @@
             var moving = !reduced.matches;
             elapsed += delta;
             speechTime += delta;
+            actionTime += delta;
+            var motion = root.CampusAvatarActions.sample(action,actionTime);
             var targetX = 0, targetY = 0;
             if (pointer && moving) {
                 var rect = canvas.getBoundingClientRect();
@@ -63,16 +70,23 @@
             mouthLevel += (mouthTarget - mouthLevel) * (1 - Math.exp(-delta * 25));
             if (!speaking) mouthLevel = 0;
             parameters = {
-                gazeX:moving ? gaze.x * 0.8 : 0, gazeY:moving ? gaze.y * 0.65 : 0,
-                angleX:moving ? gaze.x * 7 : 0,
-                angleY:moving ? gaze.y * 3 + (speaking ? Math.sin(speechTime * 4) * 0.7 : 0) : 0,
-                angleZ:moving ? Math.sin(elapsed * 0.55) * 0.35 : 0,
-                bodyAngleZ:moving ? Math.sin(elapsed * 0.42) * 0.15 : 0,
-                breath:moving ? (Math.sin(elapsed * 1.25) + 1) * 0.12 : 0,
-                eyeLOpen:eyeOpen,eyeROpen:eyeOpen,mouthOpen:mouthLevel,
+                gazeX:moving ? gaze.x * 0.8 : 0, gazeY:moving ? gaze.y * 0.65 + motion.gazeY : 0,
+                angleX:moving ? gaze.x * 16 : 0,
+                angleY:moving ? gaze.y * 6 + motion.pitch + (speaking ? Math.sin(speechTime * 4) * 0.7 : 0) : 0,
+                angleZ:moving ? Math.sin(elapsed * 0.55) * .5 + motion.roll : 0,
+                bodyAngleX:moving ? gaze.x * (action === 'study' ? 1.5 : 5) : 0,
+                bodyAngleZ:moving ? gaze.x * 3 + motion.body + Math.sin(elapsed * .42) * .4 : 0,
+                breath:moving ? (Math.sin(elapsed * 1.25) + 1) * .16 : 0,
+                eyeLOpen:eyeOpen * motion.eyeL,eyeROpen:eyeOpen * motion.eyeR,eyeSmile:motion.smile,
+                browY:motion.brow,browAngle:motion.browAngle,blush:motion.blush,mouthOpen:mouthLevel,
                 mouthForm:speaking && !audioTap ? [0,-0.8,0.5,0.9][Math.floor(speechTime * 2.4) % 4] : 0
             };
-            model.setSwayGain(moving ? 0.28 : 0);
+            var fixedDesk = action === 'study';
+            var host = canvas.parentElement;
+            host.style.setProperty('--body-x',(moving && !fixedDesk ? gaze.x * 10 : 0).toFixed(2) + 'px');
+            host.style.setProperty('--body-y',(moving && !fixedDesk ? -gaze.y * 3 + motion.lift : 0).toFixed(2) + 'px');
+            host.style.setProperty('--body-roll',(moving && !fixedDesk ? gaze.x * 1.8 + motion.roll * .25 : 0).toFixed(2) + 'deg');
+            model.setSwayGain(moving ? .48 : 0);
             model.setParameters(parameters);
             model.advance(delta,60);
         }
@@ -176,14 +190,19 @@
         /** REQ-064. Prepare a replacement offscreen, then commit only the newest choice.
          * The stable controller retains live speech and audio analysis across outfits.
          * Failure preserves the active model. Initial GPU failure uses its portrait. */
-        async function setAppearance(id) {
-            if (disposed || !knownAppearance(id)) return false;
-            if (!loading && model && id === appearance) return true;
+        async function loadModel(id, nextAction) {
+            var nextPose = root.CampusAvatarActions.profile(nextAction).pose;
+            if (disposed) return false;
+            if (model && id === appearance && pose === nextPose) {
+                loadVersion++; if (abort) abort.abort(); loading = false;
+                action = nextAction; actionTime = 0; canvas.dataset.avatarAction = action;
+                render(0); emit(); return true;
+            }
             var own = ++loadVersion, candidate = null, loaded = null, portraitReady = false;
             if (abort) abort.abort();
             abort = new root.AbortController();
-            var signal = abort.signal, base = ASSET_BASE + id + '/';
-            loading = true;
+            var signal = abort.signal, base = nextPose === 'idle' ? ASSET_BASE + id + '/' : ACTION_BASE + id + '/' + nextPose + '/';
+            loading = true; emit();
             try {
                 var portrait = new root.Image(); portrait.src = base + 'source.png';
                 await portrait.decode(); portraitReady = true;
@@ -193,6 +212,13 @@
                 if (!response.ok) throw new Error('rig-unavailable');
                 var rig = await response.json();
                 if (disposed || own !== loadVersion) return false;
+                if (nextPose === 'idle') {
+                    rig.head.maxRoll = .045; rig.head.shiftX = 18; rig.body.maxRoll = .035;
+                    rig.appendages = [
+                        {name:'left-rear-wing',kind:'ear',outline:[[353,790],[468,789],[442,1088],[325,980]],pivot:[433,795],tip:[376,1050],amplitude:.055,period:3.8,feather:16},
+                        {name:'right-rear-wing',kind:'ear',outline:[[780,790],[899,790],[922,980],[810,1090]],pivot:[815,795],tip:[870,1050],amplitude:-.055,period:3.8,phase:.2,feather:16}
+                    ];
+                }
                 candidate = root.document.createElement('canvas');
                 candidate.className = 'character-canvas appearance-pending';
                 candidate.setAttribute('aria-hidden','true');
@@ -217,6 +243,7 @@
                 canvas.dataset.appearance = id;
                 fallback.setAttribute('src',base + 'source.png');
                 appearance = id; visible = true;
+                action = nextAction; pose = nextPose; actionTime = 0; canvas.dataset.avatarAction = action;
                 if (observer) observer.observe(canvas);
                 render(1 / 60); wake();
                 if (previousModel) previousModel.destroy();
@@ -225,25 +252,37 @@
             } catch (_) {
                 if (!disposed && own === loadVersion && !model) {
                     if (portraitReady) {
-                        fallback.setAttribute('src',base + 'source.png'); appearance = id;
+                        fallback.setAttribute('src',base + 'source.png'); appearance = id; action = nextAction; pose = nextPose;
+                        canvas.dataset.avatarAction = action;
                         canvas.dataset.appearance = id; remember(id);
                     }
                     staticPortrait();
                     return portraitReady;
                 }
+                if (!disposed && own === loadVersion) { desiredAppearance = appearance; desiredAction = action; }
                 return false;
             } finally {
                 if (loaded) loaded.destroy();
                 if (candidate) candidate.remove();
-                if (own === loadVersion) loading = false;
+                if (own === loadVersion) { loading = false; emit(); }
             }
+        }
+        function setAppearance(id) {
+            if (!knownAppearance(id)) return Promise.resolve(false);
+            desiredAppearance = id;
+            return loadModel(id,desiredAction);
+        }
+        function setAction(id) {
+            if (!root.CampusAvatarActions.profile(id)) return Promise.resolve(false);
+            desiredAction = id;
+            return loadModel(desiredAppearance,id);
         }
         canvas.dataset.avatarState = 'loading';
         fallback.setAttribute('src',ASSET_BASE + appearance + '/source.png');
         var ready = setAppearance(appearance);
-        return {ready:ready,setSpeaking:setSpeaking,attachAudio:attachAudio,setAppearance:setAppearance,
+        return {ready:ready,setSpeaking:setSpeaking,attachAudio:attachAudio,setAppearance:setAppearance,setAction:setAction,
             getAppearances:function () { return APPEARANCES.map(function (item) { return {id:item.id,label:item.label,portrait:ASSET_BASE + item.id + '/source.png'}; }); },
-            getState:function () { return {ready:!!model && canvas.dataset.avatarState === 'ready',appearance:appearance,loading:loading,remembered:remembered,speaking:speaking,parameters:Object.assign({},parameters)}; },
+            getState:getState,
             destroy:function () {
                 if (disposed) return;
                 setSpeaking(false); disposed = true; loadVersion++; if (abort) abort.abort(); stopFrames();

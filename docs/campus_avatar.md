@@ -48,6 +48,10 @@
 
 点击右上角“形象”打开衣橱，选择背带裤、兜帽衫或短袖。点击关闭、按Escape或点击面板外部即可收起，键盘关闭后焦点返回入口。手机成功换装后自动收起面板，展示完整人物及声音控件。成功的选择通过 `campus.avatar.appearance.v1` 保存在本机 localStorage，刷新自动恢复。存储受限时本次选择仍生效，界面说明保存状态。[面板](../src/main/resources/static/campus.html#L13)、[交互控制](../src/main/resources/static/js/campus-appearance.js#L7)。
 
-换装先在独立画布准备，最新一次成功选择才提交。失败后现有模型继续可用，旧加载完成后释放其模型和画布。语音始终持有同一控制器，正在播报的口型、音频分析、停止、静音与减少动态效果继续按当前生命周期执行。初次GPU加载失败时显示所选衣装的透明立绘。[切换与提交](../src/main/resources/static/js/campus-avatar.js#L179)、[正常入口接入](../src/main/resources/static/js/campus.js#L11)、[换装回归](../tests/frontend/campus-avatar.test.js#L183)。
+换装先在独立画布准备，最新一次成功选择才提交。失败后现有模型继续可用，旧加载完成后释放其模型和画布。语音始终持有同一控制器，正在播报的口型、音频分析、停止、静音与减少动态效果继续按当前生命周期执行。初次GPU加载失败时显示所选衣装的透明立绘。[切换与提交](../src/main/resources/static/js/campus-avatar.js#L193)、[正常入口接入](../src/main/resources/static/js/campus.js#L12)、[换装回归](../tests/frontend/campus-avatar.test.js#L185)。
 
 重建使用已有 RuiC-2D checkout，安装其所需的Pillow、NumPy与OpenCV后执行 `python -X utf8 scripts/build_campus_avatar_v8.py --ruic <RuiC-2D目录>`。脚本在本仓库target构建，输出rig、built图层、保护区导入报告与摘要清单。[绑定脚本](../scripts/build_campus_avatar_v8.py#L74)、[资产回归](../tests/test_avatar_v8_assets.py#L12)。
+
+## REQ-065 全身动作与情境表情
+
+校园页现支持更明显的全身跟随，以及学习、用餐、思考、期待、庆祝和疑惑六类动作。学习与用餐采用侧身构图，三套衣装均可切换。完整状态、素材、dsh-pet参考、构建与验收见[动作说明](avatar_actions.md#L1)。

@@ -23,3 +23,7 @@ RuiC-2D 采用提交 5f78bfb852154be71b4352fda6a3c2b759930597，Mesh Avatar 和 
 ## v8换装运行资源
 
 校园页当前使用 `yanxiaobei-v8` 下的背带裤、兜帽衫和短袖三套可动模型。原图基于v7经内置ImageGen调整细腿、小鞋，并生成六张眼睛和口型差分。RuiC-2D在面部保护区内配准导入，原表情来源许可标记为 `upstream-unspecified`。[生成提示词](yanxiaobei-v8/prompts.json#L1)、[摘要清单](yanxiaobei-v8/manifest.json#L1)、[设计和差分来源](../../../../../../docs/designs/yanxiaobei/v8/README.md#L1)。
+
+## REQ-065 情境姿态
+
+`yanxiaobei-actions`包含三套衣装的学习、用餐、思考、期待共12张内置ImageGen透明原图及RuiC-2D派生绑定。学习和用餐使用三分之四侧身，生成文件名、各阶段完整提示词与dsh-pet 0.3.8参考分类均有记录。[提示词](yanxiaobei-actions/prompts.json#L1)、[摘要](yanxiaobei-actions/manifest.json#L1)、[使用及构建](../../../../../../docs/avatar_actions.md#L1)。

@@ -349,3 +349,9 @@ REQ-063的3项[设计资产回归](../tests/test_avatar_design_assets.py#L13)使
 执行 `node --test tests/frontend/campus-avatar.test.js`，共17项，包含原10项人物与声音回归及7项衣橱入口回归。覆盖三套切换、刷新恢复、快速操作的最后选择、失败重试、说话中换装、草稿与会话保持、关闭与焦点、手机选后收起、存储受限、静态模式和离页迟到。[换装回归](../tests/frontend/campus-avatar.test.js#L183)。
 
 执行 `python -X utf8 -m unittest discover -s tests -p test_avatar_v8_assets.py`，预期3项通过，检查69份运行文件摘要、三套1254平方RGBA原图、完整眼睛/口型图层及18次保护区导入。CI加入同一检查。[资产回归](../tests/test_avatar_v8_assets.py#L12)、[HTTP部署核对](../scripts/smoke_teacher_project.py#L257)。失败先核对manifest和运行包是否来自同一次构建，再检查衣装ID、加载版本、模型销毁及声音生命周期。
+
+## TEST-065 情境动作与全身跟随
+
+完整前端386项通过，其中人物正常入口27项及真实RuiC-2D schema 1项覆盖本轮动作。执行 `node --test tests/frontend/*.test.js`，检查关键词及否定、结构化场景、普通追问、12套换装、预览到期、新请求取消预览、取消及新对话、延迟加载并发换装、失败重试、侧脸播报、隐藏、销毁及减少动态效果。[入口回归](../tests/frontend/campus-avatar.test.js#L282)、[实际运行库](../tests/frontend/campus-avatar-assets.test.js#L11)。
+
+`python -X utf8 -m unittest discover -s tests -p test_avatar_action_assets.py`的3项检查12张RGBA原图、168份摘要、LF元数据、侧脸绑定与完整提示词，已加入CI。HTTP冒烟读取全部姿态文件核对打包后的SHA-256。[资产测试](../tests/test_avatar_action_assets.py#L11)、[部署核对](../scripts/smoke_teacher_project.py#L262)。实际桌面、手机尺寸、全身位移矩阵、0项衣橱axe违规及剩余设备验收见[运行记录](avatar_actions.md#L35)。

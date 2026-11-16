@@ -56,7 +56,7 @@
         root.document.addEventListener('keydown',escape);
         root.document.addEventListener('pointerdown',outside);
         update(); avatar.ready.then(function () { if (!disposed) update(); });
-        return {destroy:function () {
+        return {close:close,destroy:function () {
             disposed = true; sequence++; close(false);
             toggle.removeEventListener('click',togglePanel);
             byId('closeAppearance').removeEventListener('click',closePanel);
