@@ -9,13 +9,18 @@
     <link rel="stylesheet" href="/css/campus.css">
 </head>
 <body>
-    <header class="brand"><a href="/campus.html" aria-label="燕小北校园助手首页">燕小北<span>校园助手</span></a><small>北京工业大学课程原型</small></header>
+    <header class="brand"><a href="/campus.html" aria-label="燕小北校园助手首页">燕小北<span>校园助手</span></a><div class="brand-actions"><small>北京工业大学课程原型</small><button id="appearanceToggle" class="appearance-toggle" type="button" aria-expanded="false" aria-controls="appearancePanel">形象</button></div></header>
+    <aside id="appearancePanel" class="appearance-panel" aria-labelledby="appearanceTitle" hidden>
+        <div class="appearance-heading"><h2 id="appearanceTitle">燕小北的衣橱</h2><button id="closeAppearance" class="text-button" type="button" aria-label="关闭形象选择">关闭</button></div>
+        <div id="appearanceChoices" class="appearance-choices" role="group" aria-label="选择衣装"></div>
+        <p id="appearanceStatus" class="appearance-status" role="status">在这台设备记住你的选择</p>
+    </aside>
     <main id="campusStage" class="campus-stage">
         <div id="sceneBackdrop" class="scene-backdrop" aria-hidden="true"></div>
         <section id="avatar" class="avatar" aria-label="燕小北">
             <div id="greeting" class="greeting">嗨，我是燕小北。<br>今天在校园里，想做些什么？</div>
-            <div class="character">
-                <img id="avatarFallback" class="character-fallback" src="/media/campus/yanxiaobei-avatar/source.png" alt="紫发羽翼的燕小北向你问好" width="1024" height="1536">
+            <div id="characterHost" class="character">
+                <img id="avatarFallback" class="character-fallback" src="/media/campus/yanxiaobei-v8/overalls/source.png" alt="紫发羽翼的燕小北向你问好" width="1254" height="1254">
                 <canvas id="avatarCanvas" class="character-canvas" role="img" aria-label="会眨眼、跟随视线和开口说话的燕小北" hidden></canvas>
             </div>
             <p id="speechStatus" class="speech-status" role="status">很高兴见到你</p>
@@ -92,6 +97,7 @@
     <script src="/js/campus-location-lab.js"></script>
     <script src="/vendor/ruic2d/mesh-avatar.js"></script>
     <script src="/js/campus-avatar.js"></script>
+    <script src="/js/campus-appearance.js"></script>
     <script src="/js/campus-voice.js"></script>
     <script src="/js/campus.js"></script>
 </body>

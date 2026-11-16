@@ -8,6 +8,7 @@
     var draftRevision = 0, lastSpeech = '嗨，我是燕小北。今天在校园里，想做些什么？';
     var welcomeTimer = null;
     var avatar = CampusAvatar.create({canvas:byId('avatarCanvas'),fallback:byId('avatarFallback')});
+    var appearance = CampusAppearance.create({avatar:avatar});
     var nonce = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,9);
     async function api(path, body, signal) {
         var opts = body === undefined ? {} : {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)};
@@ -226,7 +227,7 @@
         disposed = true; generation++; clearTimeout(welcomeTimer);
         if (active) { active.controller.abort(); api('/api/campus/cancel',{conversationId:active.attempt.payload.conversationId,requestId:active.attempt.payload.requestId}).catch(function () {}); }
         if (locationLab) locationLab.destroy(); if (voice) voice.destroy(); if (environment) environment.destroy(); if (scene) scene.destroy();
-        avatar.destroy();
+        appearance.destroy(); avatar.destroy();
     });
     welcomeTimer = setTimeout(function () { byId('conversation').hidden = false; byId('campusControls').hidden = false; },1400);
     update(); initialize();

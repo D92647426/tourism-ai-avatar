@@ -6,7 +6,7 @@
 
 校园助手采用用户提供的《小北校园日常》形象，经 imagegen 重绘透明正面立绘与眼睛、口型差分，再经 RuiC-2D 绑定。校园页中央问好、侧边陪伴和手机角落人物共用一个渲染器。原作者完整设定仍待核实，生成素材的侧背细节包含推断。当前页面使用正面模型。
 
-[页面入口](../src/main/resources/static/campus.html#L15)、[角色控制器](../src/main/resources/static/js/campus-avatar.js#L9)、[来源与完整生成提示词](../src/main/resources/static/media/campus/yanxiaobei-avatar/制作记录.md#L1)。
+[页面入口](../src/main/resources/static/campus.html#L23)、[角色控制器](../src/main/resources/static/js/campus-avatar.js#L20)、[v1来源记录](../src/main/resources/static/media/campus/yanxiaobei-avatar/制作记录.md#L1)。
 
 ## 交互与声音
 
@@ -20,7 +20,7 @@
 
 模型资源、运行库和许可随 JAR 本地发布。运行库采用 RuiC-2D 提交 5f78bfb852154be71b4352fda6a3c2b759930597 中的 Mesh Avatar，并包含正时间间隔至少更新一次的高刷新率修正。WebGL、脚本或模型资源不可用时显示同一形象的透明立绘，问答及语音继续使用原有入口。WebGL 上下文丢失后可刷新页面重新加载。
 
-[模型参数](../src/main/resources/static/media/campus/yanxiaobei-avatar/rig.json#L1)、[运行库许可](../src/main/resources/static/vendor/ruic2d/LICENSE-mesh-avatar.txt#L1)、[RuiC-2D许可](../src/main/resources/static/vendor/ruic2d/LICENSE-RuiC-2D.txt#L1)。
+[v8背带裤模型参数](../src/main/resources/static/media/campus/yanxiaobei-v8/overalls/rig.json#L1)、[运行库许可](../src/main/resources/static/vendor/ruic2d/LICENSE-mesh-avatar.txt#L1)、[RuiC-2D许可](../src/main/resources/static/vendor/ruic2d/LICENSE-RuiC-2D.txt#L1)。
 
 ## 验证与演示
 
@@ -41,3 +41,13 @@
 ## v7 定稿与换装设计资产
 
 2026年11月16日归档三套角色设计图，采用收窄后的下巴、恢复的深灰黑色收拢后翼、大环形呆毛与简化尖发束。资产类型为 `character-design-artwork`，图像、完整提示词、原文件名和校验清单已集中保存。[三套设计稿](designs/yanxiaobei/v7/README.md#L1)、[议题 #71](https://github.com/D92647426/tourism-ai-avatar/issues/71)。
+
+## REQ-064 v8细腿小鞋与形象切换
+
+页面当前加载三套 v8 可动模型，默认背带裤。腿部按约22%、鞋按约20%的收小目标经内置 ImageGen 局部调整，保留 v7 脸型、眼睛、呆毛、头发和后翼设计。三套原图均为1254×1254 RGBA透明PNG，视觉尺寸以实际出图为准。眼睛与口型另生成六张差分，绑定时仅导入受保护的面部区域，18次导入的区域外变化像素均为0。[原图和提示词](designs/yanxiaobei/v8/README.md#L1)、[部署校验清单](../src/main/resources/static/media/campus/yanxiaobei-v8/manifest.json#L1)。
+
+点击右上角“形象”打开衣橱，选择背带裤、兜帽衫或短袖。点击关闭、按Escape或点击面板外部即可收起，键盘关闭后焦点返回入口。手机成功换装后自动收起面板，展示完整人物及声音控件。成功的选择通过 `campus.avatar.appearance.v1` 保存在本机 localStorage，刷新自动恢复。存储受限时本次选择仍生效，界面说明保存状态。[面板](../src/main/resources/static/campus.html#L13)、[交互控制](../src/main/resources/static/js/campus-appearance.js#L7)。
+
+换装先在独立画布准备，最新一次成功选择才提交。失败后现有模型继续可用，旧加载完成后释放其模型和画布。语音始终持有同一控制器，正在播报的口型、音频分析、停止、静音与减少动态效果继续按当前生命周期执行。初次GPU加载失败时显示所选衣装的透明立绘。[切换与提交](../src/main/resources/static/js/campus-avatar.js#L179)、[正常入口接入](../src/main/resources/static/js/campus.js#L11)、[换装回归](../tests/frontend/campus-avatar.test.js#L183)。
+
+重建使用已有 RuiC-2D checkout，安装其所需的Pillow、NumPy与OpenCV后执行 `python -X utf8 scripts/build_campus_avatar_v8.py --ruic <RuiC-2D目录>`。脚本在本仓库target构建，输出rig、built图层、保护区导入报告与摘要清单。[绑定脚本](../scripts/build_campus_avatar_v8.py#L74)、[资产回归](../tests/test_avatar_v8_assets.py#L12)。

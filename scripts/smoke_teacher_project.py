@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import http.cookiejar
 import json
 import os
@@ -248,9 +249,16 @@ def verify_campus(base: str) -> dict:
     assert b"campus" in fetch(base + "/campus.html")
     for resource in ("/css/campus.css", "/js/campus.js", "/js/campus-scene.js", "/js/campus-companion.js",
                      "/js/campus-environment.js", "/js/campus-voice.js", "/js/campus-map.js",
-                     "/js/campus-location-lab.js", "/vendor/leaflet/leaflet.js", "/vendor/leaflet/leaflet.css",
+                     "/js/campus-location-lab.js", "/js/campus-avatar.js", "/js/campus-appearance.js",
+                     "/vendor/ruic2d/mesh-avatar.js", "/vendor/leaflet/leaflet.js", "/vendor/leaflet/leaflet.css",
                      "/vendor/leaflet/LICENSE"):
         assert fetch(base + resource), resource
+    # REQ-064 verifies every deployed outfit texture, geometry and sprite digest.
+    avatar_base = "/media/campus/yanxiaobei-v8/"
+    avatar_manifest = call(avatar_base + "manifest.json")
+    assert avatar_manifest["outfits"] == ["overalls", "hoodie", "tshirt"]
+    for item in avatar_manifest["files"]:
+        assert hashlib.sha256(fetch(base + avatar_base + item["file"])).hexdigest() == item["sha256"], item["file"]
     map_features = call("/media/campus/pingleyuan-features.geojson")
     map_points = call("/media/campus/campus-map-points.json")
     assert map_features["type"] == "FeatureCollection" and len(map_features["features"]) >= 150
@@ -268,7 +276,7 @@ def verify_campus(base: str) -> dict:
                        "campus_card_route", "campus_unknown_gym", "campus_library_visitor_sources",
                        "campus_interior_exterior", "campus_dining_choice", "campus_simulation_exit",
                        "campus_cancel_new", "campus_weather_invalid", "campus_http_assets",
-                       "campus_coordinate_origin", "campus_offline_map_assets"]}
+                       "campus_coordinate_origin", "campus_offline_map_assets", "campus_v8_outfit_assets"]}
 
 
 def verify(jar: Path, java: str, port: int, timeout: float) -> dict:

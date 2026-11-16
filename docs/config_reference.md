@@ -178,6 +178,10 @@ REQ-047内部调用参数：GuideChatRequest.create 的 requireCorrectionOn400�
 
 ## CFG-062 可动人物内部参数
 
-固定资源基址 `/media/campus/yanxiaobei-avatar/`，包含 rig.json 和 built 图层。默认转头最大7度，上下跟随3度，眼神水平0.8、垂直0.65，指数平滑系数9，发丝增益0.28，附属动作增益0.4。RuiC-2D 画布像素比上限2。上述数值为内部动画常量，调整后执行人物回归并检查桌面、手机与减少动态效果。
+当前资源基址 `/media/campus/yanxiaobei-v8/`，按衣装子目录包含 rig.json 和 built 图层。默认转头最大7度，上下跟随3度，眼神水平0.8、垂直0.65，指数平滑系数9，发丝增益0.28，附属动作增益0.4。RuiC-2D 画布像素比上限2。上述数值为内部动画常量，调整后执行人物回归并检查桌面、手机与减少动态效果。
 
 [参数及资源加载](../src/main/resources/static/js/campus-avatar.js#L4)、[测试](../tests/frontend/campus-avatar.test.js#L1)。本轮沿用现有声线、音量、语速及登录配置。
+
+## CFG-064 形象偏好
+
+`campus.avatar.appearance.v1` 为可选localStorage字符串，默认 `overalls`，合法值为 `overalls`、`hoodie`、`tshirt`。仅成功加载时保存，未知值回到背带裤，存储失败时本次选择生效并显示提示。此项由右上角形象面板管理，适用于当前设备和浏览器来源。验证命令为 `node --test tests/frontend/campus-avatar.test.js`。[枚举及恢复](../src/main/resources/static/js/campus-avatar.js#L7)、[保存与容错](../src/main/resources/static/js/campus-avatar.js#L27)、[测试](../tests/frontend/campus-avatar.test.js#L183)。

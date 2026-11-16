@@ -9,10 +9,11 @@ function fixture(options = {}) {
         async createMeshAvatar(canvas, settings) {
             if (options.failure) throw Error('WebGL unavailable');
             if (options.pending) await options.pending.promise;
+            if (options.modelLoad) await options.modelLoad(settings);
             canvas.width = 320;
             canvas.getBoundingClientRect = () => ({left:100,top:80,width:320,height:480});
             const model = {
-                destroyed:false, parameters:{},
+                destroyed:false, parameters:{},assetsBase:settings.assetsBase,
                 setAutoIdle(){},setAutoMotion(){},setAppendageGain(){},setSwayGain(){},
                 setParameters(values){ this.parameters = {...values}; states.push(this.parameters); },
                 getViewport(){ return {scale:0.3,offset:[6.4,9.6]}; },
@@ -32,7 +33,7 @@ test('real page loads the movable character with a matching static fallback',asy
     assert.equal(p.nodes.get('avatarCanvas').dataset.avatarState,'ready');
     assert.equal(p.nodes.get('avatarCanvas').hidden,false);
     assert.equal(p.nodes.get('avatarFallback').hidden,true);
-    assert.match(p.nodes.get('avatarFallback').getAttribute('src'),/yanxiaobei-avatar\/source.png$/);
+    assert.match(p.nodes.get('avatarFallback').getAttribute('src'),/yanxiaobei-v8\/overalls\/source.png$/);
     assert.ok(p.frames.length > 10);
     assert.equal(p.states.at(-1).mouthOpen,0);
 });
@@ -173,4 +174,101 @@ test('local speech uses actual audio amplitude, silence closes the mouth and sto
     p.click('stopSpeech');
     assert.equal(p.states.at(-1).mouthOpen,0); assert.equal(disconnected,1);
     p.pagehide(); assert.equal(closed,true);
+});
+
+function outfitButton(p,id) {
+    return p.nodes.get('appearanceChoices').children.find(button=>button.dataset.appearance === id);
+}
+
+test('wardrobe switches all three v8 outfits, saves only a valid choice and restores it on refresh',async()=>{
+    const values = new Map(), storage = {getItem:key=>values.get(key),setItem:(key,value)=>values.set(key,value)};
+    const p = fixture({storage}); await flush();
+    p.click('appearanceToggle');
+    assert.equal(p.nodes.get('appearancePanel').hidden,false);
+    for (const id of ['hoodie','tshirt','overalls']) {
+        outfitButton(p,id).fire('click'); await flush();
+        assert.equal(p.nodes.get('avatarCanvas').dataset.appearance,id);
+        assert.equal(outfitButton(p,id).getAttribute('aria-pressed'),'true');
+        assert.equal(values.get('campus.avatar.appearance.v1'),id);
+        assert.equal(p.nodes.get('sendMessage').disabled,false);
+    }
+    outfitButton(p,'hoodie').fire('click'); await flush();
+    const next = fixture({storage}); await flush();
+    assert.equal(next.nodes.get('avatarCanvas').dataset.appearance,'hoodie');
+    assert.match(next.models[0].assetsBase,/\/hoodie\/built\/$/);
+    assert.ok(p.models.slice(0,-1).every(model=>model.destroyed));
+});
+
+test('latest rapid choice wins and delayed renderer resources are disposed',async()=>{
+    const delayed = deferred();
+    const p = fixture({modelLoad:settings=>settings.assetsBase.includes('/hoodie/') ? delayed.promise : Promise.resolve()});
+    await flush(); const original = p.models[0];
+    outfitButton(p,'hoodie').fire('click'); await flush();
+    assert.equal(original.destroyed,false);
+    outfitButton(p,'tshirt').fire('click'); await flush();
+    assert.equal(p.nodes.get('avatarCanvas').dataset.appearance,'tshirt');
+    delayed.resolve(); await flush();
+    assert.equal(p.nodes.get('avatarCanvas').dataset.appearance,'tshirt');
+    assert.equal(p.models.at(-1).destroyed,true);
+    assert.equal(p.nodes.get('characterHost').children.length,2);
+});
+
+test('failed outfit retains the active model, portrait and preference and can be retried',async()=>{
+    let fail = true;
+    const p = fixture({modelLoad:settings=>{if (fail && settings.assetsBase.includes('/hoodie/')) throw Error('texture missing');}});
+    await flush(); const original = p.models[0], portrait = p.nodes.get('avatarFallback').getAttribute('src');
+    outfitButton(p,'hoodie').fire('click'); await flush();
+    assert.equal(original.destroyed,false);
+    assert.equal(p.nodes.get('avatarCanvas').dataset.appearance,'overalls');
+    assert.equal(p.nodes.get('avatarFallback').getAttribute('src'),portrait);
+    assert.match(p.nodes.get('appearanceStatus').textContent,/重试/);
+    assert.equal(p.nodes.get('characterHost').children.length,2);
+    fail = false; outfitButton(p,'hoodie').fire('click'); await flush();
+    assert.equal(p.nodes.get('avatarCanvas').dataset.appearance,'hoodie');
+});
+
+test('switching during real speech retains mouth lifecycle, draft and conversation request identity',async()=>{
+    const p = fixture(); await flush();
+    p.nodes.get('campusInput').value = '没发送的草稿';
+    p.click('replaySpeech'); p.utterances.at(-1).onstart(); p.step();
+    const count = p.chats().length, before = p.models.length;
+    outfitButton(p,'hoodie').fire('click'); await flush(); p.step();
+    assert.ok(p.models.length > before); assert.ok(p.models.at(-1).parameters.mouthOpen > 0);
+    assert.equal(p.nodes.get('campusInput').value,'没发送的草稿'); assert.equal(p.chats().length,count);
+    p.click('stopSpeech'); assert.equal(p.models.at(-1).parameters.mouthOpen,0);
+});
+
+test('Escape and close restore focus, outside click dismisses, storage failure and corrupt values are safe',async()=>{
+    const p = fixture({storage:{getItem:()=> '../../other',setItem(){throw Error('blocked');}}}); await flush();
+    assert.equal(p.nodes.get('avatarCanvas').dataset.appearance,'overalls');
+    p.click('appearanceToggle'); p.context.document.dispatchForTest('keydown',{key:'Escape'});
+    assert.equal(p.nodes.get('appearancePanel').hidden,true); assert.equal(p.context.document.activeElement,p.nodes.get('appearanceToggle'));
+    p.click('appearanceToggle'); p.context.document.dispatchForTest('pointerdown',{target:p.nodes.get('campusInput')});
+    assert.equal(p.nodes.get('appearancePanel').hidden,true);
+    p.click('appearanceToggle'); p.click('closeAppearance'); assert.equal(p.nodes.get('appearancePanel').hidden,true);
+    outfitButton(p,'hoodie').fire('click'); await flush();
+    assert.equal(p.nodes.get('avatarCanvas').dataset.appearance,'hoodie');
+    assert.match(p.nodes.get('appearanceStatus').textContent,/未能保存/);
+});
+
+test('portrait failure does not alter selection, static fallback can switch and late load after disposal is inert',async()=>{
+    const p = fixture({portraitDecode:url=>url.includes('/hoodie/') ? Promise.reject(Error('bad image')) : Promise.resolve()}); await flush();
+    outfitButton(p,'hoodie').fire('click'); await flush();
+    assert.equal(p.nodes.get('avatarCanvas').dataset.appearance,'overalls');
+    const fallback = fixture({failure:true}); await flush();
+    outfitButton(fallback,'tshirt').fire('click'); await flush();
+    assert.equal(fallback.nodes.get('avatarCanvas').dataset.avatarState,'static');
+    assert.match(fallback.nodes.get('avatarFallback').getAttribute('src'),/\/tshirt\/source.png$/);
+    const delayed = deferred(), late = fixture({modelLoad:s=>s.assetsBase.includes('/hoodie/') ? delayed.promise : Promise.resolve()}); await flush();
+    outfitButton(late,'hoodie').fire('click'); await flush(); late.pagehide(); delayed.resolve(); await flush();
+    assert.ok(late.models.every(model=>model.destroyed));
+});
+
+test('mobile wardrobe closes after a successful choice to reveal the full character and speech controls',async()=>{
+    const p = fixture({mobile:true}); await flush(); p.click('appearanceToggle');
+    outfitButton(p,'hoodie').fire('click'); await flush();
+    assert.equal(p.nodes.get('avatarCanvas').dataset.appearance,'hoodie');
+    assert.equal(p.nodes.get('appearancePanel').hidden,true);
+    assert.equal(p.nodes.get('appearanceToggle').getAttribute('aria-expanded'),'false');
+    assert.equal(p.context.document.activeElement,p.nodes.get('appearanceToggle'));
 });

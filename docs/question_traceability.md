@@ -41,3 +41,7 @@
 持续陪伴先覆盖页面可见阶段，主动气泡获得用户回应后再展开。课堂轨迹模拟明确标注。事务知识区分校区、人群和办理目标，实景图绑定具体地点。用户已确认以补卡、图书馆、饭点邀约三组场景形成首个Demo。需求REQ-054至REQ-059、数据、状态、分阶段实施与验收见[首版设计](superpowers/specs/2026-11-09-campus-assistant-design.md#L1)，校园事实与缺口见[核验记录](bjut_campus_research.md#L1)。
 
 实际代码当前仍为景区实现，迁移入口依据[会话服务](../src/main/java/com/guide/service/ConversationService.java#L78)、[模型客户端](../src/main/java/com/guide/service/AiCompletionClient.java#L157)和[语音生命周期](../src/main/resources/static/js/speech-lifecycle.js#L447)展开。书面设计复核后编写实施计划，当前验证范围为文档和来源核验。
+
+## Q-0033 当前软件效果与形象切换
+
+2026年11月16日已运行校园助手并复查补卡、图书馆、路线、地图测试、饭点邀约和天气。根据随后用户要求，优先完成v8细腿小鞋与三套可动形象切换。当前后续重点是手机主场景与对话的空间分配、路线动作顺序、实地入口与餐饮资料、真实模型和角色声音的运行配置。[完整复查](campus_review_2026-11-16.md#L1)、[REQ-064形象](campus_avatar.md#L45)、[运行手册](campus_demo_runbook.md#L1)。

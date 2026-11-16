@@ -197,3 +197,9 @@ REQ-061的坐标起点由[hasRouteOrigin](../src/main/java/com/guide/campus/Camp
 ## REQ-063 角色设计资产
 
 [v7设计入口](designs/yanxiaobei/v7/README.md#L1)索引三套透明PNG、来源、提示词及校验清单。[AvatarDesignAssetsTest](../tests/test_avatar_design_assets.py#L13)检查选定文件摘要、PNG头和生成记录，使用Python标准库运行。
+
+## REQ-064 v8与衣橱
+
+[CampusAvatar.setAppearance](../src/main/resources/static/js/campus-avatar.js#L179)管理三套新模型的预载、最新请求提交、旧模型释放、失败保留和偏好保存。[CampusAppearance.create](../src/main/resources/static/js/campus-appearance.js#L7)负责按钮、非模态面板、加载反馈和键盘关闭。[校园生命周期](../src/main/resources/static/js/campus.js#L11)初始化同一角色接口并在离页销毁。
+
+[make_rig](../scripts/build_campus_avatar_v8.py#L25)定义新造型坐标，[build](../scripts/build_campus_avatar_v8.py#L74)复用RuiC-2D导入及打包流程。[AvatarV8AssetsTest](../tests/test_avatar_v8_assets.py#L12)验证三套运行资源摘要、完整差分及保护区记录。

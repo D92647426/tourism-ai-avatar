@@ -2,7 +2,16 @@
  * Integration and asset provenance: docs/campus_avatar.md. */
 (function (root) {
     'use strict';
-    var ASSET_BASE = '/media/campus/yanxiaobei-avatar/';
+    var ASSET_BASE = '/media/campus/yanxiaobei-v8/';
+    var STORAGE_KEY = 'campus.avatar.appearance.v1';
+    var APPEARANCES = [
+        {id:'overalls',label:'背带裤'}, {id:'hoodie',label:'兜帽衫'}, {id:'tshirt',label:'短袖'}
+    ];
+    function knownAppearance(id) { return APPEARANCES.some(function (item) { return item.id === id; }); }
+    function savedAppearance() {
+        try { var id = root.localStorage.getItem(STORAGE_KEY); return knownAppearance(id) ? id : 'overalls'; }
+        catch (_) { return 'overalls'; }
+    }
     function clamp(value, limit) { return Math.max(-limit, Math.min(limit, value)); }
 
     /** Create one character renderer. Input is canvas and fallback image.
@@ -14,7 +23,11 @@
         var speaking = false, speechTime = 0, mouthLevel = 0, nextBlink = 4.8, blinkStart = -1;
         var pointer = null, gaze = {x:0,y:0}, visible = true, parameters = {}, faceCentre = null;
         var context = null, audioTap = null, observer = null;
-        var abort = new root.AbortController();
+        var abort = null, loadVersion = 0, loading = false, appearance = savedAppearance(), remembered = true;
+        function remember(id) {
+            try { root.localStorage.setItem(STORAGE_KEY,id); remembered = true; }
+            catch (_) { remembered = false; }
+        }
         var reduced = root.matchMedia('(prefers-reduced-motion: reduce)');
 
         function render(delta) {
@@ -140,6 +153,7 @@
             canvas.dataset.avatarState = 'static';
         }
         function contextLost(event) {
+            if (event.target !== canvas) return;
             event.preventDefault(); staticPortrait();
             if (model) { model.destroy(); model = null; }
         }
@@ -151,39 +165,88 @@
         root.document.addEventListener('pointerdown',unlockAudio,{passive:true});
         root.document.addEventListener('keydown',unlockAudio);
         if (reduced.addEventListener) reduced.addEventListener('change',motionPreference);
-        canvas.addEventListener('webglcontextlost',contextLost);
-        canvas.dataset.avatarState = 'loading';
-        var ready = (async function () {
+        if (root.IntersectionObserver) {
+            observer = new root.IntersectionObserver(function (entries) {
+                var entry = entries.find(function (item) { return item.target === canvas; });
+                if (!entry) return;
+                visible = entry.isIntersecting;
+                if (visible) wake(); else stopFrames();
+            });
+        }
+        /** REQ-064. Prepare a replacement offscreen, then commit only the newest choice.
+         * The stable controller retains live speech and audio analysis across outfits.
+         * Failure preserves the active model. Initial GPU failure uses its portrait. */
+        async function setAppearance(id) {
+            if (disposed || !knownAppearance(id)) return false;
+            if (!loading && model && id === appearance) return true;
+            var own = ++loadVersion, candidate = null, loaded = null, portraitReady = false;
+            if (abort) abort.abort();
+            abort = new root.AbortController();
+            var signal = abort.signal, base = ASSET_BASE + id + '/';
+            loading = true;
             try {
+                var portrait = new root.Image(); portrait.src = base + 'source.png';
+                await portrait.decode(); portraitReady = true;
+                if (disposed || own !== loadVersion) return false;
                 if (!root.MeshAvatar) throw new Error('runtime-unavailable');
-                var response = await root.fetch(ASSET_BASE + 'rig.json',{signal:abort.signal});
+                var response = await root.fetch(base + 'rig.json',{signal:signal});
                 if (!response.ok) throw new Error('rig-unavailable');
                 var rig = await response.json();
-                if (disposed) return false;
+                if (disposed || own !== loadVersion) return false;
+                candidate = root.document.createElement('canvas');
+                candidate.className = 'character-canvas appearance-pending';
+                candidate.setAttribute('aria-hidden','true');
+                canvas.parentElement.appendChild(candidate);
+                loaded = await root.MeshAvatar.createMeshAvatar(candidate,{rig:rig,assetsBase:base + 'built/',manual:true,padTop:0.025,padSide:0.025});
+                if (disposed || own !== loadVersion) return false;
+                loaded.setAutoIdle(false); loaded.setAutoMotion(false); loaded.setAppendageGain(0.4);
+                stopFrames();
+                var previousCanvas = canvas, previousModel = model;
+                if (observer) observer.unobserve(previousCanvas);
+                previousCanvas.removeEventListener('webglcontextlost',contextLost);
+                candidate.id = previousCanvas.id;
+                candidate.setAttribute('role','img');
+                candidate.setAttribute('aria-label',previousCanvas.getAttribute('aria-label'));
+                candidate.removeAttribute('aria-hidden');
+                candidate.className = 'character-canvas character-arriving';
+                previousCanvas.replaceWith(candidate);
+                canvas = candidate; candidate = null; model = loaded; loaded = null;
                 faceCentre = {x:(rig.face.eyeA.cx + rig.face.eyeB.cx) / 2,y:(rig.face.eyeA.cy + rig.face.eyeB.cy) / 2};
-                var loaded = await root.MeshAvatar.createMeshAvatar(canvas,{rig:rig,assetsBase:ASSET_BASE + 'built/',manual:true,padTop:0.035,padSide:0.035});
-                if (disposed) { loaded.destroy(); return false; }
-                model = loaded; model.setAutoIdle(false); model.setAutoMotion(false); model.setAppendageGain(0.4);
+                canvas.addEventListener('webglcontextlost',contextLost);
                 canvas.hidden = false; fallback.hidden = true; canvas.dataset.avatarState = 'ready';
-                if (root.IntersectionObserver) {
-                    observer = new root.IntersectionObserver(function (entries) {
-                        visible = entries[0].isIntersecting;
-                        if (visible) wake(); else stopFrames();
-                    });
-                    observer.observe(canvas);
-                }
+                canvas.dataset.appearance = id;
+                fallback.setAttribute('src',base + 'source.png');
+                appearance = id; visible = true;
+                if (observer) observer.observe(canvas);
                 render(1 / 60); wake();
+                if (previousModel) previousModel.destroy();
+                remember(id);
                 return true;
             } catch (_) {
-                if (!disposed) staticPortrait();
+                if (!disposed && own === loadVersion && !model) {
+                    if (portraitReady) {
+                        fallback.setAttribute('src',base + 'source.png'); appearance = id;
+                        canvas.dataset.appearance = id; remember(id);
+                    }
+                    staticPortrait();
+                    return portraitReady;
+                }
                 return false;
+            } finally {
+                if (loaded) loaded.destroy();
+                if (candidate) candidate.remove();
+                if (own === loadVersion) loading = false;
             }
-        })();
-        return {ready:ready,setSpeaking:setSpeaking,attachAudio:attachAudio,
-            getState:function () { return {ready:!!model && canvas.dataset.avatarState === 'ready',speaking:speaking,parameters:Object.assign({},parameters)}; },
+        }
+        canvas.dataset.avatarState = 'loading';
+        fallback.setAttribute('src',ASSET_BASE + appearance + '/source.png');
+        var ready = setAppearance(appearance);
+        return {ready:ready,setSpeaking:setSpeaking,attachAudio:attachAudio,setAppearance:setAppearance,
+            getAppearances:function () { return APPEARANCES.map(function (item) { return {id:item.id,label:item.label,portrait:ASSET_BASE + item.id + '/source.png'}; }); },
+            getState:function () { return {ready:!!model && canvas.dataset.avatarState === 'ready',appearance:appearance,loading:loading,remembered:remembered,speaking:speaking,parameters:Object.assign({},parameters)}; },
             destroy:function () {
                 if (disposed) return;
-                setSpeaking(false); disposed = true; abort.abort(); stopFrames();
+                setSpeaking(false); disposed = true; loadVersion++; if (abort) abort.abort(); stopFrames();
                 if (observer) observer.disconnect();
                 if (audioTap) audioTap.detach();
                 if (context) context.close().catch(function () {});
