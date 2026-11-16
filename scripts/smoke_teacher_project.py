@@ -74,7 +74,7 @@ def wait_ready(process: subprocess.Popen, base: str, timeout: float) -> bytes:
 
 
 def verify_campus(base: str) -> dict:
-    """REQ-054..059: verify a running empty-key campus server via real cookies/CSRF.
+    """REQ-054..061: verify a running empty-key campus server via real cookies/CSRF.
 
     Input is the local server base URL. Returns check labels/counts, raises on a
     contract regression. Process ownership stays with verify. See docs/test_reference.md.
@@ -223,6 +223,17 @@ def verify_campus(base: str) -> dict:
     assert not any(key in state for key in ("hour", "time", "weather"))
     assert exited["sceneAction"]["type"] == "KEEP_SCENE" and "起点" in exited["reply"]
     assert ask("带我过去")["sceneAction"]["type"] != "SHOW_ROUTE"
+    for source in ("simulated", "geolocation"):
+        new()
+        coordinate_context = {"simulated": source == "simulated", "position": {
+            "source": source, "latitude": 39.8741, "longitude": 116.4762,
+            "accuracy": 20, "timestamp": int(time.time() * 1000)}}
+        coordinate_route = ask("平乐园图书馆怎么走", coordinate_context)
+        assert coordinate_route["sceneAction"]["type"] == "SHOW_ROUTE"
+        assert state["position"]["source"] == source and "placeId" not in state["position"]
+        assert state["position"]["latitude"] == 39.8741
+        assert "路线待核验" in coordinate_route["reply"] or "方向参考" in coordinate_route["reply"]
+    new()
     canceled_request = payload("被取消的请求")
     canceled = call("/api/campus/cancel", {key: canceled_request[key] for key in ("conversationId", "requestId")}, headers)
     assert canceled["canceled"] is True
@@ -236,8 +247,16 @@ def verify_campus(base: str) -> dict:
     assert len(catalog["assets"]) == 8
     assert b"campus" in fetch(base + "/campus.html")
     for resource in ("/css/campus.css", "/js/campus.js", "/js/campus-scene.js", "/js/campus-companion.js",
-                     "/js/campus-environment.js", "/js/campus-voice.js"):
+                     "/js/campus-environment.js", "/js/campus-voice.js", "/js/campus-map.js",
+                     "/js/campus-location-lab.js", "/vendor/leaflet/leaflet.js", "/vendor/leaflet/leaflet.css",
+                     "/vendor/leaflet/LICENSE"):
         assert fetch(base + resource), resource
+    map_features = call("/media/campus/pingleyuan-features.geojson")
+    map_points = call("/media/campus/campus-map-points.json")
+    assert map_features["type"] == "FeatureCollection" and len(map_features["features"]) >= 150
+    assert map_features["metadata"]["coordinateSystem"] == "WGS84" and map_features["metadata"]["license"] == "ODbL-1.0"
+    assert len(map_points["points"]) >= 10 and all(not point["entranceVerified"] for point in map_points["points"])
+    assert call("/api/campus/catalog")["places"] == catalog["places"]
     for asset in catalog["assets"]:
         content = fetch(base + asset["path"])
         image = (content.startswith(b"\x89PNG\r\n\x1a\n") or content.startswith(b"\xff\xd8\xff")
@@ -248,7 +267,8 @@ def verify_campus(base: str) -> dict:
             "checks": ["campus_csrf", "campus_replay", "campus_400_409", "campus_cookie_isolation",
                        "campus_card_route", "campus_unknown_gym", "campus_library_visitor_sources",
                        "campus_interior_exterior", "campus_dining_choice", "campus_simulation_exit",
-                       "campus_cancel_new", "campus_weather_invalid", "campus_http_assets"]}
+                       "campus_cancel_new", "campus_weather_invalid", "campus_http_assets",
+                       "campus_coordinate_origin", "campus_offline_map_assets"]}
 
 
 def verify(jar: Path, java: str, port: int, timeout: float) -> dict:

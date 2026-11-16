@@ -90,7 +90,7 @@ test('confirmed library areas stay quiet from library entry or direct declaratio
 test('real entry styles retain responsive stage, composer and reduced-motion rules',()=>{
     const root=path.resolve(__dirname,'../../src/main/resources/static');
     const html=fs.readFileSync(path.join(root,'campus.html'),'utf8');
-    const href=html.match(/<link[^>]+href="([^"]+)"/)[1];const css=fs.readFileSync(path.join(root,href),'utf8');
+    const href=html.match(/<link[^>]+href="([^"\s]*\/campus\.css)"/)[1];const css=fs.readFileSync(path.join(root,href),'utf8');
     assert.match(css,/\.campus-stage\s*\{/);assert.match(css,/\.composer\s*\{/);assert.match(css,/prefers-reduced-motion/);assert.match(css,/@media \(max-width: 650px\)/);
 });
 

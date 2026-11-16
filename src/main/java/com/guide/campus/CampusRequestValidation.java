@@ -126,6 +126,20 @@ final class CampusRequestValidation {
         return result;
     }
 
+    /**
+     * REQ-061: an already bounded position can preview from a catalog place or a WGS84 point.
+     * Place IDs are catalog-checked by position(); coordinates are also checked here independently.
+     * See docs/api_reference.md for the address-preview contract.
+     */
+    static boolean hasRouteOrigin(JsonNode position) {
+        if (position == null || !position.isObject()) return false;
+        if (position.path("placeId").isTextual() && !position.path("placeId").asText().trim().isEmpty()) return true;
+        JsonNode latitude = position.path("latitude"), longitude = position.path("longitude");
+        return latitude.isNumber() && longitude.isNumber()
+                && Double.isFinite(latitude.asDouble()) && Math.abs(latitude.asDouble()) <= 90
+                && Double.isFinite(longitude.asDouble()) && Math.abs(longitude.asDouble()) <= 180;
+    }
+
     static ResponseStatusException invalid(String field) {
         return new ResponseStatusException(HttpStatus.BAD_REQUEST, "INVALID_" + field);
     }

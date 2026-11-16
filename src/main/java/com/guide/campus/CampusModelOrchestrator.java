@@ -156,7 +156,7 @@ final class CampusModelOrchestrator {
 
     private void validateRelationship(ObjectNode action, ObjectNode context) {
         String type = action.path("type").asText();
-        if ("SHOW_ROUTE".equals(type) && !context.path("position").hasNonNull("placeId")) {
+        if ("SHOW_ROUTE".equals(type) && !CampusRequestValidation.hasRouteOrigin(context.path("position"))) {
             throw new IllegalStateException("Route origin required");
         }
         if ("SHOW_DINING".equals(type)) {

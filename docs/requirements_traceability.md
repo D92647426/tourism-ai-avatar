@@ -158,20 +158,26 @@ REQ-043（#29）情境编排、REQ-044（#30）观察辅助、REQ-045（#31）�
 | REQ-054 / #52 | 五现行校区、26地点、7事项19变体、8素材，学综楼现行窗口与访客用途来源 | [目录](../src/main/java/com/guide/campus/CampusCatalog.java#L55)、[来源回归](../src/test/java/com/guide/campus/CampusCatalogTest.java#L95) |
 | REQ-055 / #53 | 统一AssistantTurn、离线业务与六模型工具、受控场景、4～6建议、幂等取消和版本提交 | [chat](../src/main/java/com/guide/campus/CampusAssistantService.java#L74)、[模型往返](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L22) |
 | REQ-056 / #54 | 按需设备定位、校时、天气时点、本部范围和地址预览、显式外部地图搜索 | [环境](../src/main/resources/static/js/campus-environment.js#L4)、[天气](../src/main/java/com/guide/campus/CampusWeatherService.java#L57)、[场景](../src/main/resources/static/js/campus-scene.js#L55) |
-| REQ-057 / #55 | 前台饭点/图书馆轻邀约、忙态冷却、馆内静音、馆外清物理确认。教学区离开和校门事件由#61跟进，#55保持open追踪后续 | [陪伴](../src/main/resources/static/js/campus-companion.js#L16)、[馆内外](../src/test/java/com/guide/campus/CampusAssistantTest.java#L231) |
+| REQ-057 / #55 | 前台饭点/图书馆轻邀约、忙态冷却、馆内静音、馆外清物理确认。教学区离开和校门事件由#61跟进，#55保持open追踪后续 | [陪伴](../src/main/resources/static/js/campus-companion.js#L16)、[馆内外](../src/test/java/com/guide/campus/CampusAssistantTest.java#L258) |
 | REQ-058 / #56 | 燕小北二维人物舞台、实景、侧边陪伴、图片版本隔离，来源保留许可状态 | [页面](../src/main/resources/static/campus.html#L1)、[素材](../src/main/resources/static/media/campus/SOURCES.md#L1)、[前端测试](../tests/frontend/campus-page.test.js#L1) |
-| REQ-059 / #57 | 午间与到馆模拟、持续标识、30秒停留加速、退出清除并重新定位 | [模拟](../src/main/resources/static/js/campus-environment.js#L120)、[退出回归](../src/test/java/com/guide/campus/CampusAssistantTest.java#L318) |
+| REQ-059 / #57 | 午间与到馆模拟、持续标识、30秒停留加速、退出清除并重新定位 | [模拟](../src/main/resources/static/js/campus-environment.js#L180)、[退出回归](../src/test/java/com/guide/campus/CampusAssistantTest.java#L345) |
 
 课堂操作、来源、模型/声音与手机待验边界见 [运行手册](campus_demo_runbook.md#L1)，六API见 [API-054a～f](api_reference.md#L252)，验证命令与本轮实际结果见 [TEST-054～059](test_reference.md#L1)。旧景区入口与数据继续独立保留，校园目录随JAR发布。
 
 
-REQ-055最终复审补齐显式导航换目标和模型最终意图协调，餐厅实际选项可继续地点与导航。REQ-057覆盖library-area馆内分区静音、简短出馆清除物理位置，以及真实已确认地点的显式复核邀约。物理版本和普通轮次分别维护，保留旧调用方兼容规则。[换目标回归](../src/test/java/com/guide/campus/CampusAssistantTest.java#L75)、[模型实际选项](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L138)、[真实复核入口](../tests/frontend/campus-page.test.js#L7)
+REQ-055最终复审补齐显式导航换目标和模型最终意图协调，餐厅实际选项可继续地点与导航。REQ-057覆盖library-area馆内分区静音、简短出馆清除物理位置，以及真实已确认地点的显式复核邀约。物理版本和普通轮次分别维护，保留旧调用方兼容规则。[换目标回归](../src/test/java/com/guide/campus/CampusAssistantTest.java#L102)、[模型实际选项](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L163)、[真实复核入口](../tests/frontend/campus-page.test.js#L7)
 
 
-REQ-055限定复审补齐无关地点照片切换后的导航闭环。同业务地点及已知馆内分区的父馆照片按实际关联保留业务，显式无关照片建立新目标。[照片目标切换](../src/test/java/com/guide/campus/CampusAssistantTest.java#L149)、[模型增强与导航](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L217)
+REQ-055限定复审补齐无关地点照片切换后的导航闭环。同业务地点及已知馆内分区的父馆照片按实际关联保留业务，显式无关照片建立新目标。[照片目标切换](../src/test/java/com/guide/campus/CampusAssistantTest.java#L176)、[模型增强与导航](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L242)
 
 ## REQ-060 校园场景自然转场
 
 对应 [#65](https://github.com/D92647426/tourism-ai-avatar/issues/65)。地点、办事、饮食、地图、天气及返回舞台使用柔和淡出、照片裁切和文字渐显，人物位置随场景平滑调整。图片预加载后的双图层交叉淡入、回复及4～6项建议的分层浮现共同完成呈现。手机为角落人物及状态预留标题区高度。
 
-[转场所有权与舞台裁切](../src/main/resources/static/js/campus-scene.js#L54)、[场景及回复共同提交](../src/main/resources/static/js/campus.js#L71)、[样式与时序](../src/main/resources/static/css/campus.css#L172)、[15项回归](../tests/frontend/campus-motion.test.js#L17)。连续请求、新对话及离页会撤销旧快照归属，系统减少动态效果采用即时渲染。
+[转场所有权与舞台裁切](../src/main/resources/static/js/campus-scene.js#L54)、[场景及回复共同提交](../src/main/resources/static/js/campus.js#L72)、[样式与时序](../src/main/resources/static/css/campus.css#L214)、[15项回归](../tests/frontend/campus-motion.test.js#L17)。连续请求、新对话及离页会撤销旧快照归属，系统减少动态效果采用即时渲染。
+
+## REQ-061 地图与虚拟定位测试
+
+[#67](https://github.com/D92647426/tourism-ai-avatar/issues/67)。本部离线建筑道路图、位置与目标参考叠加、坐标起点地址/方向预览、独立地图测试面板、手动模拟时钟和样本推进。未知坐标保持资料状态，环境边界覆盖新对话、取消、后台及销毁。
+
+[使用与验收](campus_map_lab.md#L1)、[地图](../src/main/resources/static/js/campus-map.js#L34)、[面板](../src/main/resources/static/js/campus-location-lab.js#L5)、[环境](../src/main/resources/static/js/campus-environment.js#L155)、[数据生成](../scripts/update_campus_map.py#L145)。角色选型检索见[RuiC-2D与燕小北娘化调研](ruic2d_yanxiaobei_research.md#L1)。

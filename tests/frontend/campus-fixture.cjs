@@ -11,7 +11,7 @@ function page(options = {}) {
     const time = clock(), nodes = new Map(), requests = [], images = [], utterances = [], recognitions = [], geo = [], calls = [], watches = [], clearedWatches = [], transitions = [];
     let now = Date.parse('2026-11-09T04:00:00Z'), stops = 0, contextReads = 0;
     class Element {
-        constructor(tag = 'div') { this.tagName = tag.toUpperCase(); this.children = []; this.events = {}; this.attributes = {}; this.dataset = {}; this.style = {setProperty(key,value){this[key]=value;}}; this.value = ''; this.hidden = false; this.disabled = false; this._text = ''; this.classes = new Set(); }
+        constructor(tag = 'div') { this.tagName = tag.toUpperCase(); this.children = []; this.events = {}; this.attributes = {}; this.dataset = {}; this.style = {setProperty(key,value){this[key]=value;}}; this.value = ''; this.hidden = false; this.open = false; this.disabled = false; this._text = ''; this.classes = new Set(); }
         get textContent() { return this._text + this.children.map(c => c.textContent).join(''); }
         set textContent(v) { this._text = String(v); this.children = []; }
         get className() { return [...this.classes].join(' '); }
@@ -29,6 +29,8 @@ function page(options = {}) {
         getAttribute(k) { return this.attributes[k] ?? null; }
         removeAttribute(k) { delete this.attributes[k]; }
         focus() { document.activeElement = this; }
+        showModal() { this.open = true; document.activeElement = this; }
+        close() { this.open = false; this.fire('close'); }
         scrollIntoView() {}
         getBoundingClientRect() { return {top:70,bottom:615}; }
     }
@@ -36,6 +38,7 @@ function page(options = {}) {
     for (const match of html.matchAll(/<([a-z]+)\b([^>]*\bid="([^"]+)"[^>]*)>/g)) {
         const node = new Element(match[1]); node.id = match[3]; node.hidden = /\bhidden\b/.test(match[2]);
         for (const [,key,value] of match[2].matchAll(/([\w-]+)="([^"]*)"/g)) node.setAttribute(key,value);
+        if (node.attributes.value !== undefined) node.value = node.attributes.value;
         nodes.set(node.id,node);
     }
     const documentEvents = new Element(), windowEvents = new Element();
@@ -63,11 +66,13 @@ function page(options = {}) {
         if (url === '/api/campus/context') return options.contextFetch ? options.contextFetch(contextReads++) : Promise.resolve(response(options.context || {conversationId:'conversation-1',contextRevision:0,campusId:null,placeId:null}));
         if (url === '/api/digital-human-config') return Promise.resolve(response(options.config || {}));
         if (url.startsWith('/api/campus/weather')) return Promise.resolve(response(options.weather || {status:'unavailable',label:'北京市区参考天气'}));
+        if (url.startsWith('/media/campus/') && /(?:\.json|\.geojson)$/.test(url)) return options.mapFetch ? options.mapFetch(url)
+            : Promise.resolve(response(JSON.parse(fs.readFileSync(path.join(root,'src/main/resources/static',url),'utf8'))));
         if (url === '/api/speech/synthesize') return Promise.resolve(response({},401));
         const job = deferred(); requests.push({...job,url,options:opts,body:opts.body ? JSON.parse(opts.body) : {}}); return job.promise;
     }
     class TestDate extends Date { static now(){return now;} }
-    const context = vm.createContext({document,fetch,AbortController,URL,Image,Date:TestDate,console,
+    const context = vm.createContext({document,fetch,AbortController,URL,Image,Date:TestDate,console,L:options.Leaflet,
         setTimeout:time.setTimeout,clearTimeout:time.clearTimeout,
         navigator:{geolocation:{getCurrentPosition:(ok,bad) => geo.push({ok,bad}),
             watchPosition:(ok,bad) => { const watch={ok,bad,id:watches.length};watches.push(watch);return watch.id; },

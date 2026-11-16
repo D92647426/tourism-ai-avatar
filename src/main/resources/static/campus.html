@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <meta name="theme-color" content="#F3F6FA">
     <title>燕小北 · 校园助手</title>
+    <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
     <link rel="stylesheet" href="/css/campus.css">
 </head>
 <body>
@@ -44,6 +45,7 @@
                 <button id="companionToggle" class="text-button" type="button" aria-pressed="false">开启陪伴</button>
                 <button id="locatePosition" class="text-button" type="button">获取位置</button>
                 <button id="demoToggle" class="text-button" type="button" aria-expanded="false">情境演示</button>
+                <button id="openLocationLab" class="text-button" type="button">地图测试</button>
                 <button id="newConversation" class="text-button" type="button">新对话</button>
             </div>
             <section id="demoPanel" class="demo-panel" aria-label="情境演示" hidden>
@@ -55,14 +57,36 @@
         </div>
     </section>
     <footer class="credit">角色为 AI 辅助二维重建 <a href="/media/campus/SOURCES.md" target="_blank" rel="noopener noreferrer">素材来源</a></footer>
+    <dialog id="locationLab" class="location-lab" aria-labelledby="locationLabTitle">
+        <div class="lab-heading"><div><h2 id="locationLabTitle">地图与虚拟定位</h2><p>手动设置位置与时间，测试校园问答与陪伴。</p></div><button id="closeLocationLab" class="text-button" type="button" aria-label="关闭地图测试">关闭</button></div>
+        <div class="lab-layout">
+            <div id="labMap" class="lab-map"></div>
+            <form id="locationLabForm" class="lab-form">
+                <label>校区<select id="labCampus"></select></label>
+                <label>模拟地点<select id="labPlace"><option value="">仅坐标，建筑未知</option></select></label>
+                <p class="lab-help">可选地图参考点，也可在地图空白处点选任意坐标。</p>
+                <div class="lab-coordinates"><label>纬度<input id="labLatitude" type="number" min="-90" max="90" step="any" inputmode="decimal" placeholder="WGS84 纬度"></label><label>经度<input id="labLongitude" type="number" min="-180" max="180" step="any" inputmode="decimal" placeholder="WGS84 经度"></label></div>
+                <div class="lab-coordinates"><label>定位精度（米）<input id="labAccuracy" type="number" min="0" step="any" value="20"></label><label>手动模拟时钟<input id="labTime" type="time" value="12:00" required></label></div>
+                <p id="labStatus" class="lab-status" role="status">选择地点或坐标后应用虚拟定位。</p>
+                <button id="applyVirtualPosition" type="submit">应用虚拟定位</button>
+                <button id="advanceVirtualTime" class="lab-secondary" type="button" disabled>推进30秒并采样</button>
+                <button id="exitVirtualPosition" class="text-button" type="button" disabled>退出虚拟定位</button>
+                <p id="labActiveState" class="lab-active" aria-live="polite">尚未启用虚拟定位</p>
+                <button id="returnFromLocationLab" class="lab-secondary" type="button">返回对话</button>
+            </form>
+        </div>
+    </dialog>
     <noscript>请启用 JavaScript 使用校园问答。学校资料可访问北京工业大学官网。</noscript>
     <script src="/js/security.js"></script>
     <script src="/js/voice-settings.js"></script>
     <script src="/js/local-speech.js"></script>
     <script src="/js/speech-lifecycle.js"></script>
     <script src="/js/campus-companion.js"></script>
+    <script src="/vendor/leaflet/leaflet.js"></script>
+    <script src="/js/campus-map.js"></script>
     <script src="/js/campus-scene.js"></script>
     <script src="/js/campus-environment.js"></script>
+    <script src="/js/campus-location-lab.js"></script>
     <script src="/js/campus-voice.js"></script>
     <script src="/js/campus.js"></script>
 </body>

@@ -2,7 +2,7 @@
 (function () {
     'use strict';
     var byId = function (id) { return document.getElementById(id); };
-    var context = null, catalog = null, scene = null, environment = null, voice = null;
+    var context = null, catalog = null, scene = null, environment = null, voice = null, locationLab = null;
     var active = null, failed = null, barrier = null, generation = 0, serial = 0, ready = false, disposed = false;
     var contextReadSequence = 0;
     var draftRevision = 0, lastSpeech = '嗨，我是燕小北。今天在校园里，想做些什么？';
@@ -21,6 +21,7 @@
     }
     function requestBusy() { return !!active || !!barrier || !ready || disposed; }
     function update() {
+        byId('openLocationLab').disabled = !locationLab || disposed;
         byId('sendMessage').disabled = requestBusy();
         byId('cancelRequest').hidden = !active;
         byId('retryRequest').hidden = !failed || !!active || !!barrier || !ready;
@@ -176,12 +177,14 @@
             checkReadSnapshot(read,data[1]);
             catalog = data[0]; scene = CampusScene.create({catalog:catalog,onChoice:function (message) {
                 if (byId('campusInput').value.trim()) { byId('requestStatus').textContent = '输入框里还有草稿，可以先发送或修改。'; byId('campusInput').focus(); return; } submit(message,'choice');
-            }});
+            },getEnvironment:function () { return environment ? environment.snapshot() : {}; }});
             voice = CampusVoice.create({get:api,onActivity:function () { if (environment) environment.update(); },isRequestBusy:requestBusy,
                 readDraft:function () { return byId('campusInput').value; },onDraft:function (text) { byId('campusInput').value = text; },onSubmit:submit});
             environment = CampusEnvironment.create({catalog:catalog,get:api,onBoundary:cancel,
-                isBusy:function () { return requestBusy() || !!byId('campusInput').value.trim() || !!voice && voice.busy(); },
+                isBusy:function () { return requestBusy() || !!byId('campusInput').value.trim() || !!voice && voice.busy() || !!locationLab && locationLab.isOpen(); },
+                onEnvironment:function (snapshot) { scene.updateEnvironment(snapshot); if (locationLab) locationLab.update(snapshot); },
                 onQuiet:function (quiet) { if (voice) voice.setQuiet(quiet); },onAccept:function (message) { submit(message,'proactive_accept'); }});
+            locationLab = CampusLocationLab.create({catalog:catalog,environment:environment,onState:function () { environment.update(); }});
             adopt(data[1]); byId('requestStatus').textContent = ''; byId('reloadContext').hidden = true; update();
             voice.ready.then(function () { if (!document.hidden && generation === own && !disposed && !active) voice.speak(lastSpeech); });
         } catch (_) {
@@ -221,7 +224,7 @@
     window.addEventListener('pagehide',function () {
         disposed = true; generation++; clearTimeout(welcomeTimer);
         if (active) { active.controller.abort(); api('/api/campus/cancel',{conversationId:active.attempt.payload.conversationId,requestId:active.attempt.payload.requestId}).catch(function () {}); }
-        if (voice) voice.destroy(); if (environment) environment.destroy(); if (scene) scene.invalidate(true);
+        if (locationLab) locationLab.destroy(); if (voice) voice.destroy(); if (environment) environment.destroy(); if (scene) scene.destroy();
     });
     welcomeTimer = setTimeout(function () { byId('conversation').hidden = false; byId('campusControls').hidden = false; },1400);
     update(); initialize();

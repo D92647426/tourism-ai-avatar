@@ -62,3 +62,5 @@
 ## ERR-053：继承问候中的AI导致第二句配音失败
 
 触发：真实网页第一句播放成功，第二句含AI时工作进程返回502。根因：上游切换中英文分词，离线尝试下载fasttext大模型，且Windows中文路径下小模型加载失败。修复：配音副本中AI读作“人工智能”，其他拉丁字母按中文名称逐字拼读；不更改显示正文或聊天记录。位置 [spoken_text](../scripts/local_voice_server.py#L1)，回归 [WorkerTest](../tests/test_local_voice_server.py#L1)。当前是中文语音方案，不声称已实现自然英语发音。
+
+2026-11-16地图改进复现ERR-032-001，临时预览直接占用了构建JAR。停止已核验的临时进程后完整verify通过，最终预览使用独立JAR副本。[构建与运行步骤](campus_demo_runbook.md#L1)。

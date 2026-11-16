@@ -244,9 +244,9 @@ TEST-053补充：`LocalSpeechServiceTest.readTimeoutReturns504AndReleasesItsSlot
 | TEST-055C / REQ-055 | [RETURN_STAGE](../tests/frontend/campus-page.test.js#L345)、[SHOW_MAP](../tests/frontend/campus-page.test.js#L361)、[SHOW_WEATHER](../tests/frontend/campus-page.test.js#L377) | 实际API入口返回舞台清旧图、空地点校区地图与资料不足、天气正文及已有来源入口，三项分别RED/GREEN |
 | TEST-056 / REQ-056 | [CampusWeatherServiceTest](../src/test/java/com/guide/campus/CampusWeatherServiceTest.java#L1)、[校园页面](../tests/frontend/campus-page.test.js#L1) | 缓存时点、超时、无GPS与地图降级，失败查source/timestamp与坐标系 |
 | TEST-057A / REQ-057 | [confirmed dining invitation](../tests/frontend/campus-companion.test.js#L40)、[busy defers](../tests/frontend/campus-companion.test.js#L55)、[foreground samples](../tests/frontend/campus-companion.test.js#L108) | 气泡暂缓、30秒停留/20秒采样、前台恢复与过期，失败查时间与可见性 |
-| TEST-057B / REQ-057 | [explicitLibraryInteriorUsesCatalogAliasAndConfirmsOnlyPhysicalPlace](../src/test/java/com/guide/campus/CampusAssistantTest.java#L231)、[outsideAndHypotheticalLibraryStatementsNeverConfirmInterior](../src/test/java/com/guide/campus/CampusAssistantTest.java#L243)、[explicitLibraryDepartureClearsPhysicalEvidenceAndPreservesDestination](../src/test/java/com/guide/campus/CampusAssistantTest.java#L252)、[libraryQuestionsAndHypotheticalDepartureDoNotRefreshOrClearPhysicalEvidence](../src/test/java/com/guide/campus/CampusAssistantTest.java#L266) | 馆内确认成立，馆外/门口/附近/离馆清旧位置，主题保留，假设意向不刷新时间 |
+| TEST-057B / REQ-057 | [explicitLibraryInteriorUsesCatalogAliasAndConfirmsOnlyPhysicalPlace](../src/test/java/com/guide/campus/CampusAssistantTest.java#L258)、[outsideAndHypotheticalLibraryStatementsNeverConfirmInterior](../src/test/java/com/guide/campus/CampusAssistantTest.java#L270)、[explicitLibraryDepartureClearsPhysicalEvidenceAndPreservesDestination](../src/test/java/com/guide/campus/CampusAssistantTest.java#L279)、[libraryQuestionsAndHypotheticalDepartureDoNotRefreshOrClearPhysicalEvidence](../src/test/java/com/guide/campus/CampusAssistantTest.java#L293) | 馆内确认成立，馆外/门口/附近/离馆清旧位置，主题保留，假设意向不刷新时间 |
 | TEST-058 / REQ-058 | [campus-page.test.js](../tests/frontend/campus-page.test.js#L1) | 人物舞台、图片迟到隔离、真实目录素材、键盘和减少动态效果，失败查场景revision与资源ID |
-| TEST-059 / REQ-059 | [exitingSimulationWithoutGpsClearsEnvironmentAndAsksForRouteOrigin](../src/test/java/com/guide/campus/CampusAssistantTest.java#L318)、[deniedLocationAfterSimulationRemainsUnknownAndExplicitNullClearsRealPosition](../src/test/java/com/guide/campus/CampusAssistantTest.java#L333)、[页面退出](../tests/frontend/campus-page.test.js#L1) | false/null清模拟位置、time/hour/weather，拒绝定位继续问起点 |
+| TEST-059 / REQ-059 | [exitingSimulationWithoutGpsClearsEnvironmentAndAsksForRouteOrigin](../src/test/java/com/guide/campus/CampusAssistantTest.java#L345)、[deniedLocationAfterSimulationRemainsUnknownAndExplicitNullClearsRealPosition](../src/test/java/com/guide/campus/CampusAssistantTest.java#L360)、[页面退出](../tests/frontend/campus-page.test.js#L1) | false/null清模拟位置、time/hour/weather，拒绝定位继续问起点 |
 | TEST-054HTTP / REQ-054～059 | [verify_campus](../scripts/smoke_teacher_project.py#L76) | 真实CSRF、5/26目录、重放400/409、两Cookie、三闭环、取消/新会话、8素材magic，失败看业务断言及隔离服务日志 |
 
 ```powershell
@@ -268,7 +268,7 @@ python -X utf8 scripts/smoke_teacher_project.py --jar target/ai-guide-1.0.0.jar 
 
 ### TEST-057B 第一轮复审回归
 
-新增 [futureLibraryEntryDoesNotEstablishOrRefreshPhysicalEvidence](../src/test/java/com/guide/campus/CampusAssistantTest.java#L274)、[libraryOutsideWithDeClearsInteriorAndPreservesDestination](../src/test/java/com/guide/campus/CampusAssistantTest.java#L288)、[libraryDoorwayWithDeClearsInteriorAndPreservesDestination](../src/test/java/com/guide/campus/CampusAssistantTest.java#L299)。三项各先RED1失败，再运行 `mvn -o -DforkCount=0 -Dtest=CampusAssistantTest test`，全类25项通过。覆盖未来入馆及离馆不改已有位置时间戳，含“的”的馆外与门口清除确认且保留目的地。原明确到馆用例覆盖“我在/我到了/我已经进入/我已经在图书馆内”和标点子句、目录别名。
+新增 [futureLibraryEntryDoesNotEstablishOrRefreshPhysicalEvidence](../src/test/java/com/guide/campus/CampusAssistantTest.java#L301)、[libraryOutsideWithDeClearsInteriorAndPreservesDestination](../src/test/java/com/guide/campus/CampusAssistantTest.java#L315)、[libraryDoorwayWithDeClearsInteriorAndPreservesDestination](../src/test/java/com/guide/campus/CampusAssistantTest.java#L326)。三项各先RED1失败，再运行 `mvn -o -DforkCount=0 -Dtest=CampusAssistantTest test`，全类25项通过。覆盖未来入馆及离馆不改已有位置时间戳，含“的”的馆外与门口清除确认且保留目的地。原明确到馆用例覆盖“我在/我到了/我已经进入/我已经在图书馆内”和标点子句、目录别名。
 
 同一 [HTTP入口](../scripts/smoke_teacher_project.py#L76)补入上述三个实测句式，分别验证新会话未知位置、已有位置时点和馆外清除。最终计数为304项Java、276项Node，其他检查命令与边界沿用上节。
 
@@ -279,9 +279,9 @@ REQ-055换目标导航与模型业务一致性，REQ-057馆内分区和真实位
 
 | 回归 | 实际入口与预期 |
 |---|---|
-| F1显式换导航目标 | [explicitNavigationResolvesNewDestinationAndTaskBeforeRouting](../src/test/java/com/guide/campus/CampusAssistantTest.java#L75)，补卡→图书馆→补卡均采用当前目标，四教保持起点 |
-| F2馆内分区 | [leavingLibraryAreaClearsPhysicalEvidenceAndKeepsTheTopic](../src/test/java/com/guide/campus/CampusAssistantTest.java#L54)、[confirmed library areas](../tests/frontend/campus-page.test.js#L78)，多媒体阅览区直接确认和从馆内进入都静音，出馆清位置 |
-| F3模型最终意图 | [modelDiningRedirectReplacesCardChoicesAndDestinationThroughActualChoice](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L138)、[新地点与未知地点事项](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L165)、[工具场景与同业务照片](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L187)、[分区父馆外观](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L203)，选项、任务、目标和场景一致，照片预览保持服务区目的地 |
+| F1显式换导航目标 | [explicitNavigationResolvesNewDestinationAndTaskBeforeRouting](../src/test/java/com/guide/campus/CampusAssistantTest.java#L102)，补卡→图书馆→补卡均采用当前目标，四教保持起点 |
+| F2馆内分区 | [leavingLibraryAreaClearsPhysicalEvidenceAndKeepsTheTopic](../src/test/java/com/guide/campus/CampusAssistantTest.java#L81)、[confirmed library areas](../tests/frontend/campus-page.test.js#L78)，多媒体阅览区直接确认和从馆内进入都静音，出馆清位置 |
+| F3模型最终意图 | [modelDiningRedirectReplacesCardChoicesAndDestinationThroughActualChoice](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L163)、[新地点与未知地点事项](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L190)、[工具场景与同业务照片](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L212)、[分区父馆外观](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L228)，选项、任务、目标和场景一致，照片预览保持服务区目的地 |
 | F4真实复核 | [正常顺序与先声明后开启](../tests/frontend/campus-page.test.js#L7)、[跨普通服务端轮次](../tests/frontend/campus-page.test.js#L38)、[旧点击与忙态](../tests/frontend/campus-page.test.js#L48)、[过期及馆内静音](../tests/frontend/campus-page.test.js#L69)、[可选物理版本兼容](../tests/frontend/campus-companion.test.js#L19)，真实点击补充证据，接受才正式发送 |
 
 命令沿用 `mvn -o -DforkCount=0 verify`、`node --test tests/frontend/*.test.js`、数据结构/44项坏样本、3项voice、文档链接与18090隔离JAR HTTP检查。本轮完整输出以最终修复报告为准，失败先核对物理环境版本、当前目标和本轮通过验证的模型动作。首次目标回归分别先失败再修复，分区照片另补真实HTTP先红后绿。
@@ -293,7 +293,7 @@ F4另通过[错开UI时钟的实际页面回归](../tests/frontend/campus-page.t
 
 ### TEST-055 照片切换导航限定复审
 
-[unrelatedPhotoChangesCardDestinationBeforeRouting](../src/test/java/com/guide/campus/CampusAssistantTest.java#L149) 和 [modelEnhancingUnrelatedPhotoSeesTheNewDestinationAndClearedTask](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L217) 分别通过离线正常服务入口和真实HTTP供应商入口验证补卡→图书馆照片→未知起点→四教到图书馆路线。两项独立先RED再GREEN，模型增强前的上下文已切换。保留 [modelPhotoOfLibraryAreaPreservesItsServiceDestination](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L203) 的服务区目的地回归。失败先核对照片与业务地点的实际关联，最终动作与本地动作相同只用于判断建议是否需要重建。
+[unrelatedPhotoChangesCardDestinationBeforeRouting](../src/test/java/com/guide/campus/CampusAssistantTest.java#L176) 和 [modelEnhancingUnrelatedPhotoSeesTheNewDestinationAndClearedTask](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L242) 分别通过离线正常服务入口和真实HTTP供应商入口验证补卡→图书馆照片→未知起点→四教到图书馆路线。两项独立先RED再GREEN，模型增强前的上下文已切换。保留 [modelPhotoOfLibraryAreaPreservesItsServiceDestination](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L228) 的服务区目的地回归。失败先核对照片与业务地点的实际关联，最终动作与本地动作相同只用于判断建议是否需要重建。
 
 本次限定复审实跑 `mvn -o -DforkCount=0 verify` 共312项Java通过，Node285、数据坏样本44、voice3全部通过，结构、文档链接与含照片切换路线的18090隔离JAR HTTP检查通过。
 
@@ -316,3 +316,20 @@ F4另通过[错开UI时钟的实际页面回归](../tests/frontend/campus-page.t
 TEST-060另覆盖[保留场景背景迟到](../tests/frontend/campus-motion.test.js#L145)及[离页撤销已提交照片](../tests/frontend/campus-motion.test.js#L156)。场景版本仅在场景提交时替换，普通提问后仍保留当前照片的加载能力。
 
 本轮最终完整复验Java312、前端300、数据坏样本44、voice3全部通过，文档链接及结构检查通过，隔离JAR景区与校园HTTP冒烟通过。18089运行包的三份前端资源逐字节匹配工作区，并完成打包版桌面及手机浏览器复验。
+
+## TEST-061 交互地图与虚拟定位
+
+对应REQ-061及[#67](https://github.com/D92647426/tourism-ai-avatar/issues/67)。命令、预期及设备检查见[地图手册](campus_map_lab.md#L44)。
+
+| 回归 | 入口与预期 |
+|---|---|
+| 地图数据15项 | [生成回归](../tests/test_campus_map_data.py#L59)，外部成员过滤、道路裁剪、参考状态、原子写入与CLI失败恢复 |
+| 地图模块20项 | [地图回归](../tests/frontend/campus-map.test.js#L19)，视图先于几何、数据失败/缓存/销毁、参考方向、坐标精度、文本安全及场景清理 |
+| 虚拟环境23项 | [环境回归](../tests/frontend/campus-virtual-position.test.js#L23)，输入校验、校区、手动时钟、GPS隔离、退出取消回声、隐藏与销毁 |
+| 正常面板13项 | [页面入口](../tests/frontend/campus-location-lab.test.js#L17)，实际表单应用、任意坐标、未知地点、饭点邀约、暂停、关闭迟到及重试 |
+
+地图定位失败先检查资源HTTP、Leaflet视图是否先建立、样本source与simulated标记、当前校区与位置及actionGeneration。面板后台恢复后须重新应用。实际浏览器与完整构建结果在本节后续记录。
+
+TEST-061新增6项Java测试，覆盖[本地多种位置来源与缺起点](../src/test/java/com/guide/campus/CampusAssistantTest.java#L54)、[真实HTTP模型工具往返](../src/test/java/com/guide/campus/CampusModelHttpTest.java#L83)、[无效坐标400与版本保持](../src/test/java/com/guide/campus/CampusControllerTest.java#L56)、[谓词边界](../src/test/java/com/guide/campus/CampusRequestValidationTest.java#L14)。兼容simulated、demo、gps及geolocation来源。
+
+2026年11月16日完整本机验收Java318、Node356、地图数据15、既有数据44、voice3全部通过，文档与结构校验通过，隔离JAR的旧景区和校园HTTP通过。运行包与工作区9份页面、脚本、样式及地图数据逐字节一致。实际Chromium通过桌面1440×1000、手机390×844、短横屏844×390、减少动态效果、原生时间输入、地图点击、地点及坐标起点路线、午间邀约、坐标极值、跨校区及退出复验，错误记录为空。手机为视口模拟，真实GPS及移动设备继续按手册验收。地图数据15项加入[CI工作流](../.github/workflows/checks.yml#L34)。

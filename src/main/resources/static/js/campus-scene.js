@@ -56,6 +56,7 @@
         var catalog = options.catalog, epoch = 0, displayedEpoch = 0, activeTransition = null, backgroundIndex = 0;
         var stage = document.getElementById('campusStage'), panel = document.getElementById('scenePanel');
         var content = document.getElementById('sceneContent'), backdrop = document.getElementById('sceneBackdrop');
+        var mapViews = [];
         var backgroundLayers = [element('div', null, 'scene-backdrop-layer'), element('div', null, 'scene-backdrop-layer')];
         backgroundLayers.forEach(function (layer) { backdrop.appendChild(layer); });
         backdrop.style.backgroundImage = '';
@@ -102,6 +103,13 @@
         }
         function place(id) { return catalog.places.find(function (p) { return p.id === id; }); }
         function photoFor(p) { return catalog.assets.find(function (a) { return a.placeId === p.id && a.kind === 'photo'; }); }
+        function liveMap(campus, targetPlaceId) {
+            if (!root.L || !root.CampusMap) return mapPanel(campus);
+            var view = CampusMap.create({campus:campus,catalog:catalog,targetPlaceId:targetPlaceId,
+                environment:options.getEnvironment ? options.getEnvironment() : {},onChoice:options.onChoice});
+            mapViews.push(view); return view.element;
+        }
+        function clearMaps() { mapViews.forEach(function (view) { view.destroy(); }); mapViews = []; }
         function photo(asset, own, background) {
             var figure = element('figure', null, 'scene-photo'), img = element('img');
             img.alt = asset.alt; img.loading = 'lazy'; figure.appendChild(img);
@@ -135,8 +143,12 @@
             area.appendChild(element('p', p.address));
             area.appendChild(element('p', '建筑入口坐标待核验 · 资料核验 ' + p.verifiedAt, 'scene-meta'));
             if (route) {
-                var start = place(context.position && context.position.placeId), address = element('div', null, 'route-address');
-                address.appendChild(element('p', '从 ' + (start ? start.name + ' ' + start.address : '尚未确认的起点')));
+                var position = context.position || {}, start = place(position.placeId), address = element('div', null, 'route-address');
+                var origin = '尚未确认的起点';
+                if (start) origin = start.name + ' ' + start.address;
+                else if (CampusMap.coordinates(position)) origin = (context.simulated || ['simulated','demo'].indexOf(position.source) !== -1 ? '虚拟位置 ' : '当前位置 ')
+                    + position.latitude.toFixed(6) + ', ' + position.longitude.toFixed(6) + '（WGS84）';
+                address.appendChild(element('p', '从 ' + origin));
                 address.appendChild(element('p', '到 ' + p.name + ' ' + p.address)); area.appendChild(address);
             }
             var floor = catalog.assets.find(function (a) { return a.placeId === p.id && a.kind === 'floorplan'; });
@@ -147,7 +159,7 @@
                 var plan = element('img', null, 'floorplan'); plan.src = floor.path; plan.alt = floor.alt; plan.loading = 'lazy'; full.appendChild(plan); layout.appendChild(full);
                 layout.appendChild(link('图书馆官方布局', floor.sourceUrl)); area.appendChild(layout);
             }
-            if (campus) area.appendChild(mapPanel(campus));
+            if (campus) area.appendChild(liveMap(campus,p.id));
             var actions = element('div', null, 'scene-actions');
             var keyword = '北京工业大学 ' + (campus ? campus.name : '') + ' ' + p.name + ' ' + p.address;
             actions.appendChild(link('在高德搜索这个地点', 'https://uri.amap.com/search?keyword=' + encodeURIComponent(keyword) + '&city=' + encodeURIComponent('北京') + '&view=map&src=bjut-campus-demo'));
@@ -158,7 +170,7 @@
         function renderContent(turn, own) {
             var action = turn.sceneAction || {};
             displayedEpoch = own;
-            content.replaceChildren(); stage.scrollTop = 0;
+            clearMaps(); content.replaceChildren(); stage.scrollTop = 0;
             var places = (action.placeIds || []).map(place).filter(Boolean), p = places[0];
             stage.classList.add('has-scene'); panel.hidden = false;
             var task = catalog.tasks.find(function (t) { return t.id === action.taskId; });
@@ -172,7 +184,7 @@
             }
             if (action.type === 'SHOW_MAP') {
                 var campus = catalog.campuses.find(function (item) { return item.id === (turn.context || {}).campusId; });
-                content.appendChild(campus ? mapPanel(campus) : element('p', '校区待确认，可以先在对话中说明校区。'));
+                content.appendChild(campus ? liveMap(campus) : element('p', '校区待确认，可以先在对话中说明校区。'));
             } else if (action.type === 'SHOW_WEATHER') {
                 content.appendChild(element('p', turn.reply));
                 var evidence = element('a', '查看天气资料与来源'); evidence.href = '#weatherDetails';
@@ -201,12 +213,14 @@
             var own = invalidate(true);
             transition(function () {
                 displayedEpoch = own;
-                showBackground(null, own); content.replaceChildren(); stage.scrollTop = 0;
+                showBackground(null, own); clearMaps(); content.replaceChildren(); stage.scrollTop = 0;
                 panel.hidden = true; stage.classList.remove('has-scene');
                 if (updateDialogue) updateDialogue();
             }, own);
         }
-        return {render:render, clear:clear, invalidate:invalidate, place:place};
+        return {render:render, clear:clear, invalidate:invalidate, place:place,
+            updateEnvironment:function (snapshot) { mapViews.forEach(function (view) { view.update(snapshot); }); },
+            destroy:function () { invalidate(true); clearMaps(); }};
     }
     root.CampusScene = {create:create, element:element, link:link};
 })(window);
